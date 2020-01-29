@@ -2,7 +2,7 @@
 
 This code is useful, but old and crusty. Don't look under the hood :)
 
-Main utilities:
+Core utilities:
 * pr0nauto: high level stitching workflow
 * pr0nstitch: create features
 * pr0npto: tweak pto and optimize it
@@ -10,7 +10,11 @@ Main utilities:
 * pr0nts: stitch image into tiles for map rendering
 * pr0nsingle: stitch one large single image
 * outlier: print and remove control point outliers
-* pr0ncp: similar to above, but operates on image RMS
+
+Misc utilities:
+* pr0ncp: similar to outlier, but operates on image RMS
+* pr0nstack.py: stack image sets using Zerene Stacker. Used for distorted chips
+* pr0nstitchaj.py: uses older algorithm that gave early good results
 
 Sample config file:
 ```
