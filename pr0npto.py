@@ -64,10 +64,6 @@ if __name__ == "__main__":
         action="store_true",
         help='Experimental optimization algorithm')
     parser.add_argument(
-        '--tile-opt',
-        action="store_true",
-        help='Optimize project by optimizing sub areas')
-    parser.add_argument(
         '--lin-opt',
         action="store_true",
         help='Optimize project using linear predictive optimize algorithm')
