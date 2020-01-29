@@ -362,11 +362,10 @@ def il_pair_deltas(project, l_il, r_il):
 
 def pto2icm(pto):
     fns = []
-    # Copy project so we can trash it
-    # pto = pto.copy()
     for il in pto.get_image_lines():
         fns.append(il.get_name())
     return ImageCoordinateMap.from_tagged_file_names(fns)
+
 
 
 def gen_cps_delete(pto, icm=None):
@@ -1314,13 +1313,6 @@ def chaos_opt(project, icm):
             pref = random.sample(open_set, 1)[0]
             process()
             open_set.remove(pref)
-
-
-def pto2icm(pto):
-    fns = []
-    for il in pto.get_image_lines():
-        fns.append(il.get_name())
-    return ImageCoordinateMap.from_tagged_file_names(fns)
 
 
 class PreOptimizer:
