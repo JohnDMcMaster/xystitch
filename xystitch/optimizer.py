@@ -309,14 +309,14 @@ class PTOptimizer:
         
         bench.stop()
         print 'Optimized project in %s' % bench
-        
+
 '''
 Calculate average x/y position
 NOTE: x/y deltas are positive right/down
 But global coordinates are positive left,up
 Return positive left/up convention to match global coordinate system
 '''
-def pair_check(project, l_il, r_il):
+def il_pair_deltas(project, l_il, r_il):
     # lesser line
     l_ili = l_il.get_index()
     # Find matching control points
@@ -343,6 +343,85 @@ def pair_check(project, l_il, r_il):
         # XXX: actually, we might be better doing median or something like that
         return (1.0 * sum(cps_x)/len(cps_x),
                 1.0 * sum(cps_y)/len(cps_y))
+
+def pto2icm(pto):
+    fns = []
+    # Copy project so we can trash it
+    # pto = pto.copy()
+    for il in pto.get_image_lines():
+        fns.append(il.get_name())
+    return ImageCoordinateMap.from_tagged_file_names(fns)
+
+
+def gen_cps_delete(pto, icm=None):
+    """
+    For every control point yield
+    ((fnl, fnr), (lx, ly) (rx, ry))
+    Where x and y are global coordinates
+    """
+
+    if icm is None:
+        icm = pto2icm(pto)
+
+
+    for cpl in project.control_point_lines:
+        imgn = project.image_lines[cpl.get_variable('n')]
+        imgN = project.image_lines[cpl.get_variable('N')]
+
+    for y in xrange(1, icm.height()):
+        print('Gen IL pairs with Y %d / %d' % (y + 1, icm.height()))
+        for x in xrange(1, icm.width()):
+            r_fn = icm.get_image(x, y)
+            # Skip missing images
+            if r_fn is None:
+                continue
+            r_il = pto.img_fn2il[r_fn]
+
+            def process_pair(l_il, r_il):
+                l_ili = l_il.get_index()
+                r_ili = r_il.get_index()
+                for cpl in pto.control_point_lines:
+                    if cpl.getv('n') == l_ili and cpl.getv('N') == r_ili:
+                        # invert the sign so that the math works out
+                        l_xy = ((l_il.getv('d') - cpl.getv('x')) - (l_il.getv('d') - cpl.getv('X')))**2
+                        r_xy = ((r_il.getv('e') - cpl.getv('y')) - (r_il.getv('e') - cpl.getv('Y')))**2
+                        yield (l_fn, r_fn), l_xy, r_xy
+
+            if x > 0:
+                l_fn = icm.get_image(x - 1, y)
+                if l_fn:
+                    for x in process_pair(pto.img_fn2il[l_fn], r_il):
+                        yield x
+            if y > 0:
+                l_fn = icm.get_image(x, y - 1)
+                if l_fn:
+                    for x in process_pair(pto.img_fn2il[l_fn], r_il):
+                        yield x
+
+def cpl_im_abs(cpl, n_il, N_il):
+    """Return absolute (x, y), (X, Y) for n, N"""
+    # invert the sign so that the math works out
+    n_xy = (n_il.getv('d') - cpl.getv('x'), n_il.getv('e') - cpl.getv('y'))
+    N_xy = (N_il.getv('d') - cpl.getv('X'), N_il.getv('e') - cpl.getv('Y'))
+    return (n_xy, N_xy)
+
+def gen_cps(pto, icm=None):
+    """
+    For every control point yield
+    ((n_fn, N_fn), (nx, ny), (Nx, Ny))
+    Where x and y are global coordinates
+    """
+
+    if icm is None:
+        icm = pto2icm(pto)
+
+    for cpl in pto.control_point_lines:
+        n_il = pto.image_lines[cpl.get_variable('n')]
+        n_fn = n_il.get_name()
+        N_il = pto.image_lines[cpl.get_variable('N')]
+        N_fn = N_il.get_name()
+        n_xy, N_xy = cpl_im_abs(cpl, n_il, N_il)
+        yield ((n_fn, N_fn), n_xy, N_xy)
 
 def pre_opt_core(project, icm, closed_set, pairsx, pairsy, order, verbose=False):
     iters = 0
@@ -671,6 +750,35 @@ def anchor(project, icm):
 
     return ret[0]
 
+def icm_il_pairs(icm):
+    # dictionary of results so that we can play around with post-processing result
+    # This step takes by far the longest in the optimization process
+    pairsx = {}
+    pairsy = {}
+    # start with simple algorithm where we just sweep left/right
+    for y in xrange(0, icm.height()):
+        print 'Calc delta with Y %d / %d' % (y + 1, icm.height())
+        for x in xrange(0, icm.width()):
+            img = icm.get_image(x, y)
+            # Skip missing images
+            if img is None:
+                continue
+            il = project.img_fn2il[img]
+            ili = il.get_index()
+            if x > 0:
+                img = icm.get_image(x - 1, y)
+                if img:
+                    pairsx[(x, y)] = il_pair_deltas(project, project.img_fn2il[img], ili)
+                else:
+                    pairsx[(x, y)] = None
+            if y > 0:
+                img = icm.get_image(x, y - 1)
+                if img:
+                    pairsy[(x, y)] = il_pair_deltas(project, project.img_fn2il[img], ili)
+                else:
+                    pairsx[(x, y)] = None
+    return pairsx, pairsy
+
 def pre_opt(project, icm, verbose=False, stdev=None):
     '''
     FIXME: implementation is extremely inefficient
@@ -725,37 +833,9 @@ def pre_opt(project, icm, verbose=False, stdev=None):
         if fail:
             raise Exception('One or more images do not have control points')
 
-    def build_pairs():
-        # dictionary of results so that we can play around with post-processing result
-        # This step takes by far the longest in the optimization process
-        pairsx = {}
-        pairsy = {}
-        # start with simple algorithm where we just sweep left/right
-        for y in xrange(0, icm.height()):
-            print 'Calc delta with Y %d / %d' % (y + 1, icm.height())
-            for x in xrange(0, icm.width()):
-                img = icm.get_image(x, y)
-                # Skip missing images
-                if img is None:
-                    continue
-                il = project.img_fn2il[img]
-                ili = il.get_index()
-                if x > 0:
-                    img = icm.get_image(x - 1, y)
-                    if img:
-                        pairsx[(x, y)] = pair_check(project, project.img_fn2il[img], ili)
-                    else:
-                        pairsx[(x, y)] = None
-                if y > 0:
-                    img = icm.get_image(x, y - 1)
-                    if img:
-                        pairsy[(x, y)] = pair_check(project, project.img_fn2il[img], ili)
-                    else:
-                        pairsx[(x, y)] = None
-        return pairsx, pairsy
     # (x, y) keyed dict gives the delta to the left or up
     # That is, (0, 0) is not included
-    pairsx, pairsy = build_pairs()
+    pairsx, pairsy = icm_il_pairs(icm)
 
     if verbose:
         print 'Delta map'
@@ -1074,7 +1154,7 @@ def chaos_opt(project, icm):
                 # left
                 o = pos_xy.get((x - 1, y), None)
                 if o:
-                    d = pair_check(project, project.img_fn2il[icm.get_image(pref[0] - 1, pref[1])], il0)
+                    d = il_pair_deltas(project, project.img_fn2il[icm.get_image(pref[0] - 1, pref[1])], il0)
                     # and a delta to get to it?
                     if d:
                         dx, dy = d
@@ -1082,7 +1162,7 @@ def chaos_opt(project, icm):
                 # right
                 o = pos_xy.get((x + 1, y), None)
                 if o:
-                    d = pair_check(project, project.img_fn2il[icm.get_image(pref[0] + 1, pref[1])], il0)
+                    d = il_pair_deltas(project, project.img_fn2il[icm.get_image(pref[0] + 1, pref[1])], il0)
                     if d:
                         dx, dy = d
                         points.append((o[0] + dx, o[1] + dy))
@@ -1090,13 +1170,13 @@ def chaos_opt(project, icm):
                 # Y
                 o = pos_xy.get((x, y - 1), None)
                 if o:
-                    d = pair_check(project, project.img_fn2il[icm.get_image(pref[0], pref[1] - 1)], il0)
+                    d = il_pair_deltas(project, project.img_fn2il[icm.get_image(pref[0], pref[1] - 1)], il0)
                     if d:
                         dx, dy = d
                         points.append((o[0] + dx, o[1] + dy))
                 o = pos_xy.get((x, y + 1), None)
                 if o:
-                    d = pair_check(project, project.img_fn2il[icm.get_image(pref[0], pref[1] + 1)], il0)
+                    d = il_pair_deltas(project, project.img_fn2il[icm.get_image(pref[0], pref[1] + 1)], il0)
                     if d:
                         dx, dy = d
                         points.append((o[0] + dx, o[1] + dy))
