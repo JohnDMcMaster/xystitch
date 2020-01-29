@@ -8,7 +8,6 @@ import argparse
 import sys
 from xystitch.optimizer import PTOptimizer, PreOptimizer, PreOptimizerPT
 from xystitch.linopt import LinOpt
-from xystitch.tile_opt import TileOpt
 from xystitch.pto.project import PTOProject
 from xystitch.pto.util import *
 from xystitch.util import IOTimestamp, IOLog
@@ -238,17 +237,6 @@ if __name__ == "__main__":
     if args.lin_opt:
         print 'Optimizing'
         opt = LinOpt(pto)
-        opt.reoptimize = args.reoptimize
-        opt.run()
-        # Default
-        if args.center != False:
-            print 'Centering...'
-            center(pto)
-
-    # Needs to be late to get the earlier additions if we used them
-    if args.tile_opt:
-        print 'Optimizing'
-        opt = TileOpt(pto)
         opt.reoptimize = args.reoptimize
         opt.run()
         # Default
