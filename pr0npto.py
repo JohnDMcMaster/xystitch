@@ -6,7 +6,7 @@ Copyright 2012 John McMaster
 '''
 import argparse
 import sys
-from xystitch.optimizer import PTOptimizer, PreOptimizer, PreOptimizerPT
+from xystitch.optimizer import PTOptimizer, PreOptimizer
 from xystitch.linopt import LinOpt
 from xystitch.pto.project import PTOProject
 from xystitch.pto.util import *
@@ -57,10 +57,6 @@ if __name__ == "__main__":
         help='Optimize the project and also center by default')
     parser.add_argument(
         '--pre-opt',
-        action="store_true",
-        help='Experimental optimization algorithm')
-    parser.add_argument(
-        '--pre-opt-pt',
         action="store_true",
         help='Experimental optimization algorithm')
     parser.add_argument(
@@ -214,15 +210,6 @@ if __name__ == "__main__":
         opt = PreOptimizer(pto)
         opt.debug = args.verbose
         opt.stdev = args.stdev
-        opt.run()
-        # Default
-        if args.center != False:
-            print 'Centering...'
-            center(pto)
-
-    if args.pre_opt_pt:
-        print 'Optimizing'
-        opt = PreOptimizerPT(pto)
         opt.run()
         # Default
         if args.center != False:
