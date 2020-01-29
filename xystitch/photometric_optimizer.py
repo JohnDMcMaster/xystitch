@@ -20,7 +20,6 @@ Step 2 optimises the whole panorama, calculates mean and standard deviation
      -w       do optimise whole panorama (skip step 1)
      -h       shows help
 '''
-
 '''
 Usage:
 ptovariable [options] project.pto
@@ -44,46 +43,45 @@ ptovariable [options] project.pto
   -o | --output OUTFILE     Specify output file default is to overwrite input       
   -h | --help               Outputs help documentation
 '''
+
+
 class PhotometricOptimizer:
-	pto_project = None
-	
-	def __init__(self, pto_project):
-		self.pto_project = pto_project
-	
-	def run(self):
-		# Make sure its syncd
-		self.pto_project.save()
-	
-		'''
+    pto_project = None
+
+    def __init__(self, pto_project):
+        self.pto_project = pto_project
+
+    def run(self):
+        # Make sure its syncd
+        self.pto_project.save()
+        '''
 		Setup variables for optimization
-		'''	
-		args = list()
-		# Defect where brightness varies as we move towards the outside of the lens
-		args.append("--vignetting")
-		# ?
-		args.append("--response")
-		# ?
-		args.append("--exposure")
-		# ?
-		args.append("--white-balance")
-		# Overwrite input
-		args.append(self.pto_project.get_a_file_name())
-		(rc, output) = Execute.with_output("ptovariable", args)
-		if not rc == 0:
-			raise Exception('failed photometric optimization setup')
-		# Reload now that we overwrote
-		self.pto_project.reopen()
-
 		'''
+        args = list()
+        # Defect where brightness varies as we move towards the outside of the lens
+        args.append("--vignetting")
+        # ?
+        args.append("--response")
+        # ?
+        args.append("--exposure")
+        # ?
+        args.append("--white-balance")
+        # Overwrite input
+        args.append(self.pto_project.get_a_file_name())
+        (rc, output) = Execute.with_output("ptovariable", args)
+        if not rc == 0:
+            raise Exception('failed photometric optimization setup')
+        # Reload now that we overwrote
+        self.pto_project.reopen()
+        '''
 		Do actual optimization
-		'''	
-		args = list()
-		args.append("-o")
-		args.append(self.pto_project.get_a_file_name())
-		args.append(self.pto_project.get_a_file_name())
-		(rc, output) = Execute.with_output("vig_optimize", args)
-		if not rc == 0:
-			raise Exception('failed photometric optimization')
-		# Reload now that we overwrote
-		self.pto_project.reopen()		
-
+		'''
+        args = list()
+        args.append("-o")
+        args.append(self.pto_project.get_a_file_name())
+        args.append(self.pto_project.get_a_file_name())
+        (rc, output) = Execute.with_output("vig_optimize", args)
+        if not rc == 0:
+            raise Exception('failed photometric optimization')
+        # Reload now that we overwrote
+        self.pto_project.reopen()

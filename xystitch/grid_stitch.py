@@ -22,6 +22,7 @@ import multiprocessing
 
 from xystitch.util import IOTimestamp
 
+
 class Worker(object):
     def __init__(self, i, log_fn):
         self.process = multiprocessing.Process(target=self.run)
@@ -71,7 +72,8 @@ class Worker(object):
                 pto = self.generate_control_points_by_pair(pair, pair_fns)
 
                 if not pto:
-                    print 'WARNING: bad project @ %s, %s' % (repr(pair), pair_fns)
+                    print 'WARNING: bad project @ %s, %s' % (repr(pair),
+                                                             pair_fns)
                 else:
                     if len(pto.get_text().strip()) == 0:
                         raise Exception('Generated empty pair project')
@@ -83,6 +85,7 @@ class Worker(object):
                 traceback.print_exc()
                 estr = traceback.format_exc()
                 self.qo.put(('exception', (task, e, estr)))
+
 
 class GridStitch(common_stitch.CommonStitch):
     def __init__(self):
@@ -108,7 +111,8 @@ class GridStitch(common_stitch.CommonStitch):
             engine.canon2orig[new_fn] = file_name
             file_names_canonical.append(new_fn)
 
-        engine.coordinate_map = ImageCoordinateMap.from_tagged_file_names(file_names_canonical)
+        engine.coordinate_map = ImageCoordinateMap.from_tagged_file_names(
+            file_names_canonical)
 
         return engine
 
@@ -117,7 +121,6 @@ class GridStitch(common_stitch.CommonStitch):
         for (file_name, _row, _col) in self.coordinate_map.images():
             open_list.add(file_name)
         self.failures = common_stitch.FailedImages(open_list)
-
 
     def generate_control_points(self):
         '''
@@ -182,7 +185,8 @@ class GridStitch(common_stitch.CommonStitch):
                     if what == 'done':
                         (task, pto) = out[1]
                         prog = 'complete %d/%d' % (pair_complete, n_pairs)
-                        print 'W%d: done w/ submit %d, %s' % (wi, pair_submit, prog)
+                        print 'W%d: done w/ submit %d, %s' % (wi, pair_submit,
+                                                              prog)
                         print task
                         #print pto
 
@@ -220,8 +224,9 @@ class GridStitch(common_stitch.CommonStitch):
                                 worker.running.clear()
                             raise Exception('Shutdown on worker failure')
                     else:
-                        print '%s' % (out,)
-                        raise Exception('Internal error: bad task type %s' % what)
+                        print '%s' % (out, )
+                        raise Exception(
+                            'Internal error: bad task type %s' % what)
                 # Merge projects
                 if len(final_pair_projects):
                     print 'Merging %d projects' % len(final_pair_projects)
@@ -235,7 +240,7 @@ class GridStitch(common_stitch.CommonStitch):
                         while True:
                             try:
                                 pair = coord_pairs.next()
-                            except  StopIteration:
+                            except StopIteration:
                                 print 'All tasks allocated'
                                 all_allocated = True
                                 break
@@ -243,10 +248,12 @@ class GridStitch(common_stitch.CommonStitch):
                             progress = True
 
                             print '*' * 80
-                            print 'W%d: submit %s (%d / %d)' % (wi, repr(pair), pair_submit, n_pairs)
+                            print 'W%d: submit %s (%d / %d)' % (
+                                wi, repr(pair), pair_submit, n_pairs)
 
                             # Image file names as list
-                            pair_images = self.coordinate_map.get_images_from_pair(pair)
+                            pair_images = self.coordinate_map.get_images_from_pair(
+                                pair)
                             print 'pair images: ' + repr(pair_images)
                             if pair_images[0] is None or pair_images[1] is None:
                                 print 'WARNING: skipping missing image'
@@ -286,7 +293,6 @@ class GridStitch(common_stitch.CommonStitch):
                 self.project.add_image(orig)
 
         self.project.save()
-
         '''
         if 0:
             print 'Sub projects (full image):'
@@ -307,9 +313,9 @@ class GridStitch(common_stitch.CommonStitch):
         '''
 
     def do_generate_control_points_by_pair(self, pair, image_fn_pair):
-        ret = common_stitch.CommonStitch.do_generate_control_points_by_pair(self, pair, image_fn_pair)
+        ret = common_stitch.CommonStitch.do_generate_control_points_by_pair(
+            self, pair, image_fn_pair)
         if ret is None and pair.adjacent():
             print 'WARNING: last ditch effort, increasing field of view'
 
         return ret
-

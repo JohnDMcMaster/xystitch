@@ -7,17 +7,20 @@ import re
 import shutil
 
 from xystitch.image_coordinate_map import ImageCoordinateMap
-
 '''
 r29-
 r30-
 '''
 
+
 def parser_add_bool_arg(yes_arg, default=False, **kwargs):
     dashed = yes_arg.replace('--', '')
     dest = dashed.replace('-', '_')
-    parser.add_argument(yes_arg, dest=dest, action='store_true', default=default, **kwargs)
-    parser.add_argument('--no-' + dashed, dest=dest, action='store_false', **kwargs)
+    parser.add_argument(
+        yes_arg, dest=dest, action='store_true', default=default, **kwargs)
+    parser.add_argument(
+        '--no-' + dashed, dest=dest, action='store_false', **kwargs)
+
 
 def row_right(row, pos):
     '''Shift elements right starting at pos'''
@@ -37,6 +40,7 @@ def row_right(row, pos):
         except KeyError:
             pass
 
+
 def row_left(row, pos):
     '''Shift elements left starting at pos'''
     for col in xrange(0, icm.cols):
@@ -52,9 +56,11 @@ def row_left(row, pos):
         except KeyError:
             pass
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Manipulate .pto files')
-    parser.add_argument('--dry', action='store_true', help='Dont actually do anything')
+    parser.add_argument(
+        '--dry', action='store_true', help='Dont actually do anything')
     parser.add_argument('dir', help='Image directory to work on')
     parser.add_argument('actions', nargs='+', help='Actions to perform')
     args = parser.parse_args()
@@ -63,10 +69,10 @@ if __name__ == "__main__":
     working_set = set(glob.glob(os.path.join(args.dir, '*.jpg')))
     icm = ImageCoordinateMap.from_tagged_file_names(working_set)
     print 'ICM ready'
-    
+
     for action in args.actions:
         print 'Action: %s' % action
-        
+
         m = re.match('r([0-9]+)-', action)
         if m:
             row = int(m.group(1))
@@ -78,7 +84,7 @@ if __name__ == "__main__":
                     icm.set_image(cur_col, cur_row - 1, fn)
                     icm.set_image(cur_col, cur_row, None)
             continue
-        
+
         # Give the image that was duplicated.  It will be removed
         m = re.match('c([0-9]+)_r([0-9]+).jpg-', action)
         if m:
@@ -86,17 +92,17 @@ if __name__ == "__main__":
             rm_row = int(m.group(2))
             # The image given is removed (specify the second image taken)
             print 'Remove double image @ %dc, %dr' % (rm_col, rm_row)
-            
+
             # remove the bad image
             del icm.layout[(rm_col, rm_row)]
-            
+
             # Determine shift needed
             # Even row: moving right
             if rm_row % 2 == 0:
                 # If the first image is duplicate its column 1 thats the duplicate
                 if rm_col == 0:
                     raise Exception("Row must be > 0")
-                # to avoid getting negative columns, shift previous rows right                
+                # to avoid getting negative columns, shift previous rows right
                 # shift previous rows right
                 for row in xrange(0, rm_row):
                     row_right(row, 0)
@@ -110,7 +116,7 @@ if __name__ == "__main__":
                 # Shift remaining images
                 for row in xrange(rm_row + 1, icm.rows):
                     row_right(row, 0)
-                
+
             continue
 
         # Give the image that was skipped
@@ -121,7 +127,7 @@ if __name__ == "__main__":
             print 'Add skipped image @ %dc, %dr' % (skip_col, skip_row)
 
             # No image to remove: a gap is going to form
-            
+
             # Determine shift needed
             # Even row: moving right
             if skip_row % 2 == 0:
@@ -132,15 +138,15 @@ if __name__ == "__main__":
                     row_right(row, 0)
             # Odd row: moving left
             else:
-                # to avoid getting negative columns, shift previous rows right                
+                # to avoid getting negative columns, shift previous rows right
                 # shift previous rows right
                 for row in xrange(0, skip_row):
                     row_right(row, 0)
                 # Shift remaining images this row
                 row_right(skip_row, skip_col + 1)
-                
+
             continue
-        
+
         raise Exception('Unrecognized action %s' % action)
 
     tmp_dir = os.path.join(args.dir, 'pr0nshift.tmp')
@@ -151,7 +157,7 @@ if __name__ == "__main__":
             os.rmdir(tmp_dir)
     if not args.dry:
         os.mkdir(tmp_dir)
-        
+
     print 'Phase 1: stage'
     dry_actions = {}
     for (col, row) in sorted(list(icm.gen_set())):
@@ -170,7 +176,6 @@ if __name__ == "__main__":
     for fn in sorted(dry_actions):
         print 'DRY: %s %s' % (fn, dry_actions[fn])
 
-    
     print 'Phase 2: merge'
     for (col, row) in icm.gen_set():
         basename = 'c%04d_r%04d.jpg' % (col, row)
@@ -183,11 +188,10 @@ if __name__ == "__main__":
             if os.path.exists(dst_fn):
                 raise Exception("Dst filename %s exists" % dst_fn)
             shutil.move(src_fn, dst_fn)
-        
+
     print 'Cleaning up'
     if not args.dry:
         # should be empty
         os.rmdir(tmp_dir)
-    
-    print 'Done'
 
+    print 'Done'

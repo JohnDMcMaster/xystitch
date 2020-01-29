@@ -5,8 +5,10 @@ import re
 #   DecompressionBombWarning)
 Image.MAX_IMAGE_PIXELS = None
 
+
 class HugeJPEG(Exception):
     pass
+
 
 def singlify(fns_in, fn_out, fn_out_alt=None):
     def coord(fn):
@@ -14,10 +16,10 @@ def singlify(fns_in, fn_out, fn_out_alt=None):
         # st_021365x_005217y.jpg
         m = re.match('.*st_([0-9]*)x_([0-9]*)y.jpg', fn)
         return (int(m.group(1), 10), int(m.group(2), 10))
-    
+
     if not fns_in:
         raise Exception("No input")
-    
+
     print 'Calculating dimensions...'
     xmin = None
     xmax = None
@@ -33,7 +35,7 @@ def singlify(fns_in, fn_out, fn_out_alt=None):
             ymin = min(ymin, y)
             xmax = max(xmax, x)
             ymax = max(ymax, y)
-    
+
     print 'X: %d:%d' % (xmin, xmax)
     print 'Y: %d:%d' % (ymin, ymax)
     #with Image.open(fns_in[0]) as im0:
@@ -67,7 +69,7 @@ def singlify(fns_in, fn_out, fn_out_alt=None):
         return fn_out
 
     fn_out = verify_format()
-    
+
     for fni, fn in enumerate(fns_in):
         print 'Merging %d/%d %s...' % (fni + 1, len(fns_in), fn)
         (x, y) = coord(fn)
@@ -76,4 +78,3 @@ def singlify(fns_in, fn_out, fn_out_alt=None):
     print 'Saving %s...' % fn_out
     dst.save(fn_out, quality=90)
     print 'Done!'
-

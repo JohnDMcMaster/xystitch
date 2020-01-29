@@ -5,7 +5,6 @@ Licensed under a 2 clause BSD license, see COPYING for details
 '''
 
 from xystitch.execute import Execute
-
 '''
 Part of perl-Panotools-Script
 
@@ -19,17 +18,18 @@ Usage:
       -v | --verbose    Report some statistics
       -h | --help       Outputs help documentation
 '''
-class PTOClean:
-	def __init__(self, pto_project):
-		self.pto_project = pto_project
-	
-	def run(self):
-		args = list()
-		args.append("-o")
-		args.append(self.pto_project.get_a_file_name())
-		args.append(self.pto_project.get_a_file_name())
-		(rc, output) = Execute.with_output("ptoclean", args)
-		if not rc == 0:
-			raise Exception('failed to clean control points')
-		self.pto_project.reopen()
 
+
+class PTOClean:
+    def __init__(self, pto_project):
+        self.pto_project = pto_project
+
+    def run(self):
+        args = list()
+        args.append("-o")
+        args.append(self.pto_project.get_a_file_name())
+        args.append(self.pto_project.get_a_file_name())
+        (rc, output) = Execute.with_output("ptoclean", args)
+        if not rc == 0:
+            raise Exception('failed to clean control points')
+        self.pto_project.reopen()

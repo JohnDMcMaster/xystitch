@@ -9,13 +9,13 @@ from xystitch.temp_file import ManagedTempFile
 import os.path
 from xystitch.pto.util import dbg
 
+
 class Merger:
     def __init__(self, ptos):
         self.ptos = ptos
-        
+
     def run(self):
         from xystitch.pto.project import PTOProject
-        
         '''Take in a list of pto files and merge them into pto'''
         pto_temp_file = ManagedTempFile.get(None, ".pto")
 
@@ -24,8 +24,8 @@ class Merger:
 
         for pto in self.ptos:
             args.append(pto.get_a_file_name())
-    
-        print 'MERGING: %s' % (args,)
+
+        print 'MERGING: %s' % (args, )
 
         rc = execute.without_output(args)
         # go go go
@@ -42,6 +42,6 @@ class Merger:
             raise Exception('failed pto_merge')
 
         if not os.path.exists(str(pto_temp_file)):
-            raise Exception('Output file missing: %s' % (pto_temp_file,))
+            raise Exception('Output file missing: %s' % (pto_temp_file, ))
 
         return PTOProject.from_temp_file(pto_temp_file)

@@ -1,12 +1,11 @@
 #!/usr/bin/python
 
 import os
-import argparse        
+import argparse
 import sys
 import glob
 import shutil
 import subprocess
-
 '''
 zs should look something like:
 #!/usr/bin/env bash
@@ -20,38 +19,45 @@ chmod +x "${appdir}/jre/bin/java"
 "${appdir}/jre/bin/java" -Xmx1024m -classpath "${appdir}/ZereneStacker.jar:${exten}/AppleShell.jar:${exten}/jai_codec.jar:${exten}/jai_core.jar:${exten}/jai_imageio.jar:${exten}/jdom.jar:${exten}/metadata-extractor-2.4.0-beta-1.jar" com.zerenesystems.stacker.gui.MainFrame "$@"
 '''
 
-def zs(in_xml,  out_dir, args):
+
+def zs(in_xml, out_dir, args):
     args.append("-batchScript")
     args.append(in_xml)
 
     args.append(out_dir)
-    
+
     args = ['zs'] + args
-    
-    print 'Calling: %s' % (args,)
-    
+
+    print 'Calling: %s' % (args, )
+
     subprocess.check_call(args, shell=False)
 
 
 #  '%(a)d' % {'a':1}
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Stack CNC output dirs into output dir')
-    parser.add_argument('img_dirs_in', nargs='+', help='join images in input directories to form stacked output dir')
-    parser.add_argument('img_dir_out', help='join images in input directories to form stacked output dir')
+    parser = argparse.ArgumentParser(
+        description='Stack CNC output dirs into output dir')
+    parser.add_argument(
+        'img_dirs_in',
+        nargs='+',
+        help='join images in input directories to form stacked output dir')
+    parser.add_argument(
+        'img_dir_out',
+        help='join images in input directories to form stacked output dir')
     parser.add_argument('--force', action='store_true')
     args = parser.parse_args()
-    
+
     if len(args.img_dirs_in) < 2:
         raise Exception('Require at leaste two dirs')
-    
+
     out_fn = 'out.jpg'
     in_dirs = []
     fns = None
     # Verify all dirs have the same named files
     for d in args.img_dirs_in:
         if not os.path.isdir(d):
-            raise Exception('Not a dir: %s' % (d,))
+            raise Exception('Not a dir: %s' % (d, ))
         dfns = glob.glob(os.path.join(d, '*.jpg'))
         dfns_base = [os.path.basename(fn) for fn in dfns]
         if fns is None:
@@ -61,7 +67,8 @@ if __name__ == "__main__":
                 print fns
                 print dfns_base
                 raise Exception('Dirs not equal')
-    print 'Found %d image sets to stack w/ %d images in each stack' % (len(fns), len(args.img_dirs_in))
+    print 'Found %d image sets to stack w/ %d images in each stack' % (
+        len(fns), len(args.img_dirs_in))
 
     tmp_dir = '/tmp/pr0nstack.tmp'
     print 'Temp dir: %s' % tmp_dir
@@ -79,18 +86,17 @@ if __name__ == "__main__":
         print
         print
         print
-        
+
         srcs = [os.path.join(d, fn) for d in args.img_dirs_in]
         dst = os.path.join(args.img_dir_out, fn)
-        print 'srcs: %s' % (srcs,)
-        print 'dst: %s' % (dst,)
+        print 'srcs: %s' % (srcs, )
+        print 'dst: %s' % (dst, )
 
         srcs = [os.path.realpath(src) for src in srcs]
 
         if os.path.exists(tmp_dir):
             shutil.rmtree(tmp_dir)
         os.mkdir(tmp_dir)
-
         '''
         There seems to be a bug where if the input folder contains a symbolic link it will successfully stack the image but fail to save it
         so instead we copy them now
@@ -108,7 +114,7 @@ if __name__ == "__main__":
             link = os.path.join(tmp_dir, srcl)
             print 'Copying %s => %s' % (link, src)
             shutil.copy(src, link)
-        
+
         #<OutputImagesDesignatedFolder value="%(out_dir)s" />
         # <BatchFileChooser.LastDirectory value="%(in_dir)s" />
         xml = '''<?xml version="1.0" encoding="UTF-8"?>
@@ -216,10 +222,16 @@ if __name__ == "__main__":
       </Batch>
     </Batches>
   </BatchQueue>
-</ZereneStackerBatchScript>''' % {'out_dir':tmp_dir, 'in_dir':tmp_dir}
+</ZereneStackerBatchScript>''' % {
+            'out_dir': tmp_dir,
+            'in_dir': tmp_dir
+        }
         open(in_xml_fn, 'w').write(xml + '\n\n')
-        zs(in_xml_fn,  tmp_dir, ["-noSplashScreen", "-exitOnBatchScriptCompletion", "-runMinimized", "-showProgressWhenMinimized=false"])
-        
+        zs(in_xml_fn, tmp_dir, [
+            "-noSplashScreen", "-exitOnBatchScriptCompletion", "-runMinimized",
+            "-showProgressWhenMinimized=false"
+        ])
+
         outfns = glob.glob(os.path.join(tmp_dir, 'ZS-OutputImage*.jpg'))
         if len(outfns) != 1:
             print outfns
@@ -229,4 +241,4 @@ if __name__ == "__main__":
         print 'Moving stacked image %s => %s' % (stacked_src, stacked_dst)
         shutil.move(stacked_src, stacked_dst)
         shutil.rmtree(tmp_dir)
-        print '%s complete' % (fn,)
+        print '%s complete' % (fn, )

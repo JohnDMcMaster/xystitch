@@ -11,6 +11,7 @@ from xystitch.benchmark import Benchmark
 from xystitch.optimizer import gen_cps, pto2icm, tmpdbg
 from xystitch import statistics
 
+
 def run(pto_fn, pto_fn_out=None, stdev=3.0):
     print('In: %s' % pto_fn)
     bench = Benchmark()
@@ -23,7 +24,7 @@ def run(pto_fn, pto_fn_out=None, stdev=3.0):
     pairs = []
     cpls = []
     for cpl, ((n_fn, N_fn), (nx, ny), (Nx, Ny)) in gen_cps(pto, icm=icm):
-        delta = ((nx - Nx) ** 2 + (ny - Ny) ** 2) ** 0.5
+        delta = ((nx - Nx)**2 + (ny - Ny)**2)**0.5
         deltas.append(delta)
         pairs.append((n_fn, N_fn))
         cpls.append(cpl)
@@ -69,6 +70,7 @@ def run(pto_fn, pto_fn_out=None, stdev=3.0):
     bench.stop()
     print('Completed in %s' % bench)
 
+
 def run_print(pto_fn, stdev=3):
     print('In: %s' % pto_fn)
 
@@ -76,17 +78,25 @@ def run_print(pto_fn, stdev=3):
     icm = pto2icm(pto)
     for ((n_fn, N_fn), (nx, ny), (Nx, Ny)) in gen_cps(pto, icm=icm):
         print("%s:(%s, %s) %s:(%s, %s)" % (n_fn, nx, ny, N_fn, Nx, Ny))
-        print("  %s, %s" % (nx -Nx, ny - Ny))
+        print("  %s, %s" % (nx - Nx, ny - Ny))
 
 
 def main():
     parser = argparse.ArgumentParser(description='Manipulate .pto files')
-    parser.add_argument('--verbose', action="store_true", help='Verbose output')
-    parser.add_argument('--stdev', type=float, default=3.0, help='Max healthy standard deviation')
-    parser.add_argument('pto_in', nargs='?', default="out.pto", help='project to work on')
-    parser.add_argument('pto_out', nargs='?', default=None, help='project to work on')
+    parser.add_argument(
+        '--verbose', action="store_true", help='Verbose output')
+    parser.add_argument(
+        '--stdev',
+        type=float,
+        default=3.0,
+        help='Max healthy standard deviation')
+    parser.add_argument(
+        'pto_in', nargs='?', default="out.pto", help='project to work on')
+    parser.add_argument(
+        'pto_out', nargs='?', default=None, help='project to work on')
     args = parser.parse_args()
     run(args.pto_in, args.pto_out, stdev=args.stdev)
+
 
 if __name__ == "__main__":
     main()

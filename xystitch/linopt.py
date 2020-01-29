@@ -4,7 +4,6 @@ xystitch
 Copyright 2011 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under a 2 clause BSD license, see COPYING for details
 '''
-
 '''
 This file is used to optimize the size of an image project
 It works off of the following idea:
@@ -33,8 +32,10 @@ from xystitch.pto.util import *
 from xystitch.benchmark import Benchmark
 import sys
 
-def debug(s = ''):
+
+def debug(s=''):
     pass
+
 
 '''
 Convert output to PToptimizer form
@@ -83,7 +84,9 @@ Grab o lines and get the d, e entries
 Open questions
     How does FOV effect the stitch?
 '''
-def prepare_pto(pto, reoptimize = True):
+
+
+def prepare_pto(pto, reoptimize=True):
     '''Simply and modify a pto project enough so that PToptimizer will take it'''
     print 'Stripping project'
     if 0:
@@ -91,27 +94,28 @@ def prepare_pto(pto, reoptimize = True):
         print
         print
         print
-    
+
     def fix_pl(pl):
         pl.remove_variable('E')
         pl.remove_variable('R')
-        v = pl.get_variable('v') 
+        v = pl.get_variable('v')
         if v == None or v >= 180:
             print 'Manipulating project field of view'
             pl.set_variable('v', 179)
-            
+
     def fix_il(il):
-        v = il.get_variable('v') 
+        v = il.get_variable('v')
         if v == None or v >= 180:
             il.set_variable('v', 51)
-        
+
         # These aren't liked: TrX0 TrY0 TrZ0
         il.remove_variable('TrX')
         il.remove_variable('TrY')
         il.remove_variable('TrZ')
 
         # panotools seems to set these to -1 on some ocassions
-        if il.get_variable('w') == None or il.get_variable('h') == None or int(il.get_variable('w')) <= 0 or int(il.get_variable('h')) <= 0:
+        if il.get_variable('w') == None or il.get_variable('h') == None or int(
+                il.get_variable('w')) <= 0 or int(il.get_variable('h')) <= 0:
             img = PImage.from_file(il.get_name())
             il.set_variable('w', img.width())
             il.set_variable('h', img.height())
@@ -120,24 +124,25 @@ def prepare_pto(pto, reoptimize = True):
             if il.get_variable(v) == None or reoptimize:
                 il.set_variable(v, 0)
                 #print 'setting var'
-    
+
     fix_pl(pto.get_panorama_line())
-    
+
     for il in pto.image_lines:
         fix_il(il)
         #print il
         #sys.exit(1)
-    
+
     if 0:
         print
-        print    
+        print
         print 'prepare_pto final:'
         print pto
         print
         print
-        print 'Finished prepping for PToptimizer'    
+        print 'Finished prepping for PToptimizer'
     #sys.exit(1)
-            
+
+
 def merge_pto(ptoopt, pto):
     '''Take a resulting pto project and merge the coordinates back into the original'''
     '''
@@ -164,14 +169,16 @@ def merge_pto(ptoopt, pto):
     
     note that o lines have some image ID strings before them but position is probably better until I have an issue
     '''
-    
+
     # Make sure we are going to manipulate the data and not text
     pto.parse()
-    
+
     base_n = len(pto.get_image_lines())
     opt_n = len(ptoopt.get_optimizer_lines())
     if base_n != opt_n:
-        raise Exception('Must have optimized same number images as images.  Base pto has %d and opt has %d' % (base_n, opt_n))
+        raise Exception(
+            'Must have optimized same number images as images.  Base pto has %d and opt has %d'
+            % (base_n, opt_n))
     opts = list()
     print
     for i in range(len(pto.get_image_lines())):
@@ -183,7 +190,8 @@ def merge_pto(ptoopt, pto):
             il.set_variable(v, val)
             debug('New IL: ' + str(il))
         debug()
-        
+
+
 class LinOpt:
     def __init__(self, project):
         self.project = project
@@ -193,12 +201,12 @@ class LinOpt:
         # If set to true will clear out all old optimizer settings
         # If PToptimizer gets old values in it will use them as a base
         self.reoptimize = True
-        
+
         self.ref_r0 = 0
         self.ref_r1 = 0
         self.ref_c0 = 4
         self.ref_c1 = 4
-    
+
     def verify_images(self):
         first = True
         for i in self.project.get_image_lines():
@@ -208,34 +216,37 @@ class LinOpt:
                 self.v = i.fov()
                 first = False
             else:
-                if self.w != i.width() or self.h != i.height() or self.v != i.fov():
+                if self.w != i.width() or self.h != i.height(
+                ) or self.v != i.fov():
                     print i.text
-                    print 'Old width %d, height %d, view %d' % (self.w, self.h, self.v)
-                    print 'Image width %d, height %d, view %d' % (i.width(), i.height(), i.fov())
+                    print 'Old width %d, height %d, view %d' % (self.w, self.h,
+                                                                self.v)
+                    print 'Image width %d, height %d, view %d' % (
+                        i.width(), i.height(), i.fov())
                     raise Exception('Image does not match')
-        
+
     def center_project(self):
         self.calc_bounds()
         xc = (self.xmin + self.xmax) / 2.0
         yc = (self.ymin + self.ymax) / 2.0
         for i in self.project.get_images():
             i.shift(xc, yc)
-        
+
     def calc_bounds(self):
         # TODO: review pto coordinate system to see if this is accurate
         self.xmin = min([i.left() for i in self.project.get_images()])
         self.xmax = max([i.right() for i in self.project.get_images()])
         self.ymin = min([i.top() for i in self.project.get_images()])
         self.ymax = max([i.bottom() for i in self.project.get_images()])
-        
+
     def calc_size(self):
         self.calc_bounds()
         self.width = self.xmax - self.xmin
         self.height = self.ymax - self.ymin
-        
+
     def image_fl(self, img):
         return image_fl(img)
-        
+
     def calc_v(self, fl, width):
         # Straight off of Hugin wiki (or looking above...)
         # FoV = 2 * atan(size / (2 * FocalLength))
@@ -245,7 +256,7 @@ class LinOpt:
             v = min(v, 179)
             v = max(v, 1)
         return v
-        
+
     def calc_fov(self):
         '''
         Calculate the focal distance on a single image
@@ -254,12 +265,12 @@ class LinOpt:
         # Step 1: calculate image focal length
         # Note that even if we had mixed image parameters they should already been normalized to be on the same focal plane
         self.fl = self.image_fl(self.project.get_images()[0])
-        
+
         # Step 2: now use the focal distance to compute v, the angle (field) of view
         self.v = self.calc_v(self.fl, self.width)
         pl = self.project.get_panorama_line()
         pl.set_fov(self.v)
-        
+
     def run(self):
         '''
         The base Hugin project seems to work if you take out a few things:
@@ -283,14 +294,14 @@ class LinOpt:
         There are several other lines that are just the repeats of previous lines
         '''
         bench = Benchmark()
-        
+
         # The following will assume all of the images have the same size
         self.verify_images()
-        
+
         # Copy project so we can trash it
         project = self.project.copy()
         prepare_pto(project, self.reoptimize)
-        
+
         pre_run_text = project.get_text()
         if 0:
             print
@@ -299,8 +310,7 @@ class LinOpt:
             print pre_run_text
             print
             print
-                
-        
+
         # "PToptimizer out.pto"
         args = ["PToptimizer"]
         args.append(project.get_a_file_name())
@@ -311,7 +321,7 @@ class LinOpt:
             print
             print
             print 'Failed rc: %d' % rc
-            print 'Failed project save to %s' % (fn,)
+            print 'Failed project save to %s' % (fn, )
             try:
                 open(fn, 'w').write(pre_run_text)
             except:
@@ -321,7 +331,6 @@ class LinOpt:
             raise Exception('failed position optimization')
         # API assumes that projects don't change under us
         project.reopen()
-        
         '''
         Line looks like this
         # final rms error 24.0394 units
@@ -334,8 +343,9 @@ class LinOpt:
         print 'Optimize: RMS error of %f' % rms_error
         # Filter out gross optimization problems
         if self.rms_error_threshold and rms_error > self.rms_error_threshold:
-            raise Exception("Max RMS error threshold %f but got %f" % (self.rms_error_threshold, rms_error))
-        
+            raise Exception("Max RMS error threshold %f but got %f" %
+                            (self.rms_error_threshold, rms_error))
+
         if self.debug:
             print 'Parsed: %s' % str(project.parsed)
 
@@ -352,23 +362,22 @@ class LinOpt:
         merge_pto(project, self.project)
         if self.debug:
             print self.project
-        
+
         bench.stop()
         print 'Optimized project in %s' % bench
-        
+
         # These are beyond this scope
         # Move them somewhere else if we want them
         if 0:
             # The following will assume all of the images have the same size
             self.verify_images()
-        
+
             # Final dimensions are determined by field of view and width
             # Calculate optimial dimensions
             self.calc_dimensions()
-        
+
             print 'Centering project...'
             self.center_project()
-        
             '''
             WARNING WARNING WARNING
             The panotools model is too advanced for what I'm doing right now
@@ -383,11 +392,12 @@ class LinOpt:
             '''
             print 'Calculating optimial field of view to match desired size...'
             self.calc_fov()
-            
+
 
 def usage():
     print 'optimizer <file in> [file out]'
     print 'If file out is not given it will be file in'
+
 
 if __name__ == "__main__":
     from xystitch.pto.project import PTOProject
@@ -400,7 +410,7 @@ if __name__ == "__main__":
         file_name_out = sys.argv[2]
     else:
         file_name_out = file_name_in
-    
+
     print 'Loading raw project...'
     project = PTOProject.from_file_name(file_name_in)
     print 'Creating optimizer...'
@@ -413,4 +423,3 @@ if __name__ == "__main__":
     print 'Saving...'
     project.save_as(file_name_out)
     print 'Parsed main done: %s' % str(project.parsed)
-

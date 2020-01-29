@@ -23,9 +23,11 @@ from xystitch.util import logwt
 
 allow_overwrite = True
 
+
 def t_or_f(arg):
     arg_value = str(arg).lower()
     return not (arg_value == "false" or arg_value == "0" or arg_value == "no")
+
 
 def excepthook(excType, excValue, tracebackobj):
     print '%s: %s' % (excType, excValue)
@@ -33,19 +35,26 @@ def excepthook(excType, excValue, tracebackobj):
     print 'Exiting on exception'
     os._exit(1)
 
+
 def parser_add_bool_arg(yes_arg, default=False, **kwargs):
     dashed = yes_arg.replace('--', '')
     dest = dashed.replace('-', '_')
-    parser.add_argument(yes_arg, dest=dest, action='store_true', default=default, **kwargs)
-    parser.add_argument('--no-' + dashed, dest=dest, action='store_false', **kwargs)
+    parser.add_argument(
+        yes_arg, dest=dest, action='store_true', default=default, **kwargs)
+    parser.add_argument(
+        '--no-' + dashed, dest=dest, action='store_false', **kwargs)
+
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Stitch images quickly into .pto through hints')
+    parser = argparse.ArgumentParser(
+        description='Stitch images quickly into .pto through hints')
     parser.add_argument('--out', default='out.pto', help='Output file name')
-    parser.add_argument('--log', default='pr0nstitch', help='Output log file name')
+    parser.add_argument(
+        '--log', default='pr0nstitch', help='Output log file name')
     parser_add_bool_arg('--grid-only', default=False, help='')
     parser.add_argument('--algorithm', default='grid', help='')
-    parser.add_argument('--threads', type=int, default= multiprocessing.cpu_count())
+    parser.add_argument(
+        '--threads', type=int, default=multiprocessing.cpu_count())
     parser_add_bool_arg('--overwrite', default=False, help='')
     parser_add_bool_arg('--regular', default=True, help='')
     parser.add_argument('--x-overlap', type=int, help='in pixels')
@@ -55,15 +64,15 @@ if __name__ == "__main__":
     parser_add_bool_arg('--ignore-errors', default=False, help='')
     parser.add_argument('fns', nargs='+', help='File names')
     args = parser.parse_args()
-    
+
     log_dir = args.log
     _dt = logwt(log_dir, 'main.log', shift_d=True)
-    
+
     depth = 1
     # CNC like precision?
     # Default to true for me
     regular = True
-                
+
     input_image_file_names = list()
     input_project_file_name = None
     output_project_file_name = None
@@ -81,10 +90,10 @@ if __name__ == "__main__":
 
     print 'post arg'
     print 'output project: %s' % output_project_file_name
-    
+
     if args.threads < 1:
         raise Exception('Bad threads')
-    
+
     if args.algorithm == "grid":
         engine = GridStitch.from_tagged_file_names(input_image_file_names)
         engine.ignore_errors = args.ignore_errors
@@ -99,20 +108,21 @@ if __name__ == "__main__":
     engine.set_output_project_file_name(output_project_file_name)
     engine.set_regular(regular)
     engine.set_dry(args.dry)
-    
+
     if args.x_overlap:
         engine.x_overlap = args.x_overlap
     if args.y_overlap:
         engine.y_overlap = args.y_overlap
-    
+
     if not allow_overwrite:
-        if output_project_file_name and os.path.exists(output_project_file_name):
+        if output_project_file_name and os.path.exists(
+                output_project_file_name):
             print 'ERROR: cannot overwrite existing project file: %s' % output_project_file_name
             sys.exit(1)
 
     sys.excepthook = excepthook
     # Exit on ^C instead of ignoring
     signal.signal(signal.SIGINT, signal.SIG_DFL)
-    
+
     engine.run()
     print 'Done!'

@@ -10,42 +10,48 @@ import os
 import shutil
 import sys
 
+
 def rjust_str(s, nchars):
     '''right justify string, space padded to nchars spaces'''
     return ('%% %ds' % nchars) % s
+
 
 def mean_stddev(data):
     '''mean and standard deviation'''
     mean = sum(data) / float(len(data))
     varience = sum([(x - mean)**2 for x in data])
     stddev = math.sqrt(varience / float(len(data) - 1))
-    return (mean, stddev) 
+    return (mean, stddev)
+
 
 def now():
     return datetime.datetime.utcnow().isoformat()
 
+
 def msg(s=''):
     print '%s: %s' % (now(), s)
 
+
 def logwt(d, fn, shift_d=True, shift_f=False, stampout=True):
     '''Log with timestamping'''
-    
+
     if shift_d:
         try_shift_dir(d)
         os.mkdir(d)
-    
+
     fn_can = os.path.join(d, fn)
     outlog = IOLog(obj=sys, name='stdout', out_fn=fn_can, shift=shift_f)
     errlog = IOLog(obj=sys, name='stderr', out_fd=outlog.out_fd)
-    
+
     # Add stamps after so that they appear in output logs
     outdate = None
     errdate = None
     if stampout:
         outdate = IOTimestamp(sys, 'stdout')
         errdate = IOTimestamp(sys, 'stderr')
-    
+
     return (outlog, errlog, outdate, errdate)
+
 
 def try_shift_dir(d):
     if not os.path.exists(d):
@@ -65,7 +71,7 @@ class IOTimestamp(object):
     def __init__(self, obj=sys, name='stdout'):
         self.obj = obj
         self.name = name
-        
+
         self.fd = obj.__dict__[name]
         obj.__dict__[name] = self
         self.nl = True
@@ -76,7 +82,7 @@ class IOTimestamp(object):
 
     def flush(self):
         self.fd.flush()
-       
+
     def write(self, data):
         parts = data.split('\n')
         for i, part in enumerate(parts):
@@ -92,9 +98,16 @@ class IOTimestamp(object):
             # The last element has no newline
             self.nl = i != (len(parts) - 1)
 
+
 # Log file descriptor to file
 class IOLog(object):
-    def __init__(self, obj=sys, name='stdout', out_fn=None, out_fd=None, mode='a', shift=False):
+    def __init__(self,
+                 obj=sys,
+                 name='stdout',
+                 out_fn=None,
+                 out_fd=None,
+                 mode='a',
+                 shift=False):
         if out_fd:
             self.out_fd = out_fd
         else:
@@ -108,7 +121,7 @@ class IOLog(object):
                         continue
                     shutil.move(out_fn, dst)
                     break
-            
+
             hdr = mode == 'a' and os.path.exists(out_fn)
             self.out_fd = open(out_fn, mode)
             if hdr:
@@ -116,10 +129,10 @@ class IOLog(object):
                 self.out_fd.write('*' * 80 + '\n')
                 self.out_fd.write('*' * 80 + '\n')
                 self.out_fd.write('Log rolled over\n')
-        
+
         self.obj = obj
         self.name = name
-        
+
         self.fd = obj.__dict__[name]
         obj.__dict__[name] = self
         self.nl = True
@@ -130,14 +143,16 @@ class IOLog(object):
 
     def flush(self):
         self.fd.flush()
-       
+
     def write(self, data):
         self.fd.write(data)
         self.out_fd.write(data)
 
+
 def add_bool_arg(parser, yes_arg, default=False, **kwargs):
     dashed = yes_arg.replace('--', '')
     dest = dashed.replace('-', '_')
-    parser.add_argument(yes_arg, dest=dest, action='store_true', default=default, **kwargs)
-    parser.add_argument('--no-' + dashed, dest=dest, action='store_false', **kwargs)
-
+    parser.add_argument(
+        yes_arg, dest=dest, action='store_true', default=default, **kwargs)
+    parser.add_argument(
+        '--no-' + dashed, dest=dest, action='store_false', **kwargs)

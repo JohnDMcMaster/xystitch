@@ -12,18 +12,20 @@ import subprocess
 import shutil
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='create tiles from unstitched images')
+    parser = argparse.ArgumentParser(
+        description='create tiles from unstitched images')
     parser.add_argument('--border', default='1', help='border size')
-    parser.add_argument('pto', default='out.pto', nargs='?', help='pto project')
+    parser.add_argument(
+        'pto', default='out.pto', nargs='?', help='pto project')
     args = parser.parse_args()
     args.border = int(args.border, 0)
-    
+
     pto_orig = PTOProject.from_file_name(args.pto)
     img_fns = []
     for il in pto_orig.get_image_lines():
         img_fns.append(il.get_name())
     icm = ImageCoordinateMap.from_tagged_file_names(img_fns)
-    
+
     # Reduced .pto
     pto_red = pto_orig.copy()
     # Delete all lines not in the peripheral
@@ -35,9 +37,11 @@ if __name__ == "__main__":
             if im is None:
                 continue
             ils_del.append(pto_orig.img_fn2il[im])
-    print 'Deleting %d / %d images' % (len(ils_del), icm.width() * icm.height())
+    print 'Deleting %d / %d images' % (len(ils_del),
+                                       icm.width() * icm.height())
     pto_red.del_images(ils_del)
-    pto_red.save_as(pto_orig.file_name.replace('.pto', '_sm.pto'), is_new_filename=True)
+    pto_red.save_as(
+        pto_orig.file_name.replace('.pto', '_sm.pto'), is_new_filename=True)
 
     print 'Opening temp file %s' % pto_red.file_name
     subp = subprocess.Popen(['hugin', pto_red.file_name], shell=False)
@@ -60,12 +64,15 @@ if __name__ == "__main__":
     r = pto_red.image_lines[0].getv('r')
     if r is None:
         r = 0.0
+
     def floats(f):
         if f is None:
             return 'None'
         else:
             return '%0.2f' % f
-    print 'Rotation %s => %s' % (floats(pto_orig.image_lines[0].getv('r')), floats(r))
+
+    print 'Rotation %s => %s' % (floats(pto_orig.image_lines[0].getv('r')),
+                                 floats(r))
     for il in pto_orig.image_lines:
         il.setv('r', r)
 

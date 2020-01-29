@@ -27,9 +27,6 @@
 ##  See the License for the specific language governing permissions and
 
 ##  limitations under the License.
-
-
-
 """
 
 Basic statistics module.
@@ -159,32 +156,29 @@ A single exception is defined: StatisticsError is a subclass of ValueError.
 
 """
 
-
-__all__ = [ 'StatisticsError',
-
-            'pstdev', 'pvariance', 'stdev', 'variance',
-
-            'median',  'median_low', 'median_high', 'median_grouped',
-
-            'mean', 'mode',
-
-          ]
-
-
+__all__ = [
+    'StatisticsError',
+    'pstdev',
+    'pvariance',
+    'stdev',
+    'variance',
+    'median',
+    'median_low',
+    'median_high',
+    'median_grouped',
+    'mean',
+    'mode',
+]
 
 import collections
 
 import math
-
 
 from fractions import Fraction
 
 from decimal import Decimal
 
 from itertools import groupby
-
-
-
 
 # === Exceptions ===
 
@@ -194,12 +188,10 @@ class StatisticsError(ValueError):
     pass
 
 
-
 # === Private utilities ===
 
 
 def _sum(data, start=0):
-
     """_sum(data [, start]) -> (type, sum, count)
 
 
@@ -271,7 +263,7 @@ def _sum(data, start=0):
 
         T = _coerce(T, typ)  # or raise TypeError
 
-        for n,d in map(_exact_ratio, values):
+        for n, d in map(_exact_ratio, values):
 
             count += 1
 
@@ -298,7 +290,6 @@ def _sum(data, start=0):
     return (T, total, count)
 
 
-
 def _isfinite(x):
 
     try:
@@ -310,9 +301,7 @@ def _isfinite(x):
         return math.isfinite(x)  # Coerces to float first.
 
 
-
 def _coerce(T, S):
-
     """Coerce types T and S to a common type, or raise TypeError.
 
 
@@ -332,25 +321,25 @@ def _coerce(T, S):
 
     # as possible.
 
-    if T is S:  return T
+    if T is S: return T
 
     # Mixed int & other coerce to the other type.
 
-    if S is int or S is bool:  return T
+    if S is int or S is bool: return T
 
-    if T is int:  return S
+    if T is int: return S
 
     # If one is a (strict) subclass of the other, coerce to the subclass.
 
-    if issubclass(S, T):  return S
+    if issubclass(S, T): return S
 
-    if issubclass(T, S):  return T
+    if issubclass(T, S): return T
 
     # Ints coerce to the other type.
 
-    if issubclass(T, int):  return S
+    if issubclass(T, int): return S
 
-    if issubclass(S, int):  return T
+    if issubclass(S, int): return T
 
     # Mixed fraction & float coerces to float (or float subclass).
 
@@ -369,9 +358,7 @@ def _coerce(T, S):
     raise TypeError(msg % (T.__name__, S.__name__))
 
 
-
 def _exact_ratio(x):
-
     """Return Real number x to exact (numerator, denominator) pair.
 
 
@@ -437,11 +424,10 @@ def _exact_ratio(x):
     raise TypeError(msg.format(type(x).__name__))
 
 
-
 # FIXME This is faster than Fraction.from_decimal, but still too slow.
 
-def _decimal_to_ratio(d):
 
+def _decimal_to_ratio(d):
     """Convert Decimal d to exact integer ratio (numerator, denominator).
 
 
@@ -466,7 +452,7 @@ def _decimal_to_ratio(d):
 
     for digit in digits:
 
-        num = num*10 + digit
+        num = num * 10 + digit
 
     if exp < 0:
 
@@ -485,9 +471,7 @@ def _decimal_to_ratio(d):
     return (num, den)
 
 
-
 def _convert(value, T):
-
     """Convert value to given numeric type T."""
 
     if type(value) is T:
@@ -512,12 +496,11 @@ def _convert(value, T):
 
         if issubclass(T, Decimal):
 
-            return T(value.numerator)/T(value.denominator)
+            return T(value.numerator) / T(value.denominator)
 
         else:
 
             raise
-
 
 
 def _counts(data):
@@ -545,12 +528,10 @@ def _counts(data):
     return table
 
 
-
 # === Measures of central tendency (averages) ===
 
 
 def mean(data):
-
     """Return the sample arithmetic mean of data.
 
 
@@ -591,14 +572,13 @@ def mean(data):
 
     assert count == n
 
-    return _convert(total/n, T)
-
+    return _convert(total / n, T)
 
 
 # FIXME: investigate ways to calculate medians without sorting? Quickselect?
 
-def median(data):
 
+def median(data):
     """Return the median (middle value) of numeric data.
 
 
@@ -628,20 +608,18 @@ def median(data):
 
         raise StatisticsError("no median for empty data")
 
-    if n%2 == 1:
+    if n % 2 == 1:
 
-        return data[n//2]
+        return data[n // 2]
 
     else:
 
-        i = n//2
+        i = n // 2
 
-        return (data[i - 1] + data[i])/2
-
+        return (data[i - 1] + data[i]) / 2
 
 
 def median_low(data):
-
     """Return the low median of numeric data.
 
 
@@ -669,18 +647,16 @@ def median_low(data):
 
         raise StatisticsError("no median for empty data")
 
-    if n%2 == 1:
+    if n % 2 == 1:
 
-        return data[n//2]
+        return data[n // 2]
 
     else:
 
-        return data[n//2 - 1]
-
+        return data[n // 2 - 1]
 
 
 def median_high(data):
-
     """Return the high median of data.
 
 
@@ -708,12 +684,10 @@ def median_high(data):
 
         raise StatisticsError("no median for empty data")
 
-    return data[n//2]
-
+    return data[n // 2]
 
 
 def median_grouped(data, interval=1):
-
     """Return the 50th percentile (median) of grouped continuous data.
 
 
@@ -775,7 +749,7 @@ def median_grouped(data, interval=1):
 
     # centre of the class interval.
 
-    x = data[n//2]
+    x = data[n // 2]
 
     for obj in (x, interval):
 
@@ -785,13 +759,13 @@ def median_grouped(data, interval=1):
 
     try:
 
-        L = x - interval/2  # The lower limit of the median interval.
+        L = x - interval / 2  # The lower limit of the median interval.
 
     except TypeError:
 
         # Mixed type. For now we just coerce to float.
 
-        L = float(x) - float(interval)/2
+        L = float(x) - float(interval) / 2
 
     cf = data.index(x)  # Number of values below the median interval.
 
@@ -799,12 +773,10 @@ def median_grouped(data, interval=1):
 
     f = data.count(x)  # Number of data points in the median interval.
 
-    return L + interval*(n/2 - cf)/f
-
+    return L + interval * (n / 2 - cf) / f
 
 
 def mode(data):
-
     """Return the most common data point from discrete or nominal data.
 
 
@@ -843,19 +815,14 @@ def mode(data):
     elif table:
 
         raise StatisticsError(
-
-                'no unique mode; found %d equally common values' % len(table)
-
-                )
+            'no unique mode; found %d equally common values' % len(table))
 
     else:
 
         raise StatisticsError('no mode for empty data')
 
 
-
 # === Measures of spread ===
-
 
 # See http://mathworld.wolfram.com/Variance.html
 
@@ -879,7 +846,6 @@ def mode(data):
 
 
 def _ss(data, c=None):
-
     """Return sum of square deviations of sequence data.
 
 
@@ -897,26 +863,24 @@ def _ss(data, c=None):
 
         c = mean(data)
 
-    T, total, count = _sum((x-c)**2 for x in data)
+    T, total, count = _sum((x - c)**2 for x in data)
 
     # The following sum should mathematically equal zero, but due to rounding
 
     # error may not.
 
-    U, total2, count2 = _sum((x-c) for x in data)
+    U, total2, count2 = _sum((x - c) for x in data)
 
     assert T == U and count == count2
 
-    total -=  total2**2/len(data)
+    total -= total2**2 / len(data)
 
     assert not total < 0, 'negative sum of square deviations: %f' % total
 
     return (T, total)
 
 
-
 def variance(data, xbar=None):
-
     """Return the sample variance of data.
 
 
@@ -992,12 +956,10 @@ def variance(data, xbar=None):
 
     T, ss = _ss(data, xbar)
 
-    return _convert(ss/(n-1), T)
-
+    return _convert(ss / (n - 1), T)
 
 
 def pvariance(data, mu=None):
-
     """Return the population variance of ``data``.
 
 
@@ -1077,12 +1039,10 @@ def pvariance(data, mu=None):
 
     T, ss = _ss(data, mu)
 
-    return _convert(ss/n, T)
-
+    return _convert(ss / n, T)
 
 
 def stdev(data, xbar=None):
-
     """Return the square root of the sample variance.
 
 
@@ -1107,9 +1067,7 @@ def stdev(data, xbar=None):
         return math.sqrt(var)
 
 
-
 def pstdev(data, mu=None):
-
     """Return the square root of the population variance.
 
 
@@ -1132,5 +1090,3 @@ def pstdev(data, mu=None):
     except AttributeError:
 
         return math.sqrt(var)
-
-

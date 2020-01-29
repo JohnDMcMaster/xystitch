@@ -3,7 +3,6 @@ xystitch
 Copyright 2011 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under a 2 clause BSD license, see COPYING for details
 '''
-
 '''
 Each picture may have lens artifacts that make them not perfectly linear
 This distorts the images to match the final plane
@@ -76,8 +75,10 @@ import datetime
 import os
 import sys
 
+
 class RemapperFailed(execute.CommandFailed):
     pass
+
 
 def get_nona_files(output_prefix, max_images):
     ret = set()
@@ -85,23 +86,27 @@ def get_nona_files(output_prefix, max_images):
     # The images shouldn't change, use the old loaded project
     for i in xrange(max_images):
         fn = '%s%04d.tif' % (output_prefix, i)
-        if os.path.exists(fn):    
+        if os.path.exists(fn):
             ret.add(fn)
     return ret
+
 
 class Nona:
     TIFF_SINGLE = "TIFF_m"
     TIFF_MULTILAYER = "TIFF_multilayer"
-    
+
     def __init__(self, pto_project, output_prefix="nonaout", start_hook=None):
-        if output_prefix is None or len(output_prefix) == 0 or output_prefix == '.' or output_prefix == '..':
-            raise RemapperFailed('Bad output file base "%s"' % str(output_prefix))
-        
+        if output_prefix is None or len(
+                output_prefix
+        ) == 0 or output_prefix == '.' or output_prefix == '..':
+            raise RemapperFailed(
+                'Bad output file base "%s"' % str(output_prefix))
+
         self.pto_project = pto_project
         # if true assume pto project is already setup up correctly
         # just use it
         self.pto_fn = None
-        
+
         # this is taken from the pto
         #self.output_file_base = output_file_base
         #self.output_managed_temp_dir = ManagedTempDir(self.pto_project.get_a_file_name() + "__")
@@ -116,12 +121,13 @@ class Nona:
 
         def p(s=''):
             print '%s: %s' % (datetime.datetime.utcnow().isoformat(), s)
+
         self.p = p
         self.pprefix = lambda: datetime.datetime.utcnow().isoformat() + ': '
         self.stdout = sys.stdout
         self.stderr = sys.stderr
         self.start_hook = start_hook
-    
+
     '''
     def run(self):
         project_name = self.pto_project.get_a_file_name()
@@ -135,9 +141,10 @@ class Nona:
         print 'Chose output prefix "%s"' % project_name
         self.remap(project_name)
     '''
-        
+
     def remap(self):
-        old_files = get_nona_files(self.output_prefix, len(self.pto_project.get_image_lines()))
+        old_files = get_nona_files(self.output_prefix,
+                                   len(self.pto_project.get_image_lines()))
         # For my purposes right now I think this will always be 0
         if len(old_files) != 0:
             print old_files
@@ -154,37 +161,46 @@ class Nona:
                 if self.output_cropped:
                     #  p f0 w1000 h500 v120 n"TIFF_m c:LZW r:CROP"
                     crop_opt = "r:CROP"
-            pl.set_variable("n", "%s %s %s" % (self.image_type, crop_opt, self.compression_opt))
+            pl.set_variable(
+                "n",
+                "%s %s %s" % (self.image_type, crop_opt, self.compression_opt))
             project_fn = project.get_a_file_name()
-        
-        args = ["nona",
-                "-m", self.image_type,
-                "-verbose",
-                "-z",
-                "LZW",
-                #"-g",
-                "-o", self.output_prefix,
-                ]
+
+        args = [
+            "nona",
+            "-m",
+            self.image_type,
+            "-verbose",
+            "-z",
+            "LZW",
+            #"-g",
+            "-o",
+            self.output_prefix,
+        ]
         for arg in self.args:
             args.append(arg)
-        
+
         args.append(project_fn)
-        
+
         if self.start_hook:
             self.start_hook()
         # example:
         # cmd in: nona "-m" "TIFF_m" "-verbose" "-z" "LZW" "-o" "/tmp/xystitch_7E296EA2D31827B4/0DF5034FE1CEE831/" "out.pto"
         # p w2673 h2056 f0 v76 n"TIFF_m r:CROP c:LZW" E0.0 R0 S"276,2673,312,2056"
         # m line unchanged
-        print 'Remapper: executing %s' % (args,)
-        rc = execute.prefix(args, stdout=self.stdout, stderr=self.stderr, prefix=self.pprefix)
+        print 'Remapper: executing %s' % (args, )
+        rc = execute.prefix(
+            args, stdout=self.stdout, stderr=self.stderr, prefix=self.pprefix)
         if not rc == 0:
             self.p()
             self.p()
             self.p()
             self.p('Failed to remap')
-            self.p('If you see "Write error at scanline..." you are out of scratch space')
-            self.p('Clear up temp storage (ie in /tmp) or move it using .pr0nrc')
+            self.p(
+                'If you see "Write error at scanline..." you are out of scratch space'
+            )
+            self.p(
+                'Clear up temp storage (ie in /tmp) or move it using .pr0nrc')
             #print output
             raise RemapperFailed('failed to remap')
         #project.reopen()
@@ -194,11 +210,14 @@ class Nona:
             self.output_files = list()
             # This algorithm breaks down once you start doing cropping
             # it may be a set but lists have advantages trying to trace whats happening
-            self.output_files = sorted(list(get_nona_files(self.output_prefix, len(self.pto_project.get_image_lines()))))
-            self.p('Think nona just generated %d files' % (len(self.output_files),))
+            self.output_files = sorted(
+                list(
+                    get_nona_files(self.output_prefix,
+                                   len(self.pto_project.get_image_lines()))))
+            self.p('Think nona just generated %d files' % (len(
+                self.output_files), ))
         else:
             raise RemapperFailed('bad image type')
+
     def get_output_files(self):
         return self.output_files
-        
-

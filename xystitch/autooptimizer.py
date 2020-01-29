@@ -34,19 +34,19 @@ Usage:  autooptimiser [options] input.pto
     button in hugin is performed.
 '''
 
-class PositionOptimizer:
-	def __init__(self, project):
-		self.project = project
-	
-	def optimize(self):
-		# "autooptimiser -n -o project.pto project.pto"
-		args = list()
-		args.append("-n")
-		args.append("-o")
-		args.append(project.get_a_file_name())
-		args.append(project.get_a_file_name())
-		(rc, output) = Execute.with_output("autooptimiser", args)
-		if not rc == 0:
-			raise Exception('failed position optimization')
-		self.project.reopen()
 
+class PositionOptimizer:
+    def __init__(self, project):
+        self.project = project
+
+    def optimize(self):
+        # "autooptimiser -n -o project.pto project.pto"
+        args = list()
+        args.append("-n")
+        args.append("-o")
+        args.append(project.get_a_file_name())
+        args.append(project.get_a_file_name())
+        (rc, output) = Execute.with_output("autooptimiser", args)
+        if not rc == 0:
+            raise Exception('failed position optimization')
+        self.project.reopen()

@@ -23,7 +23,8 @@ try:
 except ImportError:
     scipy = None
 
-def debug(s = ''):
+
+def debug(s=''):
     if 1:
         print s
 
@@ -36,7 +37,8 @@ TODO: consider learning NumPy...
 This is simple enough that its not justified yet
 '''
 
-def regress_row(m, pto, cols, rows, selector, allow_missing = False):
+
+def regress_row(m, pto, cols, rows, selector, allow_missing=False):
     '''
     pto: pto to optimize
     m: image coordinate map for pto
@@ -65,14 +67,15 @@ def regress_row(m, pto, cols, rows, selector, allow_missing = False):
                 raise Exception('Could not find %s in map' % fn)
             fit_cols.append(col)
             if selector(il) is None:
-                raise Exception('Reference image line is missing x/y position: %s' % il)
+                raise Exception(
+                    'Reference image line is missing x/y position: %s' % il)
             deps.append(selector(il))
             debug("     col %d (%s): %d" % (col, fn, selector(il)))
         if len(fit_cols) == 0:
             if not allow_missing:
                 raise Exception('No matches')
             continue
-        
+
         # Find x/y given a col
         (c0, _c1) = polyfit(fit_cols, deps, 1)
         debug("    y = %0.3f * x + %0.3f" % (c0, _c1))
@@ -85,7 +88,8 @@ def regress_row(m, pto, cols, rows, selector, allow_missing = False):
     # XXX: should remove outliers
     return sum(slopes) / len(slopes)
 
-def regress_col(m, pto, cols, rows, selector, allow_missing = False):
+
+def regress_col(m, pto, cols, rows, selector, allow_missing=False):
     # Discard the constants, we will pick a reference point later
     slopes = []
     for col in cols:
@@ -106,9 +110,10 @@ def regress_col(m, pto, cols, rows, selector, allow_missing = False):
                 raise Exception('Could not find %s in map' % fn)
             fit_rows.append(row)
             if selector(il) is None:
-                raise Exception('Reference image line is missing x/y position: %s' % il)
+                raise Exception(
+                    'Reference image line is missing x/y position: %s' % il)
             deps.append(selector(il))
-        
+
         if len(fit_rows) == 0:
             if not allow_missing:
                 raise Exception('No matches')
@@ -123,14 +128,23 @@ def regress_col(m, pto, cols, rows, selector, allow_missing = False):
     # XXX: should remove outliers
     return sum(slopes) / len(slopes)
 
-def calc_constants(order, m_real, pto_ref,
-        c0s, c1s, c3s, c4s,
-        m_ref = None, allow_missing=False, col_border=0, row_border=0):
+
+def calc_constants(order,
+                   m_real,
+                   pto_ref,
+                   c0s,
+                   c1s,
+                   c3s,
+                   c4s,
+                   m_ref=None,
+                   allow_missing=False,
+                   col_border=0,
+                   row_border=0):
     if m_ref is None:
         m_ref = m_real
-    
+
     ref_fns = pto_ref.get_file_names()
-    
+
     c2s = []
     c5s = []
     # Only calculate relative to central area
@@ -155,26 +169,28 @@ def calc_constants(order, m_real, pto_ref,
                     # x = c0 * c + c1 * r + c2
                     row_order = row % order
                     if row_order == cur_order:
-                        cur_x = cur_x = il.x() - c0s[row_order] * col - c1s[row_order] * row
+                        cur_x = cur_x = il.x(
+                        ) - c0s[row_order] * col - c1s[row_order] * row
                         this_c2s.append(cur_x)
-            
+
                     # y = c3 * c + c4 * r + c5
                     col_order = col % order
                     if col_order == cur_order:
-                        cur_y = il.y() - c3s[col_order] * col - c4s[col_order] * row
+                        cur_y = il.y(
+                        ) - c3s[col_order] * col - c4s[col_order] * row
                         this_c5s.append(cur_y)
-                
+
                     #print '%s: x%g y%g' % (fn, cur_x, cur_y)
-                
+
                 except:
                     print
                     print il
                     print c0s, c1s, c3s, c4s
                     print col, row
-                    print 
-            
+                    print
+
                     raise
-        
+
         print 'Order %u: %u even solutions' % (cur_order, len(this_c2s))
         print 'Order %u: %u even solutions' % (cur_order, len(this_c5s))
         if 1:
@@ -184,21 +200,23 @@ def calc_constants(order, m_real, pto_ref,
             c2s.append(this_c2s[0])
             c5s.append(this_c5s[0])
     return (c2s, c5s)
-    
+
+
 def rms_errorl(l):
     return (sum([(i - sum(l) / len(l))**2 for i in l]) / len(l))**0.5
-    
+
+
 def rms_error_diff(l1, l2):
     if len(l1) != len(l2):
         raise ValueError("Lists must be identical")
     return (sum([(l2[i] - l1[i])**2 for i in range(len(l1))]) / len(l1))**0.5
 
-def linearize(pto, pto_ref = None, allow_missing = False, order = 2):
+
+def linearize(pto, pto_ref=None, allow_missing=False, order=2):
     if order is 0:
         raise Exception('Can not have order 0')
     if type(order) != type(0):
         raise Exception('Order is bad type')
-    
     '''
     Our model should be like this:
     -Each axis will have some degree of backlash.  This backlash will create a difference between adjacent rows / cols
@@ -216,10 +234,9 @@ def linearize(pto, pto_ref = None, allow_missing = False, order = 2):
     Perform a linear regression on each row/col?
     Might lead to very large y = mx + b equations for the column math
     '''
-    
+
     if pto_ref is None:
         pto_ref = pto
-
     '''
     Phase 1: calculate linear system
     '''
@@ -238,12 +255,12 @@ def linearize(pto, pto_ref = None, allow_missing = False, order = 2):
     m_ref = ImageCoordinateMap.from_tagged_file_names(ref_fns)
     # Ref likely does not cover the entire map
     ((ref_x0, ref_x1), (ref_y0, ref_y1)) = m_ref.active_box()
-    print 'Reference map uses x(%d:%d), y(%d:%d)' % (ref_x0, ref_x1, ref_y0, ref_y1)
+    print 'Reference map uses x(%d:%d), y(%d:%d)' % (ref_x0, ref_x1, ref_y0,
+                                                     ref_y1)
 
     #m_real = ImageCoordinateMap.from_tagged_file_names(real_fns)
     #print 'Real map uses x(%d:%d), y(%d:%d)' % (ref_x0, ref_x1, ref_y0, ref_y1)
     #m.debug_print()
-    
     '''
     Ultimately trying to form this equation
     x = c0 * c + c1 * r + c2
@@ -252,7 +269,7 @@ def linearize(pto, pto_ref = None, allow_missing = False, order = 2):
     Except that constants will also have even and odd varities
     c2 and c5 will be taken from reasonable points of reference, likely (0, 0) or something like that
     '''
-    
+
     c0s = []
     c1s = []
     c3s = []
@@ -271,36 +288,56 @@ def linearize(pto, pto_ref = None, allow_missing = False, order = 2):
             reg_y0 = ref_y0 + 1
         reg_x1 = ref_x1
         reg_y1 = ref_y1
-        print 'Order %d: using x(%d:%d), y(%d:%d)' % (cur_order, reg_x0, reg_x1, reg_y0, reg_y1)
+        print 'Order %d: using x(%d:%d), y(%d:%d)' % (cur_order, reg_x0,
+                                                      reg_x1, reg_y0, reg_y1)
 
         # Given a column find x (primary x)
         # dependence of x on col in specified rows
-        c0s.append(regress_row(m_ref, pto_ref,
-                    cols=xrange(reg_x0, reg_x1 + 1, order), rows=xrange(reg_y0, reg_y1 + 1, order),
-                    selector=lambda x: x.x(), allow_missing=allow_missing))
+        c0s.append(
+            regress_row(
+                m_ref,
+                pto_ref,
+                cols=xrange(reg_x0, reg_x1 + 1, order),
+                rows=xrange(reg_y0, reg_y1 + 1, order),
+                selector=lambda x: x.x(),
+                allow_missing=allow_missing))
         # dependence of x on row in specified cols
-        c1s.append(regress_col(m_ref, pto_ref,
-                    cols=xrange(reg_x0, reg_x1 + 1, order), rows=xrange(reg_y0, reg_y1 + 1, order),
-                    selector=lambda x: x.x(), allow_missing=allow_missing))
+        c1s.append(
+            regress_col(
+                m_ref,
+                pto_ref,
+                cols=xrange(reg_x0, reg_x1 + 1, order),
+                rows=xrange(reg_y0, reg_y1 + 1, order),
+                selector=lambda x: x.x(),
+                allow_missing=allow_missing))
         # Given a row find y (primary y)
         # dependence of y on col in specified rows
-        c3s.append(regress_row(m_ref, pto_ref,
-                    cols=xrange(reg_x0, reg_x1 + 1, order), rows=xrange(reg_y0, reg_y1 + 1, order),
-                    selector=lambda x: x.y(), allow_missing=allow_missing))
+        c3s.append(
+            regress_row(
+                m_ref,
+                pto_ref,
+                cols=xrange(reg_x0, reg_x1 + 1, order),
+                rows=xrange(reg_y0, reg_y1 + 1, order),
+                selector=lambda x: x.y(),
+                allow_missing=allow_missing))
         # cdependence of y on row in specified cols
-        c4s.append(regress_col(m_ref, pto_ref,
-                    cols=xrange(reg_x0, reg_x1 + 1, order), rows=xrange(reg_y0, reg_y1 + 1, order),
-                    selector=lambda x: x.y(), allow_missing=allow_missing))
+        c4s.append(
+            regress_col(
+                m_ref,
+                pto_ref,
+                cols=xrange(reg_x0, reg_x1 + 1, order),
+                rows=xrange(reg_y0, reg_y1 + 1, order),
+                selector=lambda x: x.y(),
+                allow_missing=allow_missing))
 
     # Now chose a point in the center
     # it doesn't have to be a good fitting point in the old system, it just has to be centered
     # Fix at the origin
-    
     '''
     Actually the even and the odd should have the same slope
     The only difference should be their offset
     '''
-    
+
     if 0:
         print 'Solution found'
         print '  x = %g c + %g r + TBD' % (c0s[0], c1s[0])
@@ -310,19 +347,27 @@ def linearize(pto, pto_ref = None, allow_missing = False, order = 2):
     print
     print 'Verifying reference solution matrix....'
     # Entire reference is assumed to be good always, no border
-    (c2s_ref, c5s_ref) = calc_constants(order, m_ref, pto_ref, c0s, c1s, c3s, c4s, m_ref, allow_missing)
+    (c2s_ref, c5s_ref) = calc_constants(order, m_ref, pto_ref, c0s, c1s, c3s,
+                                        c4s, m_ref, allow_missing)
     #c1s = [c1 + 12 for c1 in c1s]
     # Print the solution matrx for debugging
     for cur_order in range(order):
         # XXX: if we really cared we could center these up
         # its easier to just run the centering algorithm after though if one cares
         print 'Reference order %d solution:' % cur_order
-        print '  x = %g c + %g r + %g' % (c0s[cur_order], c1s[cur_order], c2s_ref[cur_order])
-        print '  y = %g c + %g r + %g' % (c3s[cur_order], c4s[cur_order], c5s_ref[cur_order])
-    
+        print '  x = %g c + %g r + %g' % (c0s[cur_order], c1s[cur_order],
+                                          c2s_ref[cur_order])
+        print '  y = %g c + %g r + %g' % (c3s[cur_order], c4s[cur_order],
+                                          c5s_ref[cur_order])
+
     return ((c0s, c1s, c2s_ref), (c3s, c4s, c5s_ref))
 
-def linear_reoptimize(pto, pto_ref = None, allow_missing = False, order = 2, border = False):
+
+def linear_reoptimize(pto,
+                      pto_ref=None,
+                      allow_missing=False,
+                      order=2,
+                      border=False):
     '''
     Change XY positions to match the trend in a linear XY positioned project (ex from XY stage).  pto must have all images in pto_ref
     
@@ -335,12 +380,10 @@ def linear_reoptimize(pto, pto_ref = None, allow_missing = False, order = 2, bor
     '''
     if scipy is None:
         raise Exception('Re-optimizing requires scipi')
-    
-    ((c0s, c1s, c2s_ref), (c3s, c4s, c5s_ref)) = linearize(pto, pto_ref, allow_missing, order)
 
-    
-    
-    
+    ((c0s, c1s, c2s_ref), (c3s, c4s, c5s_ref)) = linearize(
+        pto, pto_ref, allow_missing, order)
+
     calc_ref_xs = []
     calc_ref_ys = []
     ref_xs = []
@@ -364,7 +407,8 @@ def linear_reoptimize(pto, pto_ref = None, allow_missing = False, order = 2, bor
             y_orig = il.y()
             ref_xs.append(x_orig)
             ref_ys.append(y_orig)
-            print '  c%d r%d: x%g y%g (x%g, y%g)' % (col, row, x_calc - x_orig, y_calc - y_orig, x_orig, y_orig)
+            print '  c%d r%d: x%g y%g (x%g, y%g)' % (
+                col, row, x_calc - x_orig, y_calc - y_orig, x_orig, y_orig)
             if col > 0:
                 fn_old = m_ref.get_image(col - 1, row)
                 if fn_old:
@@ -379,7 +423,8 @@ def linear_reoptimize(pto, pto_ref = None, allow_missing = False, order = 2, bor
                         fn_old2 = m_ref.get_image(col - 2, row)
                         if fn_old2:
                             il_old2 = pto_ref.get_image_by_fn(fn_old2)
-                            print '    dx2: %g' % (il.x() - 2 * il_old.x() + il_old2.x())
+                            print '    dx2: %g' % (
+                                il.x() - 2 * il_old.x() + il_old2.x())
             if row != 0:
                 fn_old = m_ref.get_image(col, row - 1)
                 if fn_old:
@@ -389,13 +434,13 @@ def linear_reoptimize(pto, pto_ref = None, allow_missing = False, order = 2, bor
                         fn_old2 = m_ref.get_image(col, row - 2)
                         if fn_old2:
                             il_old2 = pto_ref.get_image_by_fn(fn_old2)
-                            print '    dy2: %g' % (il.y() - 2 * il_old.y() + il_old2.y())
+                            print '    dy2: %g' % (
+                                il.y() - 2 * il_old.y() + il_old2.y())
     x_ref_rms_error = rms_error_diff(calc_ref_xs, ref_xs)
     y_ref_rms_error = rms_error_diff(calc_ref_ys, ref_ys)
     print 'Reference RMS error x%g y%g' % (x_ref_rms_error, y_ref_rms_error)
     print
     #exit(1)
-    
     '''
     The reference project might not start at 0,0
     Therefore scan through to find some good starting positions so that we can calc each point
@@ -406,7 +451,6 @@ def linear_reoptimize(pto, pto_ref = None, allow_missing = False, order = 2, bor
     Calculate the constant at each reference image
     Compute reference positions from these values
     '''
-    
     '''
     FIXME: we have to calculate these initially and then re-calc for border if required
     if top_bottom_backlash and border:
@@ -420,18 +464,21 @@ def linear_reoptimize(pto, pto_ref = None, allow_missing = False, order = 2, bor
     '''
     row_border = 0
     col_border = 0
-    
-    (c2s, c5s) = calc_constants(order, m_real, pto_ref, c0s, c1s, c3s, c4s, m_ref, allow_missing, col_border, row_border)
+
+    (c2s, c5s) = calc_constants(order, m_real, pto_ref, c0s, c1s, c3s, c4s,
+                                m_ref, allow_missing, col_border, row_border)
     #c2s = [c2 + 30 for c2 in c2s]
-        
+
     # Print the solution matrx for debugging
     for cur_order in range(order):
         # XXX: if we really cared we could center these up
         # its easier to just run the centering algorithm after though if one cares
         print 'Order %d solution:' % cur_order
-        print '  x = %g c + %g r + %g' % (c0s[cur_order], c1s[cur_order], c2s[cur_order])
-        print '  y = %g c + %g r + %g' % (c3s[cur_order], c4s[cur_order], c5s[cur_order])
-    
+        print '  x = %g c + %g r + %g' % (c0s[cur_order], c1s[cur_order],
+                                          c2s[cur_order])
+        print '  y = %g c + %g r + %g' % (c3s[cur_order], c4s[cur_order],
+                                          c5s[cur_order])
+
     c2_rms = rms_errorl(c2s)
     c5_rms = rms_errorl(c5s)
     print 'RMS offset error x%g y%g' % (c2_rms, c5_rms)
@@ -457,10 +504,10 @@ def linear_reoptimize(pto, pto_ref = None, allow_missing = False, order = 2, bor
                 if not allow_missing:
                     raise Exception('Missing item')
                 continue
-            
+
             col_eo = col % order
             row_eo = row % order
-            
+
             # FIRE!
             # take the dot product
             x = c0s[row_eo] * col + c1s[row_eo] * row + c2s[row_eo]
@@ -499,25 +546,16 @@ def linear_reoptimize(pto, pto_ref = None, allow_missing = False, order = 2, bor
         optimizer.run()
 
 
-
-
-
-
-
-
-
-
-
 def merge_pto(src_pto, dst_pto, cplsi=None):
     '''
     Take a pto subproject and merge coordinates back into larger project
     They must be using same coordinate system
     cplsi: control point indices to smash in dst_pto
     '''
-    
+
     # Make sure we are going to manipulate the data and not text
     dst_pto.parse()
-    
+
     base_n = len(dst_pto.get_image_lines())
     opt_n = len(src_pto.get_optimizer_lines())
     # old optimized version assuming same indices
@@ -540,20 +578,21 @@ def merge_pto(src_pto, dst_pto, cplsi=None):
             # c n1 N0 x121.0 y258.0 X133.0 Y1056.0 t0
             n = cpl.get_variable('n')
             N = cpl.get_variable('N')
-            
+
             # recycle old line object
             # it may even be the matching one but that shouldn't matter
             cpl2 = dst_pto.control_point_lines[cplsi_iter.next()]
             # Indexes will be different, adjust accordingly
             cpl2.set_variable('n', dst_pto.i2i(src_pto, n))
             cpl2.set_variable('N', dst_pto.i2i(src_pto, N))
-        
+
         # verify consumed all images
         try:
             cplsi_iter.next()
             raise Exception("Didn't use all images")
         except StopIteration:
             pass
+
 
 def merge_opt_pto(src_pto, dst_pto):
     '''Take a resulting pto project and merge the coordinates back into the original'''
@@ -581,10 +620,10 @@ def merge_opt_pto(src_pto, dst_pto):
     
     note that o lines have some image ID strings before them but position is probably better until I have an issue
     '''
-    
+
     # Make sure we are going to manipulate the data and not text
     dst_pto.parse()
-    
+
     base_n = len(dst_pto.get_image_lines())
     opt_n = len(src_pto.get_optimizer_lines())
     # old optimized version assuming same indices
@@ -608,27 +647,27 @@ def merge_opt_pto(src_pto, dst_pto):
             used_i = set()
             for il in src_pto.get_image_lines():
                 used_i.add(dst_pto.img_fn2i(il.get_name()))
-            
+
             for i, cpl in enumerate(dst_pto.get_control_point_lines()):
                 # c n1 N0 x121.0 y258.0 X133.0 Y1056.0 t0
                 n = cpl.get_variable('n')
                 N = cpl.get_variable('N')
                 if n in used_i and N in used_i:
                     yield i
-                
+
         cplsi_iter = begin_iter()
         for cpl in src_pto.get_control_point_lines():
             # c n1 N0 x121.0 y258.0 X133.0 Y1056.0 t0
             n = cpl.get_variable('n')
             N = cpl.get_variable('N')
-            
+
             # recycle old line object
             # it may even be the matching one but that shouldn't matter
             cpl2 = dst_pto.control_point_lines[cplsi_iter.next()]
             # Indexes will be different, adjust accordingly
             cpl2.set_variable('n', dst_pto.i2i(src_pto, n))
             cpl2.set_variable('N', dst_pto.i2i(src_pto, N))
-        
+
         # verify consumed all images
         try:
             cplsi_iter.next()
@@ -636,20 +675,20 @@ def merge_opt_pto(src_pto, dst_pto):
         except StopIteration:
             pass
 
+
 class TileOpt:
     def __init__(self, project):
         self.project = project
         self.debug = False
         # In practice I tend to get around 25 so anything this big signifies a real problem
         self.rms_error_threshold = 250.0
-        
+
         # Tile width
         self.tw = 5
         # Tile height
         self.th = 5
-    
-    def partial_optimize(self, xo0, xo1, yo0, yo1,
-                xf0=0, xf1=0, yf0=0, yf1=0):
+
+    def partial_optimize(self, xo0, xo1, yo0, yo1, xf0=0, xf1=0, yf0=0, yf1=0):
         '''
         Return a PTOptimizer optimized sub-self.opt_project
         o: optimized row/col
@@ -668,12 +707,11 @@ class TileOpt:
             raise Exception('')
         if yf1 < 0:
             raise Exception('')
-            
+
         xf0 += xo0
         xf1 += xo1
         yf0 += yo0
         yf1 += yo1
-        
         '''
         # Remove all previously selected optimizations
         project.variable_lines = []
@@ -686,12 +724,12 @@ class TileOpt:
                 project.variable_lines.append(vl)
         '''
         project = PTOProject.from_blank()
-        
+
         # Copy special lines
         # in particular need to keep canvas scale
         project.set_pano_line_by_text(str(self.opt_project.panorama_line))
         project.set_mode_line_by_text(str(self.opt_project.mode_line))
-        
+
         # Copy in image lines
         # Create a set of all images of interest to make relevant lines easy to find
         rel_i = set()
@@ -702,7 +740,7 @@ class TileOpt:
                 rel_i.add(il.get_index())
                 # Image itself
                 project.image_lines.append(ImageLine(str(il), project))
-        
+
         # save indices to quickly eliminate/replace them
         cpl_is = []
         # Now that all images are added we can add features between them
@@ -717,14 +755,13 @@ class TileOpt:
                 cpl2.set_variable('N', project.i2i(self.opt_project, N))
                 project.control_point_lines.append(cpl2)
                 cpl_is.append(cpli)
-        
-        
+
         anchor = None
         # All variable?
         if xo0 == xf0 and xo1 == xf1 and yo0 == yf0 and yo1 == yf1:
             # Then must anchor solution to a fixed tile
             anchor = ((xo0 + xo1) / 2, (xf0 + xf1) / 2)
-        
+
         # Finally, set images to optimize (XY only)
         for col in xrange(xo0, xo1 + 1, 1):
             for row in xrange(yo0, yo1 + 1, 1):
@@ -735,7 +772,7 @@ class TileOpt:
                 img_i = project.img_fn2i(fn)
                 vl = VariableLine('v d%d e%d' % (img_i, img_i), project)
                 project.variable_lines.append(vl)
-        
+
         # In case it crashes do a debug dump
         pre_run_text = project.get_text()
         if 0:
@@ -747,7 +784,7 @@ class TileOpt:
             print
             print
             raise Exception('Debug break')
-                
+
         # "PToptimizer out.pto"
         args = ["PToptimizer"]
         args.append(project.get_a_file_name())
@@ -758,7 +795,7 @@ class TileOpt:
             print
             print
             print 'Failed rc: %d' % rc
-            print 'Failed project save to %s' % (fn,)
+            print 'Failed project save to %s' % (fn, )
             try:
                 open(fn, 'w').write(pre_run_text)
             except:
@@ -768,7 +805,6 @@ class TileOpt:
             raise Exception('failed position optimization')
         # API assumes that projects don't change under us
         project.reopen()
-        
         '''
         Line looks like this
         # final rms error 24.0394 units
@@ -781,8 +817,9 @@ class TileOpt:
         print 'Optimize: RMS error of %f' % rms_error
         # Filter out gross optimization problems
         if self.rms_error_threshold and rms_error > self.rms_error_threshold:
-            raise Exception("Max RMS error threshold %f but got %f" % (self.rms_error_threshold, rms_error))
-        
+            raise Exception("Max RMS error threshold %f but got %f" %
+                            (self.rms_error_threshold, rms_error))
+
         if self.debug:
             print 'Parsed: %s' % str(project.parsed)
 
@@ -799,15 +836,15 @@ class TileOpt:
         print 'Merging project...'
         merge_opt_pto(project, ret)
         ret.save_as('fixup.pto')
-        
+
         return (ret, cpl_is)
-    
+
     def run(self):
         bench = Benchmark()
-        
+
         # The following will assume all of the images have the same size
         self.verify_images()
-        
+
         # Copy project so we can trash it
         self.opt_project = self.project.copy()
         self.prepare_pto(self.opt_project)
@@ -818,15 +855,13 @@ class TileOpt:
             i_fns.append(il.get_name())
         self.icm = ImageCoordinateMap.from_file_names(i_fns)
         print 'Built image coordinate map'
-        
+
         if self.icm.width() <= self.tw:
             raise Exception('Decrease tile width')
         if self.icm.height() <= self.th:
             raise Exception('Decrease tile height')
 
         order = 2
-        
-        
         '''
         Phase 1: baseline
         Fully optimize a region in the center of our pano
@@ -842,8 +877,6 @@ class TileOpt:
         y1 = y0 + self.th - 1
         (center_pto, center_cplis) = self.partial_optimize(x0, x1, y0, y1)
         merge_pto(center_pto, self.opt_project, center_cplis)
-
-
         '''
         Phase 2: predict
         Now use base center project to predict optimization positions for rest of project
@@ -854,7 +887,8 @@ class TileOpt:
         XXX: is there reason to have order 2 y coordinates?
         '''
         print 'Phase 2: predict'
-        ((c0s, c1s, c2s), (c3s, c4s, c5s)) = linearize(self.opt_project, center_pto, allow_missing=False, order=order)
+        ((c0s, c1s, c2s), (c3s, c4s, c5s)) = linearize(
+            self.opt_project, center_pto, allow_missing=False, order=order)
         # Exclude filenames directly optimized
         center_is = set()
         for il in center_pto.get_image_lines():
@@ -867,12 +901,12 @@ class TileOpt:
                 if il.get_index() in center_is:
                     continue
                 # Otherwise predict position
-                x = c0s[col%order] * col + c1s[col%order] * row + c2s[col%order]
+                x = c0s[col % order] * col + c1s[col % order] * row + c2s[
+                    col % order]
                 il.set_variable('d', x)
-                y = c3s[row%order] * col + c4s[row%order] * row + c5s[row%order]
+                y = c3s[row % order] * col + c4s[row % order] * row + c5s[
+                    row % order]
                 il.set_variable('e', y)
-        
-        
         '''
         Phase 3: optimize
         Moving out from center, optimize sub-sections based off of prediction
@@ -896,13 +930,12 @@ class TileOpt:
         merge_pto(center_pto, self.opt_project, center_cplis)
         '''
 
-
         if self.debug:
             print self.project
-        
+
         bench.stop()
         print 'Optimized project in %s' % bench
-        
+
     def verify_images(self):
         first = True
         for i in self.project.get_image_lines():
@@ -912,45 +945,50 @@ class TileOpt:
                 self.v = i.fov()
                 first = False
             else:
-                if self.w != i.width() or self.h != i.height() or self.v != i.fov():
+                if self.w != i.width() or self.h != i.height(
+                ) or self.v != i.fov():
                     print i.text
-                    print 'Old width %d, height %d, view %d' % (self.w, self.h, self.v)
-                    print 'Image width %d, height %d, view %d' % (i.width(), i.height(), i.fov())
+                    print 'Old width %d, height %d, view %d' % (self.w, self.h,
+                                                                self.v)
+                    print 'Image width %d, height %d, view %d' % (
+                        i.width(), i.height(), i.fov())
                     raise Exception('Image does not match')
-        
+
     def prepare_pto(self, pto):
         '''Simply and modify a pto project enough so that PToptimizer will take it'''
         print 'Stripping project'
-        
+
         def fix_pl(pl):
             pl.remove_variable('E')
             pl.remove_variable('R')
-            v = pl.get_variable('v') 
+            v = pl.get_variable('v')
             if v == None or v >= 180:
                 print 'Manipulating project field of view'
                 pl.set_variable('v', 179)
-                
+
         def fix_il(il):
-            v = il.get_variable('v') 
+            v = il.get_variable('v')
             if v == None or v >= 180:
                 il.set_variable('v', 51)
-            
+
             # These aren't liked: TrX0 TrY0 TrZ0
             il.remove_variable('TrX')
             il.remove_variable('TrY')
             il.remove_variable('TrZ')
-    
+
             # panotools seems to set these to -1 on some ocassions
-            if il.get_variable('w') == None or il.get_variable('h') == None or int(il.get_variable('w')) <= 0 or int(il.get_variable('h')) <= 0:
+            if il.get_variable('w') == None or il.get_variable(
+                    'h') == None or int(il.get_variable('w')) <= 0 or int(
+                        il.get_variable('h')) <= 0:
                 img = PImage.from_file(il.get_name())
                 il.set_variable('w', img.width())
                 il.set_variable('h', img.height())
-                
+
             # Force reoptimize by zeroing optimization result
             il.set_variable('d', 0)
             il.set_variable('e', 0)
-        
+
         fix_pl(pto.get_panorama_line())
-        
+
         for il in pto.image_lines:
             fix_il(il)

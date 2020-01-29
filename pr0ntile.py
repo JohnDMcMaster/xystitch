@@ -51,7 +51,7 @@ If a lower res image was availible it might be nice to match features and scale 
 
 '''
 
-import sys 
+import sys
 import os.path
 from xystitch.tile.tile import SingleTiler, TileTiler
 from xystitch.tiler import Tiler
@@ -65,16 +65,16 @@ VERSION = '0.1'
 
 
 def usage():
-	print 'pr0ntile: generate tiles from a single input image'
-	print 'NOTE: replaced by pr0nts for .pto'
-	print 'Usage:'
-	print 'pr0ntile <image file names>'
-	print 'single file name will expect one gigantic input.  .pto will stitch from tile'
-	print 'FIXME broken: multiple file names (TODO: or directory) will be stitched together and must overlap'
+    print 'pr0ntile: generate tiles from a single input image'
+    print 'NOTE: replaced by pr0nts for .pto'
+    print 'Usage:'
+    print 'pr0ntile <image file names>'
+    print 'single file name will expect one gigantic input.  .pto will stitch from tile'
+    print 'FIXME broken: multiple file names (TODO: or directory) will be stitched together and must overlap'
 
 
 if __name__ == "__main__":
-	'''
+    '''
 	if len(sys.argv) > 2:
 		files_in = []
 		#for i in range(1, len(sys.argv)):
@@ -84,23 +84,22 @@ if __name__ == "__main__":
 		TileTiler(files_in, max_level, min_level).run()
 	elif len(sys.argv) == 2:
 	'''
-	for argi in xrange(len(sys.argv)):
-		if sys.argv[argi].find('.pto') > 0:
-			raise Exception('Use pr0nts')
+    for argi in xrange(len(sys.argv)):
+        if sys.argv[argi].find('.pto') > 0:
+            raise Exception('Use pr0nts')
 
-	if len(sys.argv) == 2:
-		fn = sys.argv[1]
-		print 'Assuming input is image file'
-		'''
+    if len(sys.argv) == 2:
+        fn = sys.argv[1]
+        print 'Assuming input is image file'
+        '''
 		Test file is the carved out metal sample of the 6522
 		It is 5672 x 4373 pixels
 		I might do a smaller one first
 		'''
-		#fn = 'xc9536xl_vqg44awn1105__neo50xulwd__semipol_lev_noz_dirty.jpg'
-		max_level = None
-		min_level = None
-		SingleTiler(fn, max_level, min_level).run()
-	else:
-		usage()
-		sys.exit(1)
-		
+        #fn = 'xc9536xl_vqg44awn1105__neo50xulwd__semipol_lev_noz_dirty.jpg'
+        max_level = None
+        min_level = None
+        SingleTiler(fn, max_level, min_level).run()
+    else:
+        usage()
+        sys.exit(1)

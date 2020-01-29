@@ -3,7 +3,6 @@ xystitch
 Copyright 2012 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under a 2 clause BSD license, see COPYING for details
 '''
-
 '''
 This file aims to provide the ability to resize a panorama to fit optimal xy size
 
@@ -42,4 +41,3 @@ FOV is directly proportional to optimal size for both width and height with the 
 In my project 1 FOV = 
 
 '''
-

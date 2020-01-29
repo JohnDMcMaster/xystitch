@@ -3,7 +3,6 @@ xystitch
 Copyright 2011 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under a 2 clause BSD license, see COPYING for details
 '''
-
 '''
 WARNING: beware coordinate system madness
 
@@ -24,13 +23,16 @@ import os
 from xystitch.pimage import PImage
 
 debugging = 0
-def dbg(s = ''):
+
+
+def dbg(s=''):
     if debugging:
         print 'DEBUG: %s' % s
 
+
 def calc_center(pto):
     pto.parse()
-    
+
     xbar = 0.0
     ybar = 0.0
     n = len(pto.get_image_lines())
@@ -39,12 +41,15 @@ def calc_center(pto):
         y = il.y()
         # first check that we have coordinates for all of the images
         if x is None or y is None:
-            raise Exception('Require positions to center panorama, missing on %s', il.get_name())
+            raise Exception(
+                'Require positions to center panorama, missing on %s',
+                il.get_name())
         xbar += x
         ybar += y
     xbar /= n
     ybar /= n
     return (ybar, xbar)
+
 
 def image_fl(img):
     '''Get rectilinear image focal distance'''
@@ -69,6 +74,7 @@ def image_fl(img):
         raise Exception('Require valid fov, got %s' % (img.fov()))
     return (img.width() / 2) / math.tan(img.fov() / 2)
 
+
 def center(pto):
     '''Center images in a pto about the origin'''
     '''
@@ -79,24 +85,23 @@ def center(pto):
         pto.assert_uniform_images()
     except Exception:
         print 'WARNING: images not uniform, may not be completely centered'
-    
+
     # We require the high level representation
     pto.parse()
-    
+
     if debugging:
         print 'lines old:'
         for i in range(3):
             il = pto.get_image_lines()[i]
             print il
-        
-        
-    (ybar, xbar) = calc_center(pto)    
+
+    (ybar, xbar) = calc_center(pto)
     dbg('Center adjustment by x %f, y %f' % (xbar, ybar))
     # If they were already centered this should be 0
     for i in pto.get_image_lines():
         i.set_x(i.x() - xbar)
         i.set_y(i.y() - ybar)
-    
+
     if debugging:
         print 'lines new:'
         for i in range(3):
@@ -104,7 +109,7 @@ def center(pto):
             print il
     #import sys
     #sys.exit(1)
-    
+
     # Adjust pano crop if present
     pl = pto.get_panorama_line()
     if pl.get_crop():
@@ -118,38 +123,38 @@ def center(pto):
         pfl = image_fl(pl)
         ifl = image_fl(refi)
         scalar = pfl / ifl
-        
+
         dbg('Crop scalar: %f' % scalar)
-        
+
         pxbar = xbar * scalar
         l = pl.left() - pxbar
         r = pl.right() - pxbar
         pl.set_left(l)
         pl.set_right(r)
-        
+
         pybar = ybar * scalar
         t = pl.top() - pybar
         b = pl.bottom() - pybar
         pl.set_top(t)
         pl.set_bottom(b)
-        
+
     else:
         dbg('No crop to adjust')
-    
+
+
 def anchor(pto, i_in):
     from xystitch.pto.variable_line import VariableLine
-    
     '''anchor pto image number i or obj for xy'''
     if type(i_in) is int:
         i = pto.get_image(i_in)
     else:
         i = i_in
-        
+
     def process_line(l, iindex):
         lindex = l.index()
         if lindex is None:
-            raise Exception("Couldn't determine existing index")            
-        #print '%d vs %d' % 
+            raise Exception("Couldn't determine existing index")
+        #print '%d vs %d' %
         # The line we want to optimize?
         #print '%d vs %d' % (lindex, iindex)
         if lindex == iindex:
@@ -161,7 +166,7 @@ def anchor(pto, i_in):
             # more than likely they are already equal to this
             l.set_variable('d', lindex)
             l.set_variable('e', lindex)
-    
+
     iindex = i.get_index()
     dbg('Anchoring to %s (%d)' % (i.get_name(), iindex))
     closed_set = set()
@@ -194,16 +199,18 @@ def anchor(pto, i_in):
             v = VariableLine('v d%d e%d' % (i, i), pto)
             pos = min(i, len(pto.variable_lines))
             pto.variable_lines.insert(pos, v)
-    
+
+
 def center_anchor_by_de(pto):
     '''Centering technique that requires an already optimized project, limited use'''
     # I used this for experimenting with anchor choice with some pre-optimized projects
-    
+
     # We require the high level representation
     pto.parse()
     (ybar, xbar) = calc_center(pto)
 
-    dbg('xbar: %f, ybar: %f, images: %d' % (xbar, ybar, len(pto.get_image_lines())))
+    dbg('xbar: %f, ybar: %f, images: %d' % (xbar, ybar,
+                                            len(pto.get_image_lines())))
 
     for i in pto.get_image_lines():
         x = i.x()
@@ -219,8 +226,9 @@ def center_anchor_by_de(pto):
             #anchor(pto, i.get_index())
             anchor(pto, i)
             return
-            
+
     raise Exception('Center heuristic failed')
+
 
 def center_anchor_by_fn(pto):
     '''Rely on filename to make an anchor estimate'''
@@ -231,9 +239,9 @@ def center_anchor_by_fn(pto):
     dbg('Selected %s as anchor' % fn)
     anchor(pto, pto.get_image_by_fn(fn))
 
+
 def center_anchor(pto):
     '''Chose an anchor in the center of the pto'''
-
     '''
     There is a "chicken and the egg" type problem
     We want to figure out where the panorama is centered to optimize its positions nicely
@@ -241,13 +249,14 @@ def center_anchor(pto):
     
     If it is already optimized we can 
     '''
-    
+
     dbg('Centering anchor')
 
     if 0:
         return center_anchor_by_de(pto)
     else:
         return center_anchor_by_fn(pto)
+
 
 def optimize_xy_only(self):
     # XXX: move this to earlier if possible
@@ -284,10 +293,10 @@ def optimize_xy_only(self):
             line = 'v d%d e%d \n' % (i, i)
             self.variable_lines.append(VariableLine(line, self))
         return
-        
+
     new_project_text = ''
     new_lines = ''
-        
+
     # This gives us "something" but more than likely
     # code later will run a center rountine to place this better
     for i in range(1, len(self.get_file_names())):
@@ -296,7 +305,7 @@ def optimize_xy_only(self):
     new_lines += 'v \n'
     for line in self.get_text().split('\n'):
         if line == '':
-            new_project_text += '\n'                
+            new_project_text += '\n'
         elif line[0] == 'v':
             # Replace once, ignore others
             new_project_text += new_lines
@@ -311,12 +320,13 @@ def optimize_xy_only(self):
         print
         print
 
+
 """
 def optimize_xy_only_for_images(pto, image_fns):
     '''Same as above except only for specific images'''
     for fn in image_fns:
 """
-        
+
 
 def fixup_p_lines(self):
     '''
@@ -329,7 +339,7 @@ def fixup_p_lines(self):
     new_project_text = ''
     for line in self.get_text().split('\n'):
         if line == '':
-            new_project_text += '\n'                
+            new_project_text += '\n'
         elif line[0] == 'p':
             new_line = ''
             for part in line.split():
@@ -351,12 +361,13 @@ def fixup_p_lines(self):
         print
         print
 
+
 def fixup_i_lines(self):
     print 'Fixing up i (image attributes) lines...'
     new_project_text = ''
     for line in self.get_text().split('\n'):
         if line == '':
-            new_project_text += '\n'                
+            new_project_text += '\n'
         elif line[0] == 'i':
             # before replace
             # i Eb1 Eev0 Er1 Ra0.0111006880179048 Rb-0.00838561356067657 Rc0.0198899246752262 Rd0.0135543448850513 Re-0.0435801632702351 Va1 Vb0.366722181378024 Vc-1.14825880321425 Vd0.904996105280657 Vm5 Vx0 Vy0 a0 b0 c0 d0 e0 f0 g0 h2112 n"x00000_y00033.jpg" p0 r0 t0 v70 w2816 y0
@@ -387,6 +398,7 @@ def fixup_i_lines(self):
         print
         print
 
+
 def make_basename(pto):
     '''Convert image file names to their basenames'''
     for il in pto.get_image_lines():
@@ -396,10 +408,11 @@ def make_basename(pto):
             dbg('basename: %s => %s' % (orig, new))
         il.set_name(new)
 
+
 def resave_hugin(pto):
     from xystitch.merger import Merger
     from xystitch.pto.project import PTOProject
-    
+
     # pto_merge -o converted.pto out.pto out.pto
     blank = PTOProject.from_blank()
     m = Merger([blank])
@@ -409,16 +422,19 @@ def resave_hugin(pto):
         raise Exception('Expected self merge')
     dbg('Merge into self')
 
+
 def calc_il_dim(il):
     name = il.get_name()
     pimage = PImage.from_file(name)
     il.set_width(pimage.width())
     il.set_height(pimage.height())
 
+
 def fixup_image_dim(pto):
     for il in pto.get_image_lines():
         calc_il_dim(il)
         dbg('With size info: %s' % il)
+
 
 def img_cpls(pto, img_i):
     '''Return control point lines for given image file name'''
@@ -429,6 +445,7 @@ def img_cpls(pto, img_i):
         if n == img_i or N == img_i:
             cpls.append(cpl)
     return cpls
+
 
 def rm_red_img(pto):
     '''Remove redundant images given crop selection'''
@@ -444,13 +461,14 @@ def rm_red_img(pto):
     # 0 => 50
     # 50 => 0
     # 100 => -50
-    c_left = canvas_w/2 - c_left_
-    c_right = canvas_w/2 - c_right_
-    c_top = canvas_h/2 - c_top_
-    c_bottom = canvas_h/2 - c_bottom_
+    c_left = canvas_w / 2 - c_left_
+    c_right = canvas_w / 2 - c_right_
+    c_top = canvas_h / 2 - c_top_
+    c_bottom = canvas_h / 2 - c_bottom_
     print 'Canvas: %dw X %dh' % (canvas_w, canvas_h)
-    print 'Crop [%s, %s, %s, %s] => [%s, %s, %s, %s]' % (c_left_, c_right_, c_top_, c_bottom_, c_left, c_right, c_top, c_bottom)
-    
+    print 'Crop [%s, %s, %s, %s] => [%s, %s, %s, %s]' % (
+        c_left_, c_right_, c_top_, c_bottom_, c_left, c_right, c_top, c_bottom)
+
     to_rm = []
     for il in pto.image_lines:
         #im_left = il.right()
@@ -459,13 +477,13 @@ def rm_red_img(pto):
         #im_bottom = il.top()
         r = il.rotation()
         rr = r * 3.14159 / 180
-        
+
         x = il.x()
         y = il.y()
         # rotate x/y rr radians
         xp = x * math.cos(rr) - y * math.sin(rr)
         yp = x * math.sin(rr) + y * math.cos(rr)
-        
+
         im_left = xp - il.width() / 2.0
         im_right = xp + il.width() / 2.0
         if im_left < im_right:
@@ -474,7 +492,7 @@ def rm_red_img(pto):
         im_bottom = yp + il.height() / 2.0
         if im_top < im_bottom:
             (im_top, im_bottom) = (im_bottom, im_top)
-        
+
         # try simple heuristic first
         # seems to mostly care when they aren't really overlapping at all
         # should have at least 30% overlap, maybe as low as 20% if severe errors
@@ -484,26 +502,29 @@ def rm_red_img(pto):
         il_w = il.width()
         il_h = il.height()
         if 0:
-            print 'check %s [%s, %s, %s, %s]' % (il.get_name(), im_left, im_right, im_top, im_bottom)
+            print 'check %s [%s, %s, %s, %s]' % (il.get_name(), im_left,
+                                                 im_right, im_top, im_bottom)
             print '  x %0.1f => %0.1f' % (x, xp)
             print '  y %0.1f => %0.1f' % (y, yp)
             print '  %s < %s' % (c_left - im_right, il_w * overlap_thresh)
             print '  %s < %s' % (im_left - c_right, il_w * overlap_thresh)
             print '  %s < %s' % (c_top - im_bottom, il_h * overlap_thresh)
             print '  %s < %s' % (im_top - c_bottom, il_h * overlap_thresh)
-        if (    c_left - im_right < il_w * overlap_thresh or 
-                im_left - c_right < il_w * overlap_thresh or
-                c_top - im_bottom < il_h * overlap_thresh or
-                im_top - c_bottom < il_h * overlap_thresh):
+        if (c_left - im_right < il_w * overlap_thresh
+                or im_left - c_right < il_w * overlap_thresh
+                or c_top - im_bottom < il_h * overlap_thresh
+                or im_top - c_bottom < il_h * overlap_thresh):
             #print 'Removing %s' % il
             if 0:
-                print 'rm %s [%s, %s, %s, %s]' % (il.get_name(), im_left, im_right, im_top, im_bottom)
+                print 'rm %s [%s, %s, %s, %s]' % (il.get_name(), im_left,
+                                                  im_right, im_top, im_bottom)
             to_rm.append(il)
-        
+
     print 'Removing %d / %d images' % (len(to_rm), len(pto.image_lines))
     if len(to_rm) == len(pto.image_lines):
         raise Exception("Removed all images.  remapper will fail")
     pto.del_images(to_rm)
     print 'Remaining'
     for il in pto.image_lines:
-        print '  %s w/ [%s, %s, %s, %s]' % (il.get_name(), il.left(), il.right(), il.top(), il.bottom())
+        print '  %s w/ [%s, %s, %s, %s]' % (il.get_name(), il.left(),
+                                            il.right(), il.top(), il.bottom())

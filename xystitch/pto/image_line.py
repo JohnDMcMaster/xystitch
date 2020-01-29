@@ -3,7 +3,6 @@ xystitch
 Copyright 2011 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under a 2 clause BSD license, see COPYING for details
 '''
-
 '''
 It seems width and heigth must be set to actual image width and heigh, ie can't be used for scaling like on the p line
 Changing in source file, opening in Hugin, re-saving puts back the old values
@@ -112,6 +111,7 @@ from xystitch.temp_file import ManagedTempFile
 from xystitch.execute import Execute
 import line
 
+
 # I'm really tempted to write this as a map...but I dunno
 class ImageLine(line.Line):
     '''
@@ -124,10 +124,9 @@ class ImageLine(line.Line):
     to script creation
     "i w h f Eb Eev Er Ra Rb Rc Rd Re Va Vb Vc Vd Vx Vy a b c d e g p r t v y Vm u n".split()
     '''
-    
+
     # Parameters that I don't feel like tracking or haven't seen
     #other = map()
-    
     """
     # nona requires the width and height of input images wheras PTStitcher/mender don't
     # Width, int
@@ -224,27 +223,35 @@ class ImageLine(line.Line):
     def __init__(self, text, project):
         line.Line.__init__(self, text, project)
         self.image = None
-        
+
     def prefix(self):
         return 'i'
-        
+
     def variable_print_order(self):
         # i w2816 h2112 f0 Eb1 Eev0.463243792953809 Er1 Ra0 Rb0 Rc0 Rd0 Re0 Va1 Vb0.460215357389621 Vc-0.596925841345566 Vd0.120459501533104 Vx-0 Vy-0 a0 b0 c0 d-0 e-0 g-0 p0 r0 t-0 v51 y0  Vm5 u10 n"x00022_y00339.jpg"
-        return list(['w', 'h', 'f', 'Eb', 'Eev', 'Er', 'Ra', 'Rb', 'Rc', 'Rd', 'Re', 'Va', 'Vb', 'Vc', 'Vd', 'Vx', 'Vy', 'j',
-                'a', 'b', 'c', 'd', 'e', 'g', 'p', 'r', 't', 'v', 'y',
-                'TrX', 'TrY', 'TrZ', 
-                'Tpy', 'Tpp',
-                'Vm', 'u', 'n'])
-    
+        return list([
+            'w', 'h', 'f', 'Eb', 'Eev', 'Er', 'Ra', 'Rb', 'Rc', 'Rd', 'Re',
+            'Va', 'Vb', 'Vc', 'Vd', 'Vx', 'Vy', 'j', 'a', 'b', 'c', 'd', 'e',
+            'g', 'p', 'r', 't', 'v', 'y', 'TrX', 'TrY', 'TrZ', 'Tpy', 'Tpp',
+            'Vm', 'u', 'n'
+        ])
+
     def key_variables(self):
         return set()
+
     def int_variables(self):
         return set(['w', 'h', 'f', 'g', 't', 'Vm', 'u', 'j', 'Tpy', 'Tpp'])
+
     def float_variables(self):
-        return set(['Eb', 'Eev', 'Er', 'Ra', 'Rb', 'Rc', 'Rd', 'Re', 'Va', 'Vb', 'Vc', 'Vd', 'Vx', 'Vy', 'a', 'b', 'c', 'd', 'e', 'p', 'r', 'v', 'y', 'TrX', 'TrY', 'TrZ'])
+        return set([
+            'Eb', 'Eev', 'Er', 'Ra', 'Rb', 'Rc', 'Rd', 'Re', 'Va', 'Vb', 'Vc',
+            'Vd', 'Vx', 'Vy', 'a', 'b', 'c', 'd', 'e', 'p', 'r', 'v', 'y',
+            'TrX', 'TrY', 'TrZ'
+        ])
+
     def string_variables(self):
         return set(['n'])
-        
+
     @staticmethod
     def from_line(line, pto_project):
         ret = Image()
@@ -258,20 +265,20 @@ class ImageLine(line.Line):
     Higher y moves the image up on the screen
     Higher x moves the image left on the screen
     '''
-    
+
     def shift(self, dx, dy):
         self.set_x(self.x() + dx)
         self.set_y(self.y() + dy)
 
     def set_x(self, x):
         self.set_variable('d', x)
-    
+
     def set_y(self, y):
         self.set_variable('e', y)
 
     def get_name(self):
         return self.get_variable('n')
-    
+
     def set_name(self, name):
         return self.set_variable('n', name)
 
@@ -282,7 +289,7 @@ class ImageLine(line.Line):
         path = to + "/" + os.path.basename(self.get_name())
         #print 'Making absolute image name: %s' % path
         self.set_name(path)
-        
+
     def make_relative(self, to):
         '''Make image path relative'''
         if to is None:
@@ -293,20 +300,20 @@ class ImageLine(line.Line):
 
     def left(self):
         return self.x() - self.width() / 2.0
-        
+
     def right(self):
         return self.x() + self.width() / 2.0
 
     def top(self):
         return self.y() - self.height() / 2.0
-        
+
     def bottom(self):
         return self.y() + self.height() / 2.0
-    
+
     def x(self):
         '''Center of image x position'''
         return self.get_variable('d')
-        
+
     def y(self):
         '''Center of image y position'''
         return self.get_variable('e')
@@ -316,17 +323,17 @@ class ImageLine(line.Line):
 
     def height(self):
         return self.get_variable('h')
-        
+
     def set_width(self, width):
         return self.set_variable('w', width)
 
     def set_height(self, height):
         return self.set_variable('h', height)
-        
+
     def fov(self):
         '''Returns angle (field) of view in degrees'''
-        return self.get_variable('v')            
-        
+        return self.get_variable('v')
+
     def get_index(self):
         if self.project.il2i:
             return self.project.il2i[self]

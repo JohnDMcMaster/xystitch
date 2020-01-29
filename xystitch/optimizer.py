@@ -4,7 +4,6 @@ xystitch
 Copyright 2011 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under a 2 clause BSD license, see COPYING for details
 '''
-
 '''
 This file is used to optimize the size of an image project
 It works off of the following idea:
@@ -37,8 +36,10 @@ import sys
 import random
 import json
 
-def debug(s = ''):
+
+def debug(s=''):
     pass
+
 
 '''
 Convert output to PToptimizer form
@@ -87,7 +88,9 @@ Grab o lines and get the d, e entries
 Open questions
     How does FOV effect the stitch?
 '''
-def prepare_pto(pto, reoptimize = True):
+
+
+def prepare_pto(pto, reoptimize=True):
     '''Simply and modify a pto project enough so that PToptimizer will take it'''
     print 'Stripping project'
     if 0:
@@ -95,22 +98,23 @@ def prepare_pto(pto, reoptimize = True):
         print
         print
         print
-    
+
     def fix_pl(pl):
         pl.remove_variable('E')
         pl.remove_variable('R')
-        v = pl.get_variable('v') 
+        v = pl.get_variable('v')
         if v == None or v >= 180:
             print 'Manipulating project field of view'
             pl.set_variable('v', 179)
-            
+
     def fix_il(il):
-        v = il.get_variable('v') 
+        v = il.get_variable('v')
         if v == None or v >= 180:
             il.set_variable('v', 51)
-        
+
         # panotools seems to set these to -1 on some ocassions
-        if il.get_variable('w') == None or il.get_variable('h') == None or int(il.get_variable('w')) <= 0 or int(il.get_variable('h')) <= 0:
+        if il.get_variable('w') == None or il.get_variable('h') == None or int(
+                il.get_variable('w')) <= 0 or int(il.get_variable('h')) <= 0:
             img = PImage.from_file(il.get_name())
             il.set_variable('w', img.width())
             il.set_variable('h', img.height())
@@ -119,30 +123,34 @@ def prepare_pto(pto, reoptimize = True):
             if il.get_variable(v) == None or reoptimize:
                 il.set_variable(v, 0)
                 #print 'setting var'
-        
+
         nv = {}
         for k, v in il.variables.iteritems():
-            if k in ['w', 'h', 'f', 'Va', 'Vb', 'Vc', 'Vd', 'Vx', 'Vy', 'd', 'e', 'g', 't', 'v', 'Vm', 'n']:
+            if k in [
+                    'w', 'h', 'f', 'Va', 'Vb', 'Vc', 'Vd', 'Vx', 'Vy', 'd',
+                    'e', 'g', 't', 'v', 'Vm', 'n'
+            ]:
                 nv[k] = v
         il.variables = nv
-    
+
     fix_pl(pto.get_panorama_line())
-    
+
     for il in pto.image_lines:
         fix_il(il)
         #print il
         #sys.exit(1)
-    
+
     if 0:
         print
-        print    
+        print
         print 'prepare_pto final:'
         print pto
         print
         print
-        print 'Finished prepping for PToptimizer'    
+        print 'Finished prepping for PToptimizer'
     #sys.exit(1)
-            
+
+
 def merge_pto(ptoopt, pto):
     '''Take a resulting pto project and merge the coordinates back into the original'''
     '''
@@ -169,14 +177,16 @@ def merge_pto(ptoopt, pto):
     
     note that o lines have some image ID strings before them but position is probably better until I have an issue
     '''
-    
+
     # Make sure we are going to manipulate the data and not text
     pto.parse()
-    
+
     base_n = len(pto.get_image_lines())
     opt_n = len(ptoopt.get_optimizer_lines())
     if base_n != opt_n:
-        raise Exception('Must have optimized same number images as images.  Base pto has %d and opt has %d' % (base_n, opt_n))
+        raise Exception(
+            'Must have optimized same number images as images.  Base pto has %d and opt has %d'
+            % (base_n, opt_n))
     opts = list()
     print
     for i in range(len(pto.get_image_lines())):
@@ -188,7 +198,8 @@ def merge_pto(ptoopt, pto):
             il.set_variable(v, val)
             debug('New IL: ' + str(il))
         debug()
-        
+
+
 class PTOptimizer:
     def __init__(self, project):
         self.project = project
@@ -198,7 +209,7 @@ class PTOptimizer:
         # If set to true will clear out all old optimizer settings
         # If PToptimizer gets old values in it will use them as a base
         self.reoptimize = True
-    
+
     def verify_images(self):
         first = True
         for i in self.project.get_image_lines():
@@ -208,12 +219,15 @@ class PTOptimizer:
                 self.v = i.fov()
                 first = False
             else:
-                if self.w != i.width() or self.h != i.height() or self.v != i.fov():
+                if self.w != i.width() or self.h != i.height(
+                ) or self.v != i.fov():
                     print i.text
-                    print 'Old width %d, height %d, view %d' % (self.w, self.h, self.v)
-                    print 'Image width %d, height %d, view %d' % (i.width(), i.height(), i.fov())
+                    print 'Old width %d, height %d, view %d' % (self.w, self.h,
+                                                                self.v)
+                    print 'Image width %d, height %d, view %d' % (
+                        i.width(), i.height(), i.fov())
                     raise Exception('Image does not match')
-        
+
     def run(self):
         '''
         The base Hugin project seems to work if you take out a few things:
@@ -237,14 +251,14 @@ class PTOptimizer:
         There are several other lines that are just the repeats of previous lines
         '''
         bench = Benchmark()
-        
+
         # The following will assume all of the images have the same size
         self.verify_images()
-        
+
         # Copy project so we can trash it
         project = self.project.copy()
         prepare_pto(project, self.reoptimize)
-        
+
         pre_run_text = project.get_text()
         if 0:
             print
@@ -253,8 +267,7 @@ class PTOptimizer:
             print pre_run_text
             print
             print
-                
-        
+
         # "PToptimizer out.pto"
         args = ["PToptimizer"]
         args.append(project.get_a_file_name())
@@ -265,7 +278,7 @@ class PTOptimizer:
             print
             print
             print 'Failed rc: %d' % rc
-            print 'Failed project save to %s' % (fn,)
+            print 'Failed project save to %s' % (fn, )
             try:
                 open(fn, 'w').write(pre_run_text)
             except:
@@ -275,7 +288,6 @@ class PTOptimizer:
             raise Exception('failed position optimization')
         # API assumes that projects don't change under us
         project.reopen()
-        
         '''
         Line looks like this
         # final rms error 24.0394 units
@@ -288,8 +300,9 @@ class PTOptimizer:
         print 'Optimize: RMS error of %f' % rms_error
         # Filter out gross optimization problems
         if self.rms_error_threshold and rms_error > self.rms_error_threshold:
-            raise Exception("Max RMS error threshold %f but got %f" % (self.rms_error_threshold, rms_error))
-        
+            raise Exception("Max RMS error threshold %f but got %f" %
+                            (self.rms_error_threshold, rms_error))
+
         if self.debug:
             print 'Parsed: %s' % str(project.parsed)
 
@@ -306,9 +319,10 @@ class PTOptimizer:
         merge_pto(project, self.project)
         if self.debug:
             print self.project
-        
+
         bench.stop()
         print 'Optimized project in %s' % bench
+
 
 '''
 Calculate average x/y position
@@ -316,6 +330,8 @@ NOTE: x/y deltas are positive right/down
 But global coordinates are positive left,up
 Return positive left/up convention to match global coordinate system
 '''
+
+
 def il_pair_deltas(project, l_il, r_il):
     # lesser line
     l_ili = l_il.get_index()
@@ -334,15 +350,15 @@ def il_pair_deltas(project, l_il, r_il):
         elif cpl.getv('n') == r_il and cpl.getv('N') == l_ili:
             cps_x.append(cpl.getv('X') - cpl.getv('x'))
             cps_y.append(cpl.getv('Y') - cpl.getv('y'))
-    
+
     # Possible that no control points due to failed stitch
     # or due to edge case
     if len(cps_x) == 0:
         return None
     else:
         # XXX: actually, we might be better doing median or something like that
-        return (1.0 * sum(cps_x)/len(cps_x),
-                1.0 * sum(cps_y)/len(cps_y))
+        return (1.0 * sum(cps_x) / len(cps_x), 1.0 * sum(cps_y) / len(cps_y))
+
 
 def pto2icm(pto):
     fns = []
@@ -363,7 +379,6 @@ def gen_cps_delete(pto, icm=None):
     if icm is None:
         icm = pto2icm(pto)
 
-
     for cpl in project.control_point_lines:
         imgn = project.image_lines[cpl.get_variable('n')]
         imgN = project.image_lines[cpl.get_variable('N')]
@@ -383,8 +398,10 @@ def gen_cps_delete(pto, icm=None):
                 for cpl in pto.control_point_lines:
                     if cpl.getv('n') == l_ili and cpl.getv('N') == r_ili:
                         # invert the sign so that the math works out
-                        l_xy = ((l_il.getv('d') - cpl.getv('x')) - (l_il.getv('d') - cpl.getv('X')))**2
-                        r_xy = ((r_il.getv('e') - cpl.getv('y')) - (r_il.getv('e') - cpl.getv('Y')))**2
+                        l_xy = ((l_il.getv('d') - cpl.getv('x')) -
+                                (l_il.getv('d') - cpl.getv('X')))**2
+                        r_xy = ((r_il.getv('e') - cpl.getv('y')) -
+                                (r_il.getv('e') - cpl.getv('Y')))**2
                         yield (l_fn, r_fn), l_xy, r_xy
 
             if x > 0:
@@ -398,7 +415,9 @@ def gen_cps_delete(pto, icm=None):
                     for x in process_pair(pto.img_fn2il[l_fn], r_il):
                         yield x
 
+
 tmpdbg = 0
+
 
 def cpl_im_abs(cpl, n_il, N_il):
     """
@@ -416,19 +435,22 @@ def cpl_im_abs(cpl, n_il, N_il):
     height = n_il.height()
     assert height == N_il.height()
     #n_il, N_il = N_il, n_il
-    n_xy = (n_il.getv('d') - (cpl.getv('x') - width / 2), n_il.getv('e') - (cpl.getv('y') - height / 2))
-    N_xy = (N_il.getv('d') - (cpl.getv('X') - width / 2), N_il.getv('e') - (cpl.getv('Y') - height / 2))
+    n_xy = (n_il.getv('d') - (cpl.getv('x') - width / 2),
+            n_il.getv('e') - (cpl.getv('y') - height / 2))
+    N_xy = (N_il.getv('d') - (cpl.getv('X') - width / 2),
+            N_il.getv('e') - (cpl.getv('Y') - height / 2))
     if tmpdbg and (n_il.get_index(), N_il.get_index()) == (74, 75):
         print("")
         print(n_il.getv('d'), cpl.getv('x'), n_il.getv('e'), cpl.getv('y'))
         print('debug n', n_xy)
         print((N_il.getv('d'), cpl.getv('X'), N_il.getv('e'), cpl.getv('Y')))
         print('debug N', N_xy)
-   
-        (nx, ny), (Nx, Ny) =  n_xy, N_xy
-        delta = ((nx - Nx) ** 2 + (ny - Ny) ** 2) ** 0.5
+
+        (nx, ny), (Nx, Ny) = n_xy, N_xy
+        delta = ((nx - Nx)**2 + (ny - Ny)**2)**0.5
         print('debug delta', delta)
     return (n_xy, N_xy)
+
 
 def gen_cps(pto, icm=None):
     """
@@ -448,7 +470,14 @@ def gen_cps(pto, icm=None):
         n_xy, N_xy = cpl_im_abs(cpl, n_il, N_il)
         yield cpl, ((n_fn, N_fn), n_xy, N_xy)
 
-def pre_opt_core(project, icm, closed_set, pairsx, pairsy, order, verbose=False):
+
+def pre_opt_core(project,
+                 icm,
+                 closed_set,
+                 pairsx,
+                 pairsy,
+                 order,
+                 verbose=False):
     iters = 0
     while True:
         iters += 1
@@ -463,11 +492,11 @@ def pre_opt_core(project, icm, closed_set, pairsx, pairsy, order, verbose=False)
                 # Skip missing images
                 if img is None:
                     continue
-                
+
                 # see what we can gather from
                 # list of [xcalc, ycalc]
                 points = []
-                
+
                 # X
                 # left
                 # do we have a fixed point to the left?
@@ -485,7 +514,7 @@ def pre_opt_core(project, icm, closed_set, pairsx, pairsy, order, verbose=False)
                     if d:
                         dx, dy = d
                         points.append((o[0] + dx * order, o[1] + dy * order))
-                
+
                 # Y
                 o = closed_set.get((x, y - order), None)
                 if o:
@@ -499,7 +528,7 @@ def pre_opt_core(project, icm, closed_set, pairsx, pairsy, order, verbose=False)
                     if d:
                         dx, dy = d
                         points.append((o[0] + dx * order, o[1] + dy * order))
-                
+
                 # Nothing useful?
                 if len(points) == 0:
                     continue
@@ -508,19 +537,19 @@ def pre_opt_core(project, icm, closed_set, pairsx, pairsy, order, verbose=False)
                     print '  %03dX, %03dY: setting' % (x, y)
                     for p in points:
                         print '    ', p
-                
+
                 # use all available anchor points from above
                 il = project.img_fn2il[img]
-                
-                # take average of up to 4 
+
+                # take average of up to 4
                 points_x = [p[0] for p in points]
                 xpos = 1.0 * sum(points_x) / len(points_x)
                 il.set_x(xpos)
-                
+
                 points_y = [p[1] for p in points]
                 ypos = 1.0 * sum(points_y) / len(points_y)
                 il.set_y(ypos)
-                
+
                 closed_set[(x, y)] = (xpos, ypos)
                 fixes += 1
         print 'Iter fixes: %d' % fixes
@@ -529,24 +558,30 @@ def pre_opt_core(project, icm, closed_set, pairsx, pairsy, order, verbose=False)
             print '%d iters' % iters
             break
 
-def pre_opt_propagate(project, icm, closed_set, pairsx, pairsy, order, anch_cr):
+
+def pre_opt_propagate(project, icm, closed_set, pairsx, pairsy, order,
+                      anch_cr):
     '''
     Take average delta and space tiles based on any adjacent placed tile
     '''
+
     def avg(vals, s):
         vals = filter(lambda x: x is not None, vals)
         vals = [s(val) for val in vals]
         return sum(vals) / len(vals)
+
     if len(pairsx) > 0:
-        pairsx_avg = (avg(pairsx.values(), lambda x: x[0]), avg(pairsx.values(), lambda x: x[1]))
+        pairsx_avg = (avg(pairsx.values(), lambda x: x[0]),
+                      avg(pairsx.values(), lambda x: x[1]))
     else:
         pairsx_avg = None
-    print 'pairsx: %s' % (pairsx_avg,)
+    print 'pairsx: %s' % (pairsx_avg, )
     if len(pairsy) > 0:
-        pairsy_avg = (avg(pairsy.values(), lambda x: x[0]), avg(pairsy.values(), lambda x: x[1]))
+        pairsy_avg = (avg(pairsy.values(), lambda x: x[0]),
+                      avg(pairsy.values(), lambda x: x[1]))
     else:
         pairsy_avg = None
-    print 'pairsy: %s' % (pairsy_avg,)
+    print 'pairsy: %s' % (pairsy_avg, )
 
     iters = 0
     while True:
@@ -562,12 +597,12 @@ def pre_opt_propagate(project, icm, closed_set, pairsx, pairsy, order, anch_cr):
                 # Skip missing images
                 if img is None:
                     continue
-                
+
                 #print 'Trying to fix %s' % img
                 # see what we can gather from
                 # list of [xcalc, ycalc]
                 points = []
-                
+
                 # X
                 # left
                 # do we have a fixed point to the left?
@@ -584,7 +619,7 @@ def pre_opt_propagate(project, icm, closed_set, pairsx, pairsy, order, anch_cr):
                     px, py = (o[0] + dx * order, o[1] + dy * order)
                     #print "  R calc (%0.1f, %0.1f)" % (px, py)
                     points.append((px, py))
-                
+
                 # Y
                 o = closed_set.get((x, y - order), None)
                 if o and pairsy_avg:
@@ -598,7 +633,7 @@ def pre_opt_propagate(project, icm, closed_set, pairsx, pairsy, order, anch_cr):
                     px, py = (o[0] + dx * order, o[1] + dy * order)
                     #print "  D calc (%0.1f, %0.1f)" % (px, py)
                     points.append((px, py))
-                
+
                 # Nothing useful?
                 if len(points) == 0:
                     #print "  Couldn't match points :("
@@ -606,16 +641,16 @@ def pre_opt_propagate(project, icm, closed_set, pairsx, pairsy, order, anch_cr):
 
                 # use all available anchor points from above
                 il = project.img_fn2il[img]
-                
-                # take average of up to 4 
+
+                # take average of up to 4
                 points_x = [p[0] for p in points]
                 xpos = 1.0 * sum(points_x) / len(points_x)
                 il.set_x(xpos)
-                
+
                 points_y = [p[1] for p in points]
                 ypos = 1.0 * sum(points_y) / len(points_y)
                 il.set_y(ypos)
-                
+
                 closed_set[(x, y)] = (xpos, ypos)
                 fixes += 1
         print 'Iter fixes: %d' % fixes
@@ -642,16 +677,20 @@ def pre_opt_propagate(project, icm, closed_set, pairsx, pairsy, order, anch_cr):
             # Skip missing images
             if img is None:
                 continue
-            
+
             # ship it: "all working image programs have an even number of sign errors"
-            xpos = anch_x - (c - anch_c) * pairsx_avg[0] - (r - anch_r) * pairsy_avg[0]
-            ypos = anch_y - (c - anch_c) * pairsx_avg[1] - (r - anch_r) * pairsy_avg[1]
-            print 'WARNING: rough estimate on %s: %0.1f, %0.1f' % (img, xpos, ypos)
+            xpos = anch_x - (c - anch_c) * pairsx_avg[0] - (
+                r - anch_r) * pairsy_avg[0]
+            ypos = anch_y - (c - anch_c) * pairsx_avg[1] - (
+                r - anch_r) * pairsy_avg[1]
+            print 'WARNING: rough estimate on %s: %0.1f, %0.1f' % (img, xpos,
+                                                                   ypos)
             # use all available anchor points from above
             il = project.img_fn2il[img]
             il.set_x(xpos)
             il.set_y(ypos)
             closed_set[(c, r)] = (xpos, ypos)
+
 
 def check_pair_outlier(icm, pairs, xorder, yorder, stdev=3):
     print 'Checking for outliers'
@@ -698,7 +737,7 @@ def check_pair_outlier(icm, pairs, xorder, yorder, stdev=3):
         y_min = y_u - y_sd * stdev
         y_max = y_u + y_sd * stdev
         print 'Y : %0.3f to %0.3f' % (y_min, y_max)
-        
+
         removed = 0
         npairs = 0
         for y in xrange(0, icm.height(), yorder):
@@ -718,6 +757,7 @@ def check_pair_outlier(icm, pairs, xorder, yorder, stdev=3):
                     pairs[(x, y)] = None
                     removed += 1
         print 'Removed %d / %d pairs' % (removed, npairs)
+
 
 def anchor(project, icm):
     '''
@@ -757,12 +797,13 @@ def anchor(project, icm):
         else:
             raise Exception('No images...')
 
-    # Try center first, then work outward 
+    # Try center first, then work outward
     # Center should propagate the lowest error
     def dxdys():
         for dx in (0, 1, -1):
             for dy in (0, 1, -1):
                 yield dx, dy
+
     for (dx, dy) in dxdys():
         col = icm.width() / 2 + dx
         col = min(max(0, col), icm.width() - 1)
@@ -774,6 +815,7 @@ def anchor(project, icm):
         try_anchs()
 
     return ret[0]
+
 
 def icm_il_pairs(icm):
     # dictionary of results so that we can play around with post-processing result
@@ -793,16 +835,19 @@ def icm_il_pairs(icm):
             if x > 0:
                 img = icm.get_image(x - 1, y)
                 if img:
-                    pairsx[(x, y)] = il_pair_deltas(project, project.img_fn2il[img], ili)
+                    pairsx[(x, y)] = il_pair_deltas(
+                        project, project.img_fn2il[img], ili)
                 else:
                     pairsx[(x, y)] = None
             if y > 0:
                 img = icm.get_image(x, y - 1)
                 if img:
-                    pairsy[(x, y)] = il_pair_deltas(project, project.img_fn2il[img], ili)
+                    pairsy[(x, y)] = il_pair_deltas(
+                        project, project.img_fn2il[img], ili)
                 else:
                     pairsx[(x, y)] = None
     return pairsx, pairsy
+
 
 def pre_opt(project, icm, verbose=False, stdev=None):
     '''
@@ -823,7 +868,7 @@ def pre_opt(project, icm, verbose=False, stdev=None):
     #xc = icm.width() / 2
     #yc = icm.height() / 2
     project.build_image_fn_map()
-    
+
     def printd(s):
         if verbose:
             print s
@@ -831,7 +876,7 @@ def pre_opt(project, icm, verbose=False, stdev=None):
     rms_this = get_rms(project)
     if rms_this is not None:
         print 'Pre-opt: exiting project RMS error: %f' % rms_this
-    
+
     # NOTE: algorithm will still run with missing control points to best of its ability
     # however, its expected that user will only run it on copmlete data sets
     if verbose:
@@ -867,7 +912,7 @@ def pre_opt(project, icm, verbose=False, stdev=None):
         for y in xrange(0, icm.height()):
             for x in xrange(0, icm.width()):
                 print '  %03dX, %03dY' % (x, y)
-                
+
                 p = pairsx.get((x, y), None)
                 if p is None:
                     print '    X: none'
@@ -879,7 +924,7 @@ def pre_opt(project, icm, verbose=False, stdev=None):
                     print '    Y: none'
                 else:
                     print '    Y: %0.3fx, %0.3fy' % (p[0], p[1])
-    
+
     print
     check_pair_outlier_angle(icm, pairsx, pairsy)
     print
@@ -894,18 +939,26 @@ def pre_opt(project, icm, verbose=False, stdev=None):
     print
     print
     print 'First pass: adjacent images'
-    pre_opt_core(project, icm, closed_set, pairsx, pairsy, order=1, verbose=verbose)
-    
+    pre_opt_core(
+        project, icm, closed_set, pairsx, pairsy, order=1, verbose=verbose)
+
     print
     print
     print 'Second pass: adjacent adjacent images'
-    pre_opt_core(project, icm, closed_set, pairsx, pairsy, order=2, verbose=verbose)
-    
+    pre_opt_core(
+        project, icm, closed_set, pairsx, pairsy, order=2, verbose=verbose)
+
     print
     print
     print 'Third pass: propagate adjacent'
-    pre_opt_propagate(project, icm, closed_set, pairsx, pairsy, order=1, anch_cr=(anch_c, anch_r))
-
+    pre_opt_propagate(
+        project,
+        icm,
+        closed_set,
+        pairsx,
+        pairsy,
+        order=1,
+        anch_cr=(anch_c, anch_r))
 
     print
     print
@@ -943,38 +996,46 @@ def pre_opt(project, icm, verbose=False, stdev=None):
     # internal use only
     return closed_set
 
+
 def get_rms(project):
     '''Calculate the root mean square error between control points'''
     rms = 0.0
     for cpl in project.control_point_lines:
         imgn = project.image_lines[cpl.get_variable('n')]
         imgN = project.image_lines[cpl.get_variable('N')]
-        
+
         # global coordinates (d/e) are positive upper left
         # but image coordinates (x/X//y/Y) are positive down right
         # wtf?
         # invert the sign so that the math works out
         try:
-            dx2 = ((imgn.getv('d') - cpl.getv('x')) - (imgN.getv('d') - cpl.getv('X')))**2
-            dy2 = ((imgn.getv('e') - cpl.getv('y')) - (imgN.getv('e') - cpl.getv('Y')))**2
+            dx2 = ((imgn.getv('d') - cpl.getv('x')) -
+                   (imgN.getv('d') - cpl.getv('X')))**2
+            dy2 = ((imgn.getv('e') - cpl.getv('y')) -
+                   (imgN.getv('e') - cpl.getv('Y')))**2
         # Abort RMS if not all variables defined
         except TypeError:
             return None
-        
+
         if 0:
             print 'iter'
             print '  ', imgn.text
             print '  ', imgN.text
-            print '  ', imgn.getv('d'), cpl.getv('x'), imgN.getv('d'), cpl.getv('X')
-            print '  %f vs %f' % ((imgn.getv('d') + cpl.getv('x')), (imgN.getv('d') + cpl.getv('X')))
-            print '  ', imgn.getv('e'), cpl.getv('y'), imgN.getv('e'), cpl.getv('Y')
-            print '  %f vs %f' % ((imgn.getv('e') + cpl.getv('y')), (imgN.getv('e') + cpl.getv('Y')))
-        
+            print '  ', imgn.getv('d'), cpl.getv('x'), imgN.getv(
+                'd'), cpl.getv('X')
+            print '  %f vs %f' % ((imgn.getv('d') + cpl.getv('x')),
+                                  (imgN.getv('d') + cpl.getv('X')))
+            print '  ', imgn.getv('e'), cpl.getv('y'), imgN.getv(
+                'e'), cpl.getv('Y')
+            print '  %f vs %f' % ((imgn.getv('e') + cpl.getv('y')),
+                                  (imgN.getv('e') + cpl.getv('Y')))
+
         this = math.sqrt(dx2 + dy2)
         if 0:
             print '  ', this
         rms += this
     return rms / len(project.control_point_lines)
+
 
 def check_poor_opt(project, icm=None):
     # FIXME: calculate from actual image size + used overlap
@@ -988,8 +1049,8 @@ def check_poor_opt(project, icm=None):
         j = json.load(open('out.json', 'r'))
         ox = j['x']['overlap']
         oy = j['y']['overlap']
-    ox *=  imgx
-    oy *=  imgy
+    ox *= imgx
+    oy *= imgy
     # First order tolerance
     # ie x change in x direction
     tol_1 = ox + 175
@@ -1015,7 +1076,7 @@ def check_poor_opt(project, icm=None):
             return True
 
         # Global coordinates positive upper left
-        # icm positive upper 
+        # icm positive upper
         if refc > 0:
             imgl = icm.get_image(refc - 1, refr)
             if imgl:
@@ -1023,11 +1084,13 @@ def check_poor_opt(project, icm=None):
                 # Expected delta vs actual
                 got = abs(dx - ox)
                 if got > tol_1:
-                    print '%s-%s: x-x tolerance 1 %d > expect %d' % (img, imgl, got, tol_1)
+                    print '%s-%s: x-x tolerance 1 %d > expect %d' % (
+                        img, imgl, got, tol_1)
                     ret = False
                 got = abs(dy)
                 if got > tol_2:
-                    print '%s-%s: y-y tolerance 2 %d > expect %d' % (img, imgl, got, tol_2)
+                    print '%s-%s: y-y tolerance 2 %d > expect %d' % (
+                        img, imgl, got, tol_2)
                     ret = False
         if refr > 0:
             imgl = icm.get_image(refc, refr - 1)
@@ -1036,11 +1099,13 @@ def check_poor_opt(project, icm=None):
                 # Expected delta vs actual
                 got = abs(dx)
                 if got > tol_2:
-                    print '%s-%s: x-x tolerance 2 %d > expect %d' % (img, imgl, got, tol_2)
+                    print '%s-%s: x-x tolerance 2 %d > expect %d' % (
+                        img, imgl, got, tol_2)
                     ret = False
                 got = abs(dy - oy)
                 if got > tol_1:
-                    print '%s-%s: y-y tolerance 1 %d > expect %d' % (img, imgl, got, tol_1)
+                    print '%s-%s: y-y tolerance 1 %d > expect %d' % (
+                        img, imgl, got, tol_1)
                     ret = False
         return ret
 
@@ -1053,6 +1118,7 @@ def check_poor_opt(project, icm=None):
         print 'WARNING: %d suspicious optimization result(s)' % fails
     else:
         print 'OK'
+
 
 def check_pair_outlier_angle(icm, pairsx, pairsy):
     print 'Checking for outliers by angle'
@@ -1069,8 +1135,8 @@ def check_pair_outlier_angle(icm, pairsx, pairsy):
         j = json.load(open('out.json', 'r'))
         ox = j['x']['overlap']
         oy = j['y']['overlap']
-    ox *=  imgx
-    oy *=  imgy
+    ox *= imgx
+    oy *= imgy
     # First order tolerance
     # ie x change in x direction
     tolx_1 = ox + 165
@@ -1081,13 +1147,13 @@ def check_pair_outlier_angle(icm, pairsx, pairsy):
 
     fails = 0
     npairs = [0, 0]
-
     '''
     worst_dxdc = 0.0
     worst_dxdr = 0.0
     worst_dydc = 0.0
     worst_dydr = 0.0
     '''
+
     def check(refc, refr):
         ret = True
         pairx = pairsx.get((refc, refr), None)
@@ -1098,13 +1164,15 @@ def check_pair_outlier_angle(icm, pairsx, pairsy):
             imgl = icm.get_image(refc - 1, refr)
             got = abs(dx - ox)
             if got > tolx_1:
-                print '%s-%s: x-x tolerance 1 %d > expect %d' % (img, imgl, got, tolx_1)
+                print '%s-%s: x-x tolerance 1 %d > expect %d' % (img, imgl,
+                                                                 got, tolx_1)
                 ret = False
                 pairsx[(refc, refr)] = None
                 pairsy[(refc, refr)] = None
             got = abs(dy)
             if got > tol_2:
-                print '%s-%s: y-y tolerance 2 %d > expect %d' % (img, imgl, got, tol_2)
+                print '%s-%s: y-y tolerance 2 %d > expect %d' % (img, imgl,
+                                                                 got, tol_2)
                 ret = False
                 pairsx[(refc, refr)] = None
                 pairsy[(refc, refr)] = None
@@ -1116,13 +1184,15 @@ def check_pair_outlier_angle(icm, pairsx, pairsy):
             imgl = icm.get_image(refc, refr - 1)
             got = abs(dx)
             if got > tol_2:
-                print '%s-%s: x-x tolerance 2 %d > expect %d' % (img, imgl, got, tol_2)
+                print '%s-%s: x-x tolerance 2 %d > expect %d' % (img, imgl,
+                                                                 got, tol_2)
                 ret = False
                 pairsx[(refc, refr)] = None
                 pairsy[(refc, refr)] = None
             got = abs(dy - oy)
             if got > toly_1:
-                print '%s-%s: y-y tolerance 1 %d > expect %d' % (img, imgl, got, toly_1)
+                print '%s-%s: y-y tolerance 1 %d > expect %d' % (img, imgl,
+                                                                 got, toly_1)
                 ret = False
                 pairsx[(refc, refr)] = None
                 pairsy[(refc, refr)] = None
@@ -1134,26 +1204,28 @@ def check_pair_outlier_angle(icm, pairsx, pairsy):
                 fails += 1
 
     if fails:
-        print 'WARNING: removed %d / (%dx %dy) suspicious optimization result(s)' % (fails, npairs[0], npairs[1])
+        print 'WARNING: removed %d / (%dx %dy) suspicious optimization result(s)' % (
+            fails, npairs[0], npairs[1])
     else:
         print 'OK'
+
 
 # TODO: give some more thought and then delete entirely
 def chaos_opt(project, icm):
     raise Exception("Isn't helpful, don't use")
     pos_xy = pre_opt(project, icm)
-    
+
     verbose = 0
+
     #verbose = 1
     def printd(s):
         if verbose:
             print s
-    
-    
+
     il = project.img_fn2il[icm.get_image(0, 0)]
     il.set_x(0.0)
     il.set_y(0.0)
-    
+
     iters = 0
     rms_last = None
     while True:
@@ -1165,21 +1237,24 @@ def chaos_opt(project, icm):
         if rms_last is not None and (rms_last - rms_this) < 0.01:
             print 'Break on minor improvement'
             break
-        
+
         open_set = set()
         for y in xrange(icm.height()):
             for x in xrange(icm.width()):
                 open_set.add((x, y))
         while len(open_set) > 0:
+
             def process():
                 il0 = project.img_fn2il[icm.get_image(pref[0], pref[1])]
                 points = []
                 x, y = pref
-        
+
                 # left
                 o = pos_xy.get((x - 1, y), None)
                 if o:
-                    d = il_pair_deltas(project, project.img_fn2il[icm.get_image(pref[0] - 1, pref[1])], il0)
+                    d = il_pair_deltas(
+                        project, project.img_fn2il[icm.get_image(
+                            pref[0] - 1, pref[1])], il0)
                     # and a delta to get to it?
                     if d:
                         dx, dy = d
@@ -1187,58 +1262,66 @@ def chaos_opt(project, icm):
                 # right
                 o = pos_xy.get((x + 1, y), None)
                 if o:
-                    d = il_pair_deltas(project, project.img_fn2il[icm.get_image(pref[0] + 1, pref[1])], il0)
+                    d = il_pair_deltas(
+                        project, project.img_fn2il[icm.get_image(
+                            pref[0] + 1, pref[1])], il0)
                     if d:
                         dx, dy = d
                         points.append((o[0] + dx, o[1] + dy))
-                
+
                 # Y
                 o = pos_xy.get((x, y - 1), None)
                 if o:
-                    d = il_pair_deltas(project, project.img_fn2il[icm.get_image(pref[0], pref[1] - 1)], il0)
+                    d = il_pair_deltas(
+                        project, project.img_fn2il[icm.get_image(
+                            pref[0], pref[1] - 1)], il0)
                     if d:
                         dx, dy = d
                         points.append((o[0] + dx, o[1] + dy))
                 o = pos_xy.get((x, y + 1), None)
                 if o:
-                    d = il_pair_deltas(project, project.img_fn2il[icm.get_image(pref[0], pref[1] + 1)], il0)
+                    d = il_pair_deltas(
+                        project, project.img_fn2il[icm.get_image(
+                            pref[0], pref[1] + 1)], il0)
                     if d:
                         dx, dy = d
                         points.append((o[0] + dx, o[1] + dy))
-                
+
                 # Nothing useful?
                 if len(points) == 0:
                     return
-        
+
                 if verbose:
                     print '  %03dX, %03dY: setting' % (x, y)
                     for p in points:
                         print '    ', p
-                
+
                 # use all available anchor points from above
                 il = project.img_fn2il[icm.get_image(x, y)]
-                
-                # take average of up to 4 
+
+                # take average of up to 4
                 points_x = [p[0] for p in points]
                 xpos = 1.0 * sum(points_x) / len(points_x)
                 il.set_x(xpos)
-                
+
                 points_y = [p[1] for p in points]
                 ypos = 1.0 * sum(points_y) / len(points_y)
                 il.set_y(ypos)
-                
+
                 # Adjust new position
                 pos_xy[(x, y)] = (xpos, ypos)
-            
+
             pref = random.sample(open_set, 1)[0]
             process()
             open_set.remove(pref)
+
 
 def pto2icm(pto):
     fns = []
     for il in pto.get_image_lines():
         fns.append(il.get_name())
     return ImageCoordinateMap.from_tagged_file_names(fns)
+
 
 '''
 Assumes images are in a grid to simplify workflow management
@@ -1249,13 +1332,15 @@ Iterate
     Optimizes random xy regions
     Takes advantage of existing optimizer while reducing problem space to reduce o(n**2) issues
 '''
+
+
 class ChaosOptimizer:
     def __init__(self, project):
         self.project = project
         self.debug = False
         self.icm = None
         self.rms_error_threshold = 250.0
-    
+
     def verify_images(self):
         first = True
         for i in self.project.get_image_lines():
@@ -1265,25 +1350,28 @@ class ChaosOptimizer:
                 self.v = i.fov()
                 first = False
             else:
-                if self.w != i.width() or self.h != i.height() or self.v != i.fov():
+                if self.w != i.width() or self.h != i.height(
+                ) or self.v != i.fov():
                     print i.text
-                    print 'Old width %d, height %d, view %d' % (self.w, self.h, self.v)
-                    print 'Image width %d, height %d, view %d' % (i.width(), i.height(), i.fov())
+                    print 'Old width %d, height %d, view %d' % (self.w, self.h,
+                                                                self.v)
+                    print 'Image width %d, height %d, view %d' % (
+                        i.width(), i.height(), i.fov())
                     raise Exception('Image does not match')
-    
+
     def run(self):
         bench = Benchmark()
-        
+
         # The following will assume all of the images have the same size
         self.verify_images()
-        
+
         # Copy project so we can trash it
         project = self.project.copy()
         self.icm = pto2icm(project)
 
         chaos_opt(project, self.icm)
         prepare_pto(project, reoptimize=False)
-        
+
         # "PToptimizer out.pto"
         args = ["PToptimizer"]
         args.append(project.get_a_file_name())
@@ -1295,7 +1383,7 @@ class ChaosOptimizer:
             raise Exception('failed position optimization')
         # API assumes that projects don't change under us
         project.reopen()
-        
+
         # final rms error 24.0394 units
         rms_error = None
         for l in project.get_comment_lines():
@@ -1305,15 +1393,17 @@ class ChaosOptimizer:
         print 'Optimize: RMS error of %f' % rms_error
         # Filter out gross optimization problems
         if self.rms_error_threshold and rms_error > self.rms_error_threshold:
-            raise Exception("Max RMS error threshold %f but got %f" % (self.rms_error_threshold, rms_error))
-        
+            raise Exception("Max RMS error threshold %f but got %f" %
+                            (self.rms_error_threshold, rms_error))
+
         print 'Merging project...'
         merge_pto(project, self.project)
         if self.debug:
             print self.project
-        
+
         bench.stop()
         print 'Optimized project in %s' % bench
+
 
 class PreOptimizer:
     def __init__(self, project):
@@ -1321,7 +1411,7 @@ class PreOptimizer:
         self.debug = False
         self.icm = None
         self.stdev = None
-    
+
     def verify_images(self):
         first = True
         for i in self.project.get_image_lines():
@@ -1331,18 +1421,21 @@ class PreOptimizer:
                 self.v = i.fov()
                 first = False
             else:
-                if self.w != i.width() or self.h != i.height() or self.v != i.fov():
+                if self.w != i.width() or self.h != i.height(
+                ) or self.v != i.fov():
                     print i.text
-                    print 'Old width %d, height %d, view %d' % (self.w, self.h, self.v)
-                    print 'Image width %d, height %d, view %d' % (i.width(), i.height(), i.fov())
+                    print 'Old width %d, height %d, view %d' % (self.w, self.h,
+                                                                self.v)
+                    print 'Image width %d, height %d, view %d' % (
+                        i.width(), i.height(), i.fov())
                     raise Exception('Image does not match')
-    
+
     def run(self):
         bench = Benchmark()
-        
+
         # The following will assume all of the images have the same size
         self.verify_images()
-        
+
         fns = []
         # Copy project so we can trash it
         project = self.project.copy()
@@ -1353,9 +1446,10 @@ class PreOptimizer:
         print 'Verbose: %d' % self.debug
         print 'working direclty on %s' % self.project.get_a_file_name()
         pre_opt(self.project, self.icm, verbose=self.debug, stdev=self.stdev)
-        
+
         bench.stop()
         print 'Optimized project in %s' % bench
+
 
 class PreOptimizerPT:
     def __init__(self, project):
@@ -1363,7 +1457,7 @@ class PreOptimizerPT:
         self.debug = False
         self.icm = None
         self.rms_error_threshold = 250.0
-    
+
     def verify_images(self):
         first = True
         for i in self.project.get_image_lines():
@@ -1373,18 +1467,21 @@ class PreOptimizerPT:
                 self.v = i.fov()
                 first = False
             else:
-                if self.w != i.width() or self.h != i.height() or self.v != i.fov():
+                if self.w != i.width() or self.h != i.height(
+                ) or self.v != i.fov():
                     print i.text
-                    print 'Old width %d, height %d, view %d' % (self.w, self.h, self.v)
-                    print 'Image width %d, height %d, view %d' % (i.width(), i.height(), i.fov())
+                    print 'Old width %d, height %d, view %d' % (self.w, self.h,
+                                                                self.v)
+                    print 'Image width %d, height %d, view %d' % (
+                        i.width(), i.height(), i.fov())
                     raise Exception('Image does not match')
-    
+
     def run(self):
         bench = Benchmark()
-        
+
         # The following will assume all of the images have the same size
         self.verify_images()
-        
+
         fns = []
         # Copy project so we can trash it
         project = self.project.copy()
@@ -1394,7 +1491,7 @@ class PreOptimizerPT:
 
         pre_opt(project, self.icm)
         prepare_pto(project, reoptimize=False)
-        
+
         # "PToptimizer out.pto"
         args = ["PToptimizer"]
         args.append(project.get_a_file_name())
@@ -1406,7 +1503,7 @@ class PreOptimizerPT:
             raise Exception('failed position optimization')
         # API assumes that projects don't change under us
         project.reopen()
-        
+
         # final rms error 24.0394 units
         rms_error = None
         for l in project.get_comment_lines():
@@ -1416,13 +1513,14 @@ class PreOptimizerPT:
         print 'Optimize: RMS error of %f' % rms_error
         # Filter out gross optimization problems
         if self.rms_error_threshold and rms_error > self.rms_error_threshold:
-            raise Exception("Max RMS error threshold %f but got %f" % (self.rms_error_threshold, rms_error))
-        
+            raise Exception("Max RMS error threshold %f but got %f" %
+                            (self.rms_error_threshold, rms_error))
+
         print 'Merging project...'
         merge_pto(project, self.project)
         if self.debug:
             print self.project
-        
+
         bench.stop()
         print 'Optimized project in %s' % bench
 
@@ -1430,6 +1528,7 @@ class PreOptimizerPT:
 def usage():
     print 'optimizer <file in> [file out]'
     print 'If file out is not given it will be file in'
+
 
 if __name__ == "__main__":
     from xystitch.pto.project import PTOProject
@@ -1442,7 +1541,7 @@ if __name__ == "__main__":
         file_name_out = sys.argv[2]
     else:
         file_name_out = file_name_in
-    
+
     print 'Loading raw project...'
     project = PTOProject.from_file_name(file_name_in)
     print 'Creating optimizer...'
@@ -1455,4 +1554,3 @@ if __name__ == "__main__":
     print 'Saving...'
     project.save_as(file_name_out)
     print 'Parsed main done: %s' % str(project.parsed)
-

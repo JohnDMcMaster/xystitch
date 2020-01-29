@@ -15,25 +15,27 @@ import os
 # rarely used and PIL seems to have bugs
 PALETTES = bool(os.getenv('PR0N_PALETTES', ''))
 
+
 class PImage:
     # We do not copy array, so be careful with modifications
     def __init__(self, image):
         # A PIL Image object
         self.image = None
         self.temp_file = None
-        
+
         if image is None:
             raise Exception('cannot construct on empty image')
         self.image = image
-    
-    def debug_print(self, char_limit = None, row_label = False):
+
+    def debug_print(self, char_limit=None, row_label=False):
         for y in range(0, self.height()):
             row_label_str = ''
             if row_label:
                 row_label_str = '%02d: ' % y
-            print row_label_str + self.debug_row_string(y, char_limit, row_label_str)
-    
-    def debug_row_string(self, y, char_limit = None, row_label = None):
+            print row_label_str + self.debug_row_string(
+                y, char_limit, row_label_str)
+
+    def debug_row_string(self, y, char_limit=None, row_label=None):
         if row_label is None:
             row_label = ''
         ret = row_label
@@ -51,16 +53,17 @@ class PImage:
     # To an Image
     def to_image(self):
         return self.image
-    
+
     '''
     First step in scaling is to take off any whitespace
     This normalizes the spectra
     Returns a new image that is trimmed
     '''
+
     def trim(self):
         (image, _x_min, _x_max, _y_min, _y_max) = self.trim_verbose()
         return image
-        
+
     def trim_verbose(self):
         #print 'Trimming: start'
         # Set to lowest set pixel
@@ -80,19 +83,21 @@ class PImage:
                     y_min = min(y_min, y)
                     x_max = max(x_max, x)
                     y_max = max(y_max, y)
-    
+
         #print (x_min, x_max, y_min, y_max)
         #print 'Trimming: doing subimage'
-        return (self.subimage(x_min, x_max, y_min, y_max), x_min, x_max, y_min, y_max)
-    
+        return (self.subimage(x_min, x_max, y_min, y_max), x_min, x_max, y_min,
+                y_max)
+
     def save(self, *args, **kwargs):
         '''save(file name[, format, kw options]) where kw_options includes quality=<val>'''
         self.image.save(*args, **kwargs)
 
-    def get_scaled(self, factor, filt = None):
+    def get_scaled(self, factor, filt=None):
         if filt is None:
             filt = Image.NEAREST
-        i = self.image.resize((int(self.width() * factor), int(self.height() * factor)), filt)
+        i = self.image.resize(
+            (int(self.width() * factor), int(self.height() * factor)), filt)
         return PImage.from_image(i)
 
     '''
@@ -101,7 +106,8 @@ class PImage:
     Truncates the image if our array bounds are out of range
         Maybe we should throw exception instead?
     '''
-    def subimage(self, x_min, x_max, y_min, y_max):    
+
+    def subimage(self, x_min, x_max, y_min, y_max):
         if x_min is None:
             x_min = 0
         if x_max is None:
@@ -119,7 +125,6 @@ class PImage:
         # Did we truncate the whole image?
         if x_min > x_max or y_min > y_max:
             return self.from_array([], self.get_mode(), self.get_mode())
-        
         '''
         height = y_max - y_min + 1
         width = x_max - x_min + 1
@@ -142,23 +147,23 @@ class PImage:
 
     def rotate(self, degrees):
         return PImage.from_image(self.image.rotate(degrees))
-        
+
     def width(self):
         return self.image.size[0]
-    
+
     def height(self):
         return self.image.size[1]
-    
+
     def set_pixel(self, x, y, pixel):
         self.image.putpixel((x, y), pixel)
-    
+
     def get_pixel(self, x, y):
         try:
             return self.image.getpixel((x, y))
         except:
             print 'bad pixel values, x: %d, y: %d' % (x, y)
             raise
-    
+
     # The following are in case we change image mode
     def black(self):
         '''return the instance's representation of black'''
@@ -170,7 +175,7 @@ class PImage:
         if mode == "RGB":
             return (255, 255, 255)
         raise Exception('Bad mode %s' % mode)
-    
+
     def white(self):
         '''return the instance's representation of white'''
         mode = self.get_mode()
@@ -181,7 +186,7 @@ class PImage:
         if mode == "RGB":
             return (0, 0, 0)
         raise Exception('Bad mode %s' % mode)
-    
+
     def pixel_to_brightness(self, pixel):
         '''Convert pixel to brightness value, [0.0, 1.0] where 0 is white and 1 is black'''
         # The above range was chosen somewhat arbitrarily as thats what old code did (think because thats what "1" mode does)
@@ -198,7 +203,7 @@ class PImage:
             # Also scale to the range correctly by adding 3 and then invert to make it luminescence
             return 1.0 - (pixel[0] + pixel[1] + pixel[2] + 3) / (256.0 * 3)
         raise Exception('Bad mode %s' % mode)
-    
+
     def get_mode(self):
         return self.image.mode
 
@@ -209,11 +214,11 @@ class PImage:
         # Simple case: nothing to do
         if self.width() == width and self.height == height:
             return
-        
+
         ip = Image.new(self.image.mode, (width, height))
         if PALETTES and self.image.palette:
             ip.putpalette(self.image.palette)
-        ip.paste(self.image, (0,0))
+        ip.paste(self.image, (0, 0))
         # Shift the old image out
         self.image = ip
 
@@ -221,7 +226,7 @@ class PImage:
         #self.image.paste(img, (x, y))
         # left, upper, right, and lower
         self.image.paste(img.image, (x, y, x + img.width(), y + img.height()))
-        
+
     @staticmethod
     def from_file(path):
         '''
@@ -242,7 +247,7 @@ class PImage:
     @staticmethod
     def from_image(image):
         return PImage(image)
-    
+
     @staticmethod
     def from_blank(width, height, mode="RGB"):
         '''Create a blank canvas'''
@@ -251,7 +256,7 @@ class PImage:
     @staticmethod
     def from_fns(*args, **kwargs):
         return PImage.from_image(from_fns(*args, **kwargs))
-        
+
     @staticmethod
     def from_unknown(image, trim=False):
         if isinstance(image, str):
@@ -276,9 +281,9 @@ class PImage:
             return 'RGB'
         else:
             return "L"
-            
+
     @staticmethod
-    def from_array(array, mode_in = None, mode_out = None):
+    def from_array(array, mode_in=None, mode_out=None):
         '''
         array[y][x]
         '''
@@ -288,7 +293,7 @@ class PImage:
             mode_in = PImage.get_pixel_mode(array[0][0])
         if mode_out is None:
             mode_out = mode_in
-            
+
         ret = None
         height = len(array)
         if height > 0:
@@ -309,7 +314,10 @@ class PImage:
 
     @staticmethod
     def is_image_filename(filename):
-        return filename.find('.tif') > 0 or filename.find('.jpg') > 0 or filename.find('.png') > 0 or filename.find('.bmp') > 0
+        return filename.find('.tif') > 0 or filename.find(
+            '.jpg') > 0 or filename.find('.png') > 0 or filename.find(
+                '.bmp') > 0
+
 
 def from_fns(images_in, tw=None, th=None):
     '''
@@ -318,7 +326,7 @@ def from_fns(images_in, tw=None, th=None):
      [r1c0, r1c1]]
     '''
     mode = None
-    
+
     rows = len(images_in)
     cols = len(images_in[0])
     im = None
@@ -335,7 +343,7 @@ def from_fns(images_in, tw=None, th=None):
                 # Can we make a best guess on what to fill in?
                 if not src_last:
                     continue
-                
+
                 # im should in theory work but accessing pixels
                 # is for some reason causing corruption
                 iml = Image.open(src_last)
@@ -344,31 +352,32 @@ def from_fns(images_in, tw=None, th=None):
                     imf.putpalette(iml.palette)
                 pix = iml.getpixel((tw - 1, th - 1))
                 imf.paste(pix, (0, 0, tw, th))
-                
+
                 images_in[rowi][coli] = imf
             else:
                 im = Image.open(src)
                 imw, imh = im.size
-                
+
                 if mode is None:
                     mode = im.mode
                 elif im.mode != mode:
                     raise Exception('mode mismatch')
-                
+
                 if tw is None:
                     tw = imw
                 elif tw != imw:
-                    raise Exception('tile width mismatch: %s has %s vs %s' % (src, tw, imw))
-                
+                    raise Exception('tile width mismatch: %s has %s vs %s' %
+                                    (src, tw, imw))
+
                 if th is None:
                     th = imh
                 elif th != imh:
                     raise Exception('tile height mismatch')
-                
+
                 images_in[rowi][coli] = im
 
             src_last = src or src_last
-    
+
     # Images are now all either PImage or None with uniform width/height
     width = tw * cols
     height = th * rows
@@ -376,10 +385,10 @@ def from_fns(images_in, tw=None, th=None):
     # Copy palette over from last png, if possible
     if PALETTES and im and im.palette:
         ret.putpalette(im.palette)
-    
+
     #ret = im.copy()
     #ret.resize((width, height))
-    
+
     for rowi in range(rows):
         for coli in range(cols):
             src = images_in[rowi][coli]
@@ -392,6 +401,7 @@ def from_fns(images_in, tw=None, th=None):
     #ret = im_reload(ret)
     return ret
 
+
 # Change canvas, shifting pixels to fill it
 def rescale(im, factor, filt=Image.NEAREST):
     w, h = im.size
@@ -401,6 +411,7 @@ def rescale(im, factor, filt=Image.NEAREST):
     if 0 and im.palette:
         ret.putpalette(im.palette)
     return ret
+
 
 # Change canvas, not filling in new pixels
 def resize(im, width, height, def_color=None):
@@ -416,9 +427,10 @@ def resize(im, width, height, def_color=None):
         ret.putpalette(im.palette.tobytes())
     else:
         ret = Image.new(im.mode, (width, height))
-    
+
     ret.paste(im, (0, 0))
     return ret
+
 
 def im_reload(im):
     im.save('/tmp/pt_pil_tmp.png')

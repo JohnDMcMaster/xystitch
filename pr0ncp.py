@@ -16,6 +16,7 @@ import os
 import math
 import matplotlib.pyplot as plt
 
+
 def pto2cps(pto):
     '''
     Enumerate all control point differences
@@ -28,8 +29,10 @@ def pto2cps(pto):
         N = cpl.getv('N')
         imgn = pto.image_lines[n]
         imgN = pto.image_lines[N]
-        dx = (imgn.getv('d') - cpl.getv('x')) - (imgN.getv('d') - cpl.getv('X'))
-        dy = (imgn.getv('e') - cpl.getv('y')) - (imgN.getv('e') - cpl.getv('Y'))
+        dx = (imgn.getv('d') - cpl.getv('x')) - (
+            imgN.getv('d') - cpl.getv('X'))
+        dy = (imgn.getv('e') - cpl.getv('y')) - (
+            imgN.getv('e') - cpl.getv('Y'))
 
         # Make canonical
         # Usually n < N
@@ -41,6 +44,7 @@ def pto2cps(pto):
         points.append((dx, dy))
         ret[(n, N)] = points
     return ret
+
 
 def rm_image_cps(self, indexes):
     '''
@@ -58,6 +62,7 @@ def rm_image_cps(self, indexes):
     self.control_point_lines = newls
     return removed
 
+
 def check_cp(pto):
     print 'Building CP map'
     cps = pto2cps(pto)
@@ -66,7 +71,7 @@ def check_cp(pto):
         n, N = cpk
         img1 = pto.i2img(n).get_name()
         img2 = pto.i2img(N).get_name()
-        
+
         # Compute error
         rms = 0.0
         for diff in diffs:
@@ -115,19 +120,27 @@ def check_cp(pto):
             removed = rm_image_cps(pto, toremove)
             print 'Removed %d CPs' % removed
 
+
 def parser_add_bool_arg(yes_arg, default=False, **kwargs):
     dashed = yes_arg.replace('--', '')
     dest = dashed.replace('-', '_')
-    parser.add_argument(yes_arg, dest=dest, action='store_true', default=default, **kwargs)
-    parser.add_argument('--no-' + dashed, dest=dest, action='store_false', **kwargs)
+    parser.add_argument(
+        yes_arg, dest=dest, action='store_true', default=default, **kwargs)
+    parser.add_argument(
+        '--no-' + dashed, dest=dest, action='store_false', **kwargs)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Manipulate .pto files')
-    parser.add_argument('--verbose', action="store_true", help='Verbose output')
-    parser.add_argument('pto', metavar='.pto in', nargs=1,
-                   help='project to work on')
-    parser.add_argument('out', metavar='.pto out', nargs='?',
-                   help='output file, default to override input')
+    parser.add_argument(
+        '--verbose', action="store_true", help='Verbose output')
+    parser.add_argument(
+        'pto', metavar='.pto in', nargs=1, help='project to work on')
+    parser.add_argument(
+        'out',
+        metavar='.pto out',
+        nargs='?',
+        help='output file, default to override input')
     args = parser.parse_args()
     pto_in = args.pto[0]
     pto_out = args.out
@@ -158,15 +171,13 @@ if __name__ == "__main__":
     pto = PTOProject.from_file_name(pto_in)
     # Make sure we don't accidently override the original
     pto.remove_file_name()
-    
+
     print 'Checking for bad CPs'
     check_cp(pto)
 
     if 1:
         print 'Saving to %s' % pto_out
         pto.save_as(pto_out)
-    
+
     bench.stop()
     print 'Completed in %s' % bench
-
-

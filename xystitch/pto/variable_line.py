@@ -10,6 +10,7 @@ from xystitch.temp_file import ManagedTempFile
 from xystitch.execute import Execute
 from xystitch.pto.line import Line
 
+
 class VariableLine(Line):
     def __init__(self, text, project):
         self.image = None
@@ -17,12 +18,13 @@ class VariableLine(Line):
 
     def prefix(self):
         return 'v'
-        
+
     def variable_print_order(self):
         return list(['d', 'e', 'p', 'r', 'x', 'y', 'v', 'Ra', 'Rb'])
-    
+
     def key_variables(self):
         return set()
+
     def int_variables(self):
         ret = set('deprxyv')
         ret.add('Ra')
@@ -37,19 +39,21 @@ class VariableLine(Line):
         ret.add('TrX')
         ret.add('TrY')
         return ret
+
     def float_variables(self):
         return set()
+
     def string_variables(self):
         return set()
-        
+
     def x(self):
         '''Get image index corresponding to x optimization'''
         return self.get_variable('d')
-    
+
     def y(self):
         '''Get image index corresponding to y optimization'''
         return self.get_variable('e')
-    
+
     def index(self):
         '''Check optimization variables for consistency and return the image index'''
         # Note that these can both be None
@@ -62,7 +66,7 @@ class VariableLine(Line):
         if x != y:
             raise Exception("Variables don't match")
         return x
-        
+
     @staticmethod
     def from_line(line, project):
         return VariableLine(line, project)
@@ -84,10 +88,9 @@ class VariableLine(Line):
                 # In this case, there is nothing to update
                 return None
             self.image = self.project.i2img(image_index)
-        
+
             # Since we just parsed, we should already be in sync
             return
-            
+
         for k in self.variables:
             self.set_variable(k, self.image.get_index())
-

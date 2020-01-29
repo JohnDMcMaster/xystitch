@@ -3,7 +3,6 @@ xystitch
 Copyright 2012 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under a 2 clause BSD license, see COPYING for details
 '''
-
 '''
 [mcmaster@gespenst tile]$ enblend --help
 Usage: enblend [options] [--output=IMAGE] INPUT...
@@ -93,8 +92,10 @@ import time
 import sys
 import datetime
 
+
 class BlenderFailed(CommandFailed):
     pass
+
 
 class Enblend:
     def __init__(self, input_files, output_file, lock=False):
@@ -105,13 +106,15 @@ class Enblend:
         self.additional_args = []
         self._lock = lock
         self._lock_fp = None
+
         def p(s=''):
             print '%s: %s' % (datetime.datetime.utcnow().isoformat(), s)
+
         self.p = p
         self.pprefix = lambda: datetime.datetime.utcnow().isoformat() + ': '
         self.stdout = sys.stdout
         self.stderr = sys.stderr
-        
+
     def lock(self):
         if not self._lock:
             self.p('note: Skipping enblend lock')
@@ -127,11 +130,13 @@ class Enblend:
             except IOError:
                 # Can take a while, print every 10 min or so and once at failure
                 if i % (10 * 60 * 10) == 0:
-                    self.p('Failed to acquire enblend lock, retrying (print every 10 min)')
+                    self.p(
+                        'Failed to acquire enblend lock, retrying (print every 10 min)'
+                    )
                 time.sleep(0.1)
             i += 1
         self.p('Acquired enblend lock')
-        
+
     def unlock(self):
         if self._lock_fp is None:
             self.p('Skipping enblend unlock')
@@ -139,7 +144,7 @@ class Enblend:
         self.p('Releasing enblend lock')
         self._lock_fp.close()
         self._lock_fp = None
-        
+
     def run(self):
         args = ["enblend", "-o", self.output_file]
         if self.compression:
@@ -150,14 +155,15 @@ class Enblend:
             args.append(arg)
         for f in self.input_files:
             args.append(f)
-        
+
         for opt in config.enblend_opts().split():
             args.append(opt)
-        
+
         self.lock()
-                
-        print 'Blender: executing %s' % (args,)
-        rc = execute.prefix(args, stdout=self.stdout, stderr=self.stderr, prefix=self.pprefix)
+
+        print 'Blender: executing %s' % (args, )
+        rc = execute.prefix(
+            args, stdout=self.stdout, stderr=self.stderr, prefix=self.pprefix)
         if not rc == 0:
             self.p('')
             self.p('')

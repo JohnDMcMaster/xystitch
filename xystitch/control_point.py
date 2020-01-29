@@ -12,11 +12,12 @@ from xystitch.pto.image_line import ImageLine
 import shutil
 import os.path
 
+
 def dbg(s):
     pass
 
-# clear; rm -f /tmp/*.pto /tmp/*.jpg; pr0nstitch --result=out.jpg *.jpg
 
+# clear; rm -f /tmp/*.pto /tmp/*.jpg; pr0nstitch --result=out.jpg *.jpg
 """
 class ControlPointGenerator:
     @staticmethod
@@ -47,12 +48,14 @@ class AutopanoAj(ControlPointGenerator):
     os.system("cat %s |sed 's@%s@%s@g' >/tmp/%s" % (project_file, original_dir, image_dir, temp_project_file))
 """
 
+
 #class ControlPointGenerator:
 class AutopanoSiftC:
     '''
     Example stitch command
     "autopano-sift-c" "--maxmatches" "0" "--maxdim" "10000" "out.pto" "first.png" "second.png"
     '''
+
     def generate_core(self, image_file_names):
         project_file = ManagedTempFile.get(None, ".pto")
 
@@ -95,6 +98,7 @@ class AutopanoSiftC:
         # We return PTO object, not string
         return PTOProject.from_temp_file(project_file)
 
+
 def pto_unsub(src_prj, sub_image_files, deltas, sub_to_real):
     '''
     Transforms a sub-project back into original control point coordinate space using original file names
@@ -122,8 +126,10 @@ def pto_unsub(src_prj, sub_image_files, deltas, sub_to_real):
         dst_il.set_name(sub_to_real[src_il.get_name()])
         # add it
         ret.add_image_line(dst_il)
-        same_order = same_order and sub_image_files[i].file_name == src_il.get_name()
-        print '  %d: %s vs %s' % (i, sub_image_files[i].file_name, src_il.get_name())
+        same_order = same_order and sub_image_files[
+            i].file_name == src_il.get_name()
+        print '  %d: %s vs %s' % (i, sub_image_files[i].file_name,
+                                  src_il.get_name())
 
     # Copy/shift control points
     # Should have been filtered out earlier
@@ -146,12 +152,14 @@ def pto_unsub(src_prj, sub_image_files, deltas, sub_to_real):
 
     return ret
 
+
 class ControlPointGeneratorXX:
     '''
     autopano.exe /f /tmp/file1.jpg /tmp/file2.jpg /project:hugin
     Example stitch command
     Will result in .pto in being in /tmp though
     '''
+
     def generate_core(self, image_file_names):
         command = "autopanoaj"
         args = list()
@@ -160,7 +168,7 @@ class ControlPointGeneratorXX:
         # default is .oto
         args.append("/project:hugin")
         # Use image args instead of dir
-        args.append("/f");
+        args.append("/f")
         args.append('/path:Z:\\tmp')
 
         # Images
@@ -193,6 +201,7 @@ class ControlPointGeneratorXX:
         f = open(project_file.file_name, 'w')
         f.write(project_text)
         return PTOProject.from_temp_file(project_file)
+
 
 # panotool's cpfind/cpclean
 class PanoCP:
@@ -236,7 +245,8 @@ class PanoCP:
 
         #(rc, output) = Execute.with_output('cpfind', args, print_output=self.print_output)
         print 'cpfind' + ' '.join(args)
-        (rc, output) = exc_ret_istr('cpfind', args, print_out=self.print_output)
+        (rc, output) = exc_ret_istr(
+            'cpfind', args, print_out=self.print_output)
 
         print 'PanoCP: cpfind done'
         if not rc == 0:
@@ -253,7 +263,6 @@ class PanoCP:
                 return None
             raise Exception('Bad rc: %d' % rc)
 
-
         # Now run cpclean
         args = list()
         # output file
@@ -262,7 +271,8 @@ class PanoCP:
         # input file
         args.append(project.file_name)
 
-        (rc, output) = exc_ret_istr('cpclean', args, print_out=self.print_output)
+        (rc, output) = exc_ret_istr(
+            'cpclean', args, print_out=self.print_output)
         print 'PanoCP: cpclean done'
         if not rc == 0:
             print
@@ -272,7 +282,6 @@ class PanoCP:
             print output
             print
             raise Exception('Bad rc: %d' % rc)
-
 
         project.reopen()
         print 'Fixing image lines...'
@@ -292,9 +301,10 @@ class PanoCP:
             return None
         return project
 
+
 def get_cp_engine(engine=None):
     return {
-            'autopano-sift-c': AutopanoSiftC,
-            'panocp': PanoCP,
-            None: PanoCP
+        'autopano-sift-c': AutopanoSiftC,
+        'panocp': PanoCP,
+        None: PanoCP
     }[engine]()

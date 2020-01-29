@@ -3,7 +3,6 @@ xystitch
 Copyright 2011 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under a 2 clause BSD license, see COPYING for details
 '''
-
 '''
 #hugin_optimizeReferenceImage 0
 #hugin_blender enblend
@@ -34,12 +33,12 @@ from xystitch.temp_file import ManagedTempFile
 from xystitch.execute import Execute
 import comment_line
 
+
 class OptionLine(comment_line.CommentLine):
-	
-	def __init__(self, text, project):
-		comment_line.CommentLine.__init__(self, text, project)
-		
-	'''
+    def __init__(self, text, project):
+        comment_line.CommentLine.__init__(self, text, project)
+
+    '''
 	def update(self):
 		# Update to the correct indexes
 		# Wonder if this can all go on a single line?
@@ -47,10 +46,9 @@ class OptionLine(comment_line.CommentLine):
 		for k in self.variables:
 			self.set_variables(k, self.image.get_index())
 	'''
-	
-	@staticmethod
-	def from_line(line, pto_project):
-		ret = OptionLine()
-		ret.text = line
-		return ret
 
+    @staticmethod
+    def from_line(line, pto_project):
+        ret = OptionLine()
+        ret.text = line
+        return ret
