@@ -398,11 +398,36 @@ def gen_cps_delete(pto, icm=None):
                     for x in process_pair(pto.img_fn2il[l_fn], r_il):
                         yield x
 
+tmpdbg = 0
+
 def cpl_im_abs(cpl, n_il, N_il):
-    """Return absolute (x, y), (X, Y) for n, N"""
-    # invert the sign so that the math works out
-    n_xy = (n_il.getv('d') - cpl.getv('x'), n_il.getv('e') - cpl.getv('y'))
-    N_xy = (N_il.getv('d') - cpl.getv('X'), N_il.getv('e') - cpl.getv('Y'))
+    """
+    Return absolute (x, y), (X, Y) for n, N
+    Relative to image center since thats the normal global cooridnate system
+
+    NOTE: x/y deltas are positive right/down
+    But global coordinates are positive left,up
+    Additionally deltas are relative to image edge while global coordinate are relative to center
+    Return positive left/up convention to match global coordinate system
+    """
+
+    width = n_il.width()
+    assert width == N_il.width()
+    height = n_il.height()
+    assert height == N_il.height()
+    #n_il, N_il = N_il, n_il
+    n_xy = (n_il.getv('d') - (cpl.getv('x') - width / 2), n_il.getv('e') - (cpl.getv('y') - height / 2))
+    N_xy = (N_il.getv('d') - (cpl.getv('X') - width / 2), N_il.getv('e') - (cpl.getv('Y') - height / 2))
+    if tmpdbg and (n_il.get_index(), N_il.get_index()) == (74, 75):
+        print("")
+        print(n_il.getv('d'), cpl.getv('x'), n_il.getv('e'), cpl.getv('y'))
+        print('debug n', n_xy)
+        print((N_il.getv('d'), cpl.getv('X'), N_il.getv('e'), cpl.getv('Y')))
+        print('debug N', N_xy)
+   
+        (nx, ny), (Nx, Ny) =  n_xy, N_xy
+        delta = ((nx - Nx) ** 2 + (ny - Ny) ** 2) ** 0.5
+        print('debug delta', delta)
     return (n_xy, N_xy)
 
 def gen_cps(pto, icm=None):
@@ -421,7 +446,7 @@ def gen_cps(pto, icm=None):
         N_il = pto.image_lines[cpl.get_variable('N')]
         N_fn = N_il.get_name()
         n_xy, N_xy = cpl_im_abs(cpl, n_il, N_il)
-        yield ((n_fn, N_fn), n_xy, N_xy)
+        yield cpl, ((n_fn, N_fn), n_xy, N_xy)
 
 def pre_opt_core(project, icm, closed_set, pairsx, pairsy, order, verbose=False):
     iters = 0

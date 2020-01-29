@@ -8,10 +8,10 @@ import argparse
 import sys
 from xystitch.pto.project import PTOProject
 from xystitch.benchmark import Benchmark
-from xystitch.optimizer import gen_cps, pto2icm
+from xystitch.optimizer import gen_cps, pto2icm, tmpdbg
 from xystitch import statistics
 
-def run(pto_fn, stdev=3):
+def run(pto_fn, pto_fn_out=None, stdev=3.0):
     print('In: %s' % pto_fn)
     bench = Benchmark()
 
@@ -21,10 +21,15 @@ def run(pto_fn, stdev=3):
     icm = pto2icm(pto)
     deltas = []
     pairs = []
-    for ((n_fn, N_fn), (nx, ny), (Nx, Ny)) in gen_cps(pto, icm=icm):
+    cpls = []
+    for cpl, ((n_fn, N_fn), (nx, ny), (Nx, Ny)) in gen_cps(pto, icm=icm):
         delta = ((nx - Nx) ** 2 + (ny - Ny) ** 2) ** 0.5
         deltas.append(delta)
         pairs.append((n_fn, N_fn))
+        cpls.append(cpl)
+        if tmpdbg and (n_fn == 'c005_r003.jpg' and N_fn == 'c005_r004.jpg'):
+            print('debug', (n_fn, N_fn), (nx, ny), (Nx, Ny))
+            print('debug', delta)
 
     deltas_u = statistics.mean(deltas)
     deltas_sd = statistics.stdev(deltas)
@@ -37,7 +42,7 @@ def run(pto_fn, stdev=3):
     outlier_pairs = set()
     pair_cur = None
     pairi = 0
-    for (n_fn, N_fn), delta in zip(pairs, deltas):
+    for cpl, (n_fn, N_fn), delta in zip(cpls, pairs, deltas):
         if pair_cur != (n_fn, N_fn):
             pairi = 0
             pair_cur = (n_fn, N_fn)
@@ -51,11 +56,15 @@ def run(pto_fn, stdev=3):
             print("%s %s %u: outlier delta %0.1f" % (fna, fnb, pairi, delta))
             outlier_pairs.add((fna, fnb))
             outlier_cps += 1
+            pto.remove_control_point_line(cpl)
     print("")
     print("Flagged cps: %u" % outlier_cps)
     print("Flagged pairs: %u" % len(outlier_pairs))
     for fna, fnb in sorted(list(outlier_pairs)):
         print("  %s %s" % (fna, fnb))
+
+    if pto_fn_out:
+        pto.save_as(pto_fn_out)
 
     bench.stop()
     print('Completed in %s' % bench)
@@ -73,10 +82,11 @@ def run_print(pto_fn, stdev=3):
 def main():
     parser = argparse.ArgumentParser(description='Manipulate .pto files')
     parser.add_argument('--verbose', action="store_true", help='Verbose output')
-    parser.add_argument('--center', action="store_true", dest="center", default=None, help='Center the project')
+    parser.add_argument('--stdev', type=float, default=3.0, help='Max healthy standard deviation')
     parser.add_argument('pto_in', nargs='?', default="out.pto", help='project to work on')
+    parser.add_argument('pto_out', nargs='?', default=None, help='project to work on')
     args = parser.parse_args()
-    run(args.pto_in)
+    run(args.pto_in, args.pto_out, stdev=args.stdev)
 
 if __name__ == "__main__":
     main()

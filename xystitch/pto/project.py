@@ -343,7 +343,12 @@ class PTOProject:
         if self.control_point_lines is None:
             self.control_point_lines = []
         self.control_point_lines.append(cl)
-        
+
+    def remove_control_point_line(self, cl):
+        self.parse()
+        assert self.control_point_lines is not None
+        self.control_point_lines.remove(cl)
+
     def add_control_point_line_by_text(self, cl):
         self.add_control_point_line(ControlPointLine(cl, self))
         
