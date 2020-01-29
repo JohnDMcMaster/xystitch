@@ -7,7 +7,6 @@ Copyright 2012 John McMaster
 import argparse
 import sys
 from xystitch.optimizer import PTOptimizer, PreOptimizer
-from xystitch.linopt import LinOpt
 from xystitch.pto.project import PTOProject
 from xystitch.pto.util import *
 from xystitch.util import IOTimestamp, IOLog
@@ -51,18 +50,14 @@ if __name__ == "__main__":
         default=False,
         help='Set project to optimize xy')
     parser.add_argument(
-        '--optimize',
+        '--ptoptimizer',
         action="store_true",
         dest="optimize",
-        help='Optimize the project and also center by default')
+        help='Run PTOptimizer also center by default')
     parser.add_argument(
         '--pre-opt',
         action="store_true",
-        help='Experimental optimization algorithm')
-    parser.add_argument(
-        '--lin-opt',
-        action="store_true",
-        help='Optimize project using linear predictive optimize algorithm')
+        help='Core pr0nstitch optimizer. Statistical based xy optimizer')
     parser.add_argument(
         '--reoptimize',
         action="store_true",
@@ -195,7 +190,7 @@ if __name__ == "__main__":
         optimize_xy_only(pto)
 
     # Needs to be late to get the earlier additions if we used them
-    if args.optimize:
+    if args.ptoptimizer:
         print 'Optimizing'
         opt = PTOptimizer(pto)
         opt.reoptimize = args.reoptimize
@@ -210,17 +205,6 @@ if __name__ == "__main__":
         opt = PreOptimizer(pto)
         opt.debug = args.verbose
         opt.stdev = args.stdev
-        opt.run()
-        # Default
-        if args.center != False:
-            print 'Centering...'
-            center(pto)
-
-    # Needs to be late to get the earlier additions if we used them
-    if args.lin_opt:
-        print 'Optimizing'
-        opt = LinOpt(pto)
-        opt.reoptimize = args.reoptimize
         opt.run()
         # Default
         if args.center != False:
