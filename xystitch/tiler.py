@@ -185,12 +185,13 @@ class Worker(object):
         self.running.wait(1)
 
     def run(self):
-        _outlog = open(self.log_fn, 'w')
-        sys.stdout = _outlog
-        sys.stderr = _outlog
+        if self.log_fn:
+            _outlog = open(self.log_fn, 'w')
+            sys.stdout = _outlog
+            sys.stderr = _outlog
 
-        _outdate = IOTimestamp(sys, 'stdout')
-        _errdate = IOTimestamp(sys, 'stderr')
+            _outdate = IOTimestamp(sys, 'stdout')
+            _errdate = IOTimestamp(sys, 'stderr')
 
         self.running.set()
         self.exit = False
@@ -351,7 +352,8 @@ class Tiler:
                  stp=None,
                  clip_width=None,
                  clip_height=None,
-                 log_dir='pr0nts'):
+                 log_dir='pr0nts',
+                 is_full=False):
         '''
         stw: super tile width
         sth: super tile height
@@ -413,10 +415,19 @@ class Tiler:
         self.y1 = spl.bottom()
         #print spl
 
+        if is_full:
+            self.make_full()
+        else:
+            self.is_full = False
+
         self.calc_size_heuristic(self.img_width, self.img_height)
 
         # Auto calc tile parameters based on # super tile pixels?
-        if stp:
+        if self.is_full:
+            print("full: forcing supertile size")
+            self.stw = self.width()
+            self.sth = self.height()
+        elif stp:
             if self.stw or self.sth:
                 raise ValueError(
                     "Can't manually specify width/height and do auto")
@@ -543,7 +554,8 @@ class Tiler:
         if self.sth <= self.img_height:
             self.clip_height = 0
 
-        self.recalc_step()
+        if not self.is_full:
+            self.recalc_step()
         # We build this in run
         self.map = None
         print 'Clip width: %d' % self.clip_width
@@ -643,6 +655,10 @@ class Tiler:
         '''Stitch a single supertile'''
         self.stw = self.width()
         self.sth = self.height()
+        self.clip_width = 1
+        self.clip_height = 1
+        self.super_t_xstep = 1
+        self.super_t_ystep = 1
         self.is_full = True
 
     def recalc_step(self):
@@ -1072,7 +1088,13 @@ class Tiler:
         self.workers = []
         for ti in xrange(self.threads):
             print 'Bringing up W%02d' % ti
-            w = Worker(ti, self, os.path.join(self.log_dir, 'w%02d.log' % ti))
+            # Print to individual log files if many threaded to avoid garbling stream
+            # can still conflict with master, but mostly safe...
+            if self.threads == 1:
+                log_fn = None
+            else:
+                log_fn = os.path.join(self.log_dir, 'w%02d.log' % ti)
+            w = Worker(ti, self, log_fn)
             self.workers.append(w)
             w.start()
 

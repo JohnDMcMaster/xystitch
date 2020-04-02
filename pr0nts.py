@@ -215,7 +215,8 @@ if __name__ == "__main__":
         stp=stp,
         clip_width=args.clip_width,
         clip_height=args.clip_height,
-        log_dir=log_dir)
+        log_dir=log_dir,
+        is_full=args.full)
     t.threads = args.threads
     t.verbose = args.verbose
     t.st_dir = args.st_dir
@@ -245,8 +246,6 @@ if __name__ == "__main__":
                                                     or args.super_t_ystep):
         t.recalc_step()
 
-    if args.full:
-        t.make_full()
     t.enblend_lock = args.enblend_lock
 
     if args.single_dir and not os.path.exists(args.single_dir):
