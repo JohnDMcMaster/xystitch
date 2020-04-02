@@ -816,7 +816,7 @@ def anchor(project, icm):
     return ret[0]
 
 
-def icm_il_pairs(icm):
+def icm_il_pairs(project, icm):
     # dictionary of results so that we can play around with post-processing result
     # This step takes by far the longest in the optimization process
     pairsx = {}
@@ -904,7 +904,7 @@ def pre_opt(project, icm, verbose=False, stdev=None):
 
     # (x, y) keyed dict gives the delta to the left or up
     # That is, (0, 0) is not included
-    pairsx, pairsy = icm_il_pairs(icm)
+    pairsx, pairsy = icm_il_pairs(project, icm)
 
     if verbose:
         print 'Delta map'

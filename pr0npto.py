@@ -52,7 +52,6 @@ if __name__ == "__main__":
     parser.add_argument(
         '--ptoptimizer',
         action="store_true",
-        dest="optimize",
         help='Run PTOptimizer also center by default')
     parser.add_argument(
         '--pre-opt',
