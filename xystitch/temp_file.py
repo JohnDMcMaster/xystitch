@@ -7,7 +7,7 @@ Licensed under a 2 clause BSD license, see COPYING for details
 import random
 import os
 import shutil
-from pr0ntools.config import config
+from xystitch.config import config
 
 g_default_prefix_dir = None
 g_default_prefix = None
