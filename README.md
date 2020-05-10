@@ -26,7 +26,8 @@ $ cat ~/.pr0nrc
 	},
 	"enblend": {
 		"opts":"-m 6144"
-	}
+	},
+	"temp_base": "/tmp"
 }
 ```
 
