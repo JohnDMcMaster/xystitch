@@ -120,7 +120,7 @@ class Nona:
         self.args = None
 
         def p(s=''):
-            print '%s: %s' % (datetime.datetime.utcnow().isoformat(), s)
+            print('%s: %s' % (datetime.datetime.utcnow().isoformat(), s))
 
         self.p = p
         self.pprefix = lambda: datetime.datetime.utcnow().isoformat() + ': '
@@ -147,7 +147,7 @@ class Nona:
                                    len(self.pto_project.get_image_lines()))
         # For my purposes right now I think this will always be 0
         if len(old_files) != 0:
-            print old_files
+            print(old_files)
             raise RemapperFailed('Found some old files')
 
         if self.pto_fn:
@@ -188,7 +188,7 @@ class Nona:
         # cmd in: nona "-m" "TIFF_m" "-verbose" "-z" "LZW" "-o" "/tmp/xystitch_7E296EA2D31827B4/0DF5034FE1CEE831/" "out.pto"
         # p w2673 h2056 f0 v76 n"TIFF_m r:CROP c:LZW" E0.0 R0 S"276,2673,312,2056"
         # m line unchanged
-        print 'Remapper: executing %s' % (' '.join(args), )
+        print('Remapper: executing %s' % (' '.join(args), ))
         rc = execute.prefix(
             args, stdout=self.stdout, stderr=self.stderr, prefix=self.pprefix)
         if not rc == 0:

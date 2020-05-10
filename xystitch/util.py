@@ -156,3 +156,59 @@ def add_bool_arg(parser, yes_arg, default=False, **kwargs):
         yes_arg, dest=dest, action='store_true', default=default, **kwargs)
     parser.add_argument(
         '--no-' + dashed, dest=dest, action='store_false', **kwargs)
+
+def size2str(d):
+    if d < 1000:
+        return '%g' % d
+    if d < 1000**2:
+        return '%gk' % (d / 1000.0)
+    if d < 1000**3:
+        return '%gm' % (d / 1000.0**2)
+    return '%gg' % (d / 1000.0**3)
+
+def mksize(s):
+    # To make feeding args easier
+    if s is None:
+        return None
+
+    m = re.match(r"(\d*)([A-Za-z]*)", s)
+    if not m:
+        raise ValueError("Bad size string %s" % s)
+    num = int(m.group(1))
+    modifier = m.group(2)
+    '''
+    s: square
+    k: 1000
+    K: 1024
+    m: 1000 * 1000
+    M: 1024 * 1024
+    ...
+    '''
+    for mod in modifier:
+        if mod == 'k':
+            num *= 1000
+        elif mod == 'K':
+            num *= 1024
+        elif mod == 'm':
+            num *= 1000 * 1000
+        elif mod == 'M':
+            num *= 1024 * 1024
+        elif mod == 'g':
+            num *= 1000 * 1000 * 1000
+        elif mod == 'G':
+            num *= 1024 * 1024 * 1024
+        elif mod == 's':
+            num *= num
+        else:
+            raise ValueError('Bad modifier %s on number string %s', mod, s)
+    return num
+
+def mem2pix(mem):
+    # Rough heuristic from some of my trials (1 GB => 51 MP)
+    return mem * 51 / 1000
+    # Maybe too aggressive, think ran out at 678 MP / 18240 MB => 37 MP?
+    # Maybe its a different error
+    # ahah: I think it was disk space and I had misinterpreted it as memory
+    # since the files got deleted after the run it wasn't obvious
+    #return mem * 35 / 1000
+

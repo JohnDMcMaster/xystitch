@@ -15,7 +15,7 @@ from xystitch.tiler import Tiler
 from xystitch.pto.project import PTOProject
 from xystitch.config import config
 from xystitch.single import singlify, HugeJPEG
-from xystitch.util import logwt
+from xystitch.util import logwt, add_bool_arg, size2str, mksize, mem2pix
 
 import argparse
 import glob
@@ -26,156 +26,7 @@ import sys
 import time
 
 
-def size2str(d):
-    if d < 1000:
-        return '%g' % d
-    if d < 1000**2:
-        return '%gk' % (d / 1000.0)
-    if d < 1000**3:
-        return '%gm' % (d / 1000.0**2)
-    return '%gg' % (d / 1000.0**3)
-
-
-def mksize(s):
-    # To make feeding args easier
-    if s is None:
-        return None
-
-    m = re.match(r"(\d*)([A-Za-z]*)", s)
-    if not m:
-        raise ValueError("Bad size string %s" % s)
-    num = int(m.group(1))
-    modifier = m.group(2)
-    '''
-    s: square
-    k: 1000
-    K: 1024
-    m: 1000 * 1000
-    M: 1024 * 1024
-    ...
-    '''
-    for mod in modifier:
-        if mod == 'k':
-            num *= 1000
-        elif mod == 'K':
-            num *= 1024
-        elif mod == 'm':
-            num *= 1000 * 1000
-        elif mod == 'M':
-            num *= 1024 * 1024
-        elif mod == 'g':
-            num *= 1000 * 1000 * 1000
-        elif mod == 'G':
-            num *= 1024 * 1024 * 1024
-        elif mod == 's':
-            num *= num
-        else:
-            raise ValueError('Bad modifier %s on number string %s', mod, s)
-    return num
-
-
-def mem2pix(mem):
-    # Rough heuristic from some of my trials (1 GB => 51 MP)
-    return mem * 51 / 1000
-    # Maybe too aggressive, think ran out at 678 MP / 18240 MB => 37 MP?
-    # Maybe its a different error
-    # ahah: I think it was disk space and I had misinterpreted it as memory
-    # since the files got deleted after the run it wasn't obvious
-    #return mem * 35 / 1000
-
-
-def parser_add_bool_arg(yes_arg, default=False, **kwargs):
-    dashed = yes_arg.replace('--', '')
-    dest = dashed.replace('-', '_')
-    parser.add_argument(
-        yes_arg, dest=dest, action='store_true', default=default, **kwargs)
-    parser.add_argument(
-        '--no-' + dashed, dest=dest, action='store_false', **kwargs)
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description='create tiles from unstitched images')
-    parser.add_argument(
-        'pto', default='out.pto', nargs='?', help='pto project')
-    parser.add_argument('--stw', help='Supertile width')
-    parser.add_argument('--sth', help='Supertile height')
-    parser.add_argument('--stp', help='Supertile pixels')
-    parser.add_argument('--stm', help='Supertile memory')
-    parser.add_argument(
-        '--force', action="store_true", help='Force by replacing old files')
-    parser.add_argument(
-        '--merge',
-        action="store_true",
-        help="Don't delete anything and only generate things missing")
-    parser.add_argument(
-        '--out-ext',
-        default='.jpg',
-        help='Select output image extension (and type), .jpg, .png, .tif, etc')
-    parser.add_argument(
-        '--full', action="store_true", help='use only 1 supertile')
-    parser.add_argument(
-        '--st-xstep',
-        action="store",
-        dest="super_t_xstep",
-        type=int,
-        help='Supertile x step (advanced)')
-    parser.add_argument(
-        '--st-ystep',
-        action="store",
-        dest="super_t_ystep",
-        type=int,
-        help='Supertile y step (advanced)')
-    parser.add_argument(
-        '--clip-width',
-        action="store",
-        dest="clip_width",
-        type=int,
-        help='x clip (advanced)')
-    parser.add_argument(
-        '--clip-height',
-        action="store",
-        dest="clip_height",
-        type=int,
-        help='y clip (advanced)')
-    parser.add_argument(
-        '--ignore-crop',
-        action="store_true",
-        help='Continue even if not cropped')
-    parser.add_argument('--nona-args')
-    parser.add_argument('--enblend-args')
-    parser.add_argument(
-        '--ignore-errors',
-        action="store_true",
-        dest="ignore_errors",
-        help='skip broken tile stitches (advanced)')
-    parser.add_argument(
-        '--verbose', '-v', action="store_true", help='spew lots of info')
-    parser.add_argument(
-        '--st-dir',
-        default='st',
-        help='store intermediate supertiles to given dir')
-    parser.add_argument(
-        '--st-limit',
-        default='inf',
-        help=
-        'debug (exit after # supertiles, typically --st-limit 1 --threads 1)')
-    parser.add_argument(
-        '--single-dir',
-        default='single',
-        help='folder to put final output composite image')
-    parser.add_argument(
-        '--single-fn', default=None, help='file name to write in single dir')
-    parser_add_bool_arg(
-        '--enblend-lock',
-        default=False,
-        help=
-        'use lock file to only enblend (memory intensive part) one at a time')
-    parser.add_argument(
-        '--threads', type=int, default=multiprocessing.cpu_count())
-    parser.add_argument('--log', default='pr0nts', help='Output log file name')
-    args = parser.parse_args()
-
+def run(args):
     if args.threads < 1:
         raise Exception('Bad threads')
     print 'Using %d threads' % args.threads
@@ -251,7 +102,7 @@ if __name__ == "__main__":
     if args.single_dir and not os.path.exists(args.single_dir):
         os.mkdir(args.single_dir)
 
-    print 'Running tiler'
+    print('Running tiler')
     try:
         t.run()
     except KeyboardInterrupt:
@@ -259,9 +110,10 @@ if __name__ == "__main__":
             print 'WARNING: forcing exit on stuck worker'
             time.sleep(0.5)
             os._exit(1)
-    print 'Tiler done!'
+        raise
+    print('Tiler done!')
 
-    print 'Creating single image'
+    print('Creating single image')
     single_fn = args.single_fn
     if single_fn is None:
         single_fn = 'out.jpg'
@@ -284,3 +136,92 @@ if __name__ == "__main__":
         singlify(s_fns, single_fn, single_fn_alt)
     except HugeJPEG:
         print 'WARNING: single: exceeds max image size'
+
+def main():
+    parser = argparse.ArgumentParser(
+        description='create tiles from unstitched images')
+    parser.add_argument(
+        'pto', default='out.pto', nargs='?', help='pto project')
+    parser.add_argument('--stw', help='Supertile width')
+    parser.add_argument('--sth', help='Supertile height')
+    parser.add_argument('--stp', help='Supertile pixels')
+    parser.add_argument('--stm', help='Supertile memory')
+    parser.add_argument(
+        '--force', action="store_true", help='Force by replacing old files')
+    parser.add_argument(
+        '--merge',
+        action="store_true",
+        help="Don't delete anything and only generate things missing")
+    parser.add_argument(
+        '--out-ext',
+        default='.jpg',
+        help='Select output image extension (and type), .jpg, .png, .tif, etc')
+    parser.add_argument(
+        '--full', action="store_true", help='use only 1 supertile')
+    parser.add_argument(
+        '--st-xstep',
+        action="store",
+        dest="super_t_xstep",
+        type=int,
+        help='Supertile x step (advanced)')
+    parser.add_argument(
+        '--st-ystep',
+        action="store",
+        dest="super_t_ystep",
+        type=int,
+        help='Supertile y step (advanced)')
+    parser.add_argument(
+        '--clip-width',
+        action="store",
+        dest="clip_width",
+        type=int,
+        help='x clip (advanced)')
+    parser.add_argument(
+        '--clip-height',
+        action="store",
+        dest="clip_height",
+        type=int,
+        help='y clip (advanced)')
+    parser.add_argument(
+        '--ignore-crop',
+        action="store_true",
+        help='Continue even if not cropped')
+    parser.add_argument('--nona-args')
+    parser.add_argument('--enblend-args')
+    parser.add_argument(
+        '--ignore-errors',
+        action="store_true",
+        dest="ignore_errors",
+        help='skip broken tile stitches (advanced)')
+    parser.add_argument(
+        '--verbose', '-v', action="store_true", help='spew lots of info')
+    parser.add_argument(
+        '--st-dir',
+        default='st',
+        help='store intermediate supertiles to given dir')
+    parser.add_argument(
+        '--st-limit',
+        default='inf',
+        help=
+        'debug (exit after # supertiles, typically --st-limit 1 --threads 1)')
+    parser.add_argument(
+        '--single-dir',
+        default='single',
+        help='folder to put final output composite image')
+    parser.add_argument(
+        '--single-fn', default=None, help='file name to write in single dir')
+    add_bool_arg(parser,
+        '--enblend-lock',
+        default=False,
+        help=
+        'use lock file to only enblend (memory intensive part) one at a time')
+    parser.add_argument(
+        '--threads', type=int, default=multiprocessing.cpu_count())
+    parser.add_argument('--log', default='pr0nts', help='Output log file name')
+    args = parser.parse_args()
+
+    run(ags)
+
+if __name__ == "__main__":
+    main()
+
