@@ -9,7 +9,7 @@ import math
 import os
 import shutil
 import sys
-
+import re
 
 def rjust_str(s, nchars):
     '''right justify string, space padded to nchars spaces'''

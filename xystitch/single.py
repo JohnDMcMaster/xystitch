@@ -1,12 +1,20 @@
 from PIL import Image
 import re
+import struct
+import os
 
 # /usr/local/lib/python2.7/dist-packages/PIL/Image.py:2210: DecompressionBombWarning: Image size (941782785 pixels) exceeds limit of 89478485 pixels, could be decompression bomb DOS attack.
 #   DecompressionBombWarning)
 Image.MAX_IMAGE_PIXELS = None
 
 
-class HugeJPEG(Exception):
+class HugeImage(Exception):
+    pass
+
+class HugeJPEG(HugeImage):
+    pass
+
+class HugeTIF(HugeImage):
     pass
 
 
@@ -75,6 +83,17 @@ def singlify(fns_in, fn_out, fn_out_alt=None):
         (x, y) = coord(fn)
         im = Image.open(fn)
         dst.paste(im, (x - xmin, y - ymin))
-    print('Saving %s...' % fn_out)
-    dst.save(fn_out, quality=90)
+    width, height = im.size
+    print('Saving %uw x %uh %s...' % (width, height, fn_out))
+    try:
+        dst.save(fn_out, quality=95)
+    # File "/usr/lib/python2.7/dist-packages/PIL/TiffImagePlugin.py", line 550, in _pack
+    #   return struct.pack(self._endian + fmt, *values)
+    # struct.error: 'L' format requires 0 <= number <= 4294967295
+    except struct.error:
+        try:
+            os.remove(fn_out)
+        except OSError:
+            pass
+        raise HugeTIF("Failed to save image of size %uw x %uh" % (width, height))
     print('Done!')

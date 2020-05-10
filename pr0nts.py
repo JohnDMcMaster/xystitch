@@ -14,7 +14,7 @@ http://uvicrec.blogspot.com/2012/02/tile-stitch.html
 from xystitch.tiler import Tiler
 from xystitch.pto.project import PTOProject
 from xystitch.config import config
-from xystitch.single import singlify, HugeJPEG
+from xystitch.single import singlify, HugeImage
 from xystitch.util import logwt, add_bool_arg, size2str, mksize, mem2pix
 
 import argparse
@@ -134,8 +134,8 @@ def run(args):
 
     try:
         singlify(s_fns, single_fn, single_fn_alt)
-    except HugeJPEG:
-        print 'WARNING: single: exceeds max image size'
+    except HugeImage:
+        print 'WARNING: single: exceeds max image size, skipped'
 
 def main():
     parser = argparse.ArgumentParser(
@@ -220,7 +220,7 @@ def main():
     parser.add_argument('--log', default='pr0nts', help='Output log file name')
     args = parser.parse_args()
 
-    run(ags)
+    run(args)
 
 if __name__ == "__main__":
     main()
