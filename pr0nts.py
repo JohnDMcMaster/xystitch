@@ -71,8 +71,6 @@ def run(args):
     t.threads = args.threads
     t.verbose = args.verbose
     t.st_dir = args.st_dir
-    t.force = args.force
-    t.merge = args.merge
     t.out_extension = args.out_ext
     t.ignore_errors = args.ignore_errors
     t.ignore_crop = args.ignore_crop
@@ -121,7 +119,7 @@ def run(args):
         single_fn = os.path.join(args.single_dir, single_fn)
     # sometimes I restitch with different supertile size
     # this results in excessive merge, although really I should just delete the old files
-    if args.merge:
+    if 1:
         print 'Single: using glob strategy on merge'
         s_fns = glob.glob(os.path.join(args.st_dir, 'st_*x_*y.jpg'))
     else:
@@ -146,12 +144,6 @@ def main():
     parser.add_argument('--sth', help='Supertile height')
     parser.add_argument('--stp', help='Supertile pixels')
     parser.add_argument('--stm', help='Supertile memory')
-    parser.add_argument(
-        '--force', action="store_true", help='Force by replacing old files')
-    parser.add_argument(
-        '--merge',
-        action="store_true",
-        help="Don't delete anything and only generate things missing")
     parser.add_argument(
         '--out-ext',
         default='.jpg',

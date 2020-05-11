@@ -398,8 +398,8 @@ class Tiler:
         self.threads = 1
         self.workers = None
 
-        self.open_list = None
-        self.closed_list = None
+        self.open_list_rc = None
+        self.closed_list_rc = None
 
         self.st_fns = []
         self.st_limit = float('inf')
@@ -427,11 +427,6 @@ class Tiler:
 
         #out_extension = '.png'
         self.out_extension = '.jpg'
-
-        # Delete files in the way?
-        self.force = False
-        # Keep old files and skip already generated?
-        self.merge = False
 
         spl = self.pto.get_panorama_line()
         self.x0 = spl.left()
@@ -735,8 +730,8 @@ class Tiler:
             self.clip_height = int(image_height * 1.5)
 
     def gen_supertile_tiles(self, st_bounds):
-        x0, x1, y0, y1 = st_bounds
         '''Yield UL coordinates in (y, x) pairs'''
+        x0, x1, y0, y1 = st_bounds
         xt0 = ceil_mult(x0, self.tw, align=self.x0)
         xt1 = ceil_mult(x1, self.tw, align=self.x0)
         if xt0 >= xt1:
@@ -766,10 +761,10 @@ class Tiler:
         skip_yl_check = False
         skip_yh_check = False
         if y0 == self.top():
-            print('Y check skip (%d): top border' % y0)
+            #print('Y check skip (%d): top border' % y0)
             skip_yl_check = True
         if y1 == self.bottom():
-            print('Y check skip (%d): bottom border' % y1)
+            #print('Y check skip (%d): bottom border' % y1)
             skip_yh_check = True
 
         for y in xrange(yt0, yt1, self.th):
@@ -818,7 +813,7 @@ class Tiler:
             col = self.x2col(x)
 
             # Did we already do this tile?
-            if self.is_done(row, col):
+            if self.is_done_rc(row, col):
                 # No use repeating it although it would be good to diff some of these
                 if self.verbose:
                     print('Rejecting tile x%d, y%d / r%d, c%d: already done' % (
@@ -832,7 +827,7 @@ class Tiler:
             gen_tiles += 1
         bench.stop()
         print('Generated %d new tiles for a total of %d / %d in %s' % (
-            gen_tiles, len(self.closed_list), self.net_expected_tiles,
+            gen_tiles, len(self.closed_list_rc), self.net_expected_tiles,
             str(bench)))
         if gen_tiles == 0:
             raise NoTilesGenerated("Didn't generate any tiles")
@@ -878,7 +873,7 @@ class Tiler:
         # Values above 95 should be avoided;
         # 100 completely disables the JPEG quantization stage.
         ip.image.save(nfn, quality=95)
-        self.mark_done(row, col)
+        self.mark_done_rc(row, col)
 
     def x2col(self, x):
         col = int((x - self.x0) / self.tw)
@@ -894,20 +889,21 @@ class Tiler:
             raise Exception("can't have negative row")
         return ret
 
-    def is_done(self, row, col):
-        return (row, col) in self.closed_list
+    def is_done_rc(self, row, col):
+        assert 0 <= row < self.rows() and 0 <= col < self.cols(), "bad tile %ur %uc w/ %u rows %u cols" % (row, col, self.rows(), self.cols())
+        return (row, col) in self.closed_list_rc
 
-    def mark_done(self, row, col, current=True):
+    def mark_done_rc(self, row, col, current=True):
         assert 0 <= row < self.rows() and 0 <= col < self.cols(), "bad tile %ur %uc w/ %u rows %u cols" % (row, col, self.rows(), self.cols())
         # Some tiles may solve multiple times
-        if (row, col) in self.open_list:
-            self.closed_list.add((row, col))
-            self.open_list.remove((row, col))
+        if (row, col) in self.open_list_rc:
+            self.closed_list_rc.add((row, col))
+            self.open_list_rc.remove((row, col))
             if current:
                 self.this_tiles_done += 1
         # but it should be in at least one of the sets
         else:
-            assert (row, col) in self.closed_list, "Completed bad tile %ur %uc w/ %u rows %u cols" % (row, col, self.rows(), self.cols())
+            assert (row, col) in self.closed_list_rc, "Completed bad tile %ur %uc w/ %u rows %u cols" % (row, col, self.rows(), self.cols())
 
     def n_tiles(self):
         return self.rows() * self.cols()
@@ -915,7 +911,7 @@ class Tiler:
     def dump_open_list(self):
         print('Open list:')
         i = 0
-        for (row, col) in self.open_list:
+        for (row, col) in self.open_list_rc:
             print('  r%d c%d' % (row, col))
             i += 1
             if i > 10:
@@ -993,7 +989,7 @@ class Tiler:
                         print('M: X %d:%d would have overstretched, shifting to maximum width position %d:%d' % (
                             x, x + self.stw, x0, x1))
 
-                yield [x0, x1, y0, y1]
+                yield (x0, x1, y0, y1)
 
                 #col += 1
                 if x_done:
@@ -1007,13 +1003,11 @@ class Tiler:
         return len(list(self.gen_supertile_tiles(st_bounds)))
 
     def should_try_supertile(self, st_bounds):
-        # If not merging always stitch
-        if not self.merge:
-            return True
+        #print('M: checking supertile for existing tiles with %d candidates' % (
+        #    self.n_supertile_tiles(st_bounds)))
 
-        print('M: checking supertile for existing tiles with %d candidates' % (
-            self.n_supertile_tiles(st_bounds)))
-
+        solves = 0
+        net = 0
         for (y, x) in self.gen_supertile_tiles(st_bounds):
             # If we made it this far the tile can be constructed with acceptable enblend artifacts
             row = self.y2row(y)
@@ -1021,9 +1015,10 @@ class Tiler:
 
             #print('Checking (r%d, c%d)' % (row, col))
             # Did we already do this tile?
-            if not self.is_done(row, col):
-                return True
-        return False
+            if not self.is_done_rc(row, col):
+                solves += 1
+            net += 1
+        return (solves, net)
 
     def seed_merge(self):
         '''Add all already generated tiles to the closed list'''
@@ -1032,7 +1027,7 @@ class Tiler:
         assert icm.rows <= self.rows() and icm.cols <= self.cols(), "%u rows, %u cols but icm %u rows, %u cols" % (self.rows(), self.cols(), icm.rows, icm.cols)
         already_done = 0
         for (col, row) in icm.gen_set():
-            self.mark_done(row, col, False)
+            self.mark_done_rc(row, col, False)
             already_done += 1
         print('Map seeded with %d already done tiles' % already_done)
 
@@ -1067,35 +1062,44 @@ class Tiler:
             prefix += "_"
 
         with open(os.path.join(self.log_dir, prefix + 'open_list.txt'), "w") as f:
-            for (row, col) in self.open_list:
+            for (row, col) in self.open_list_rc:
                 f.write("%sr,%sc\n" % (row, col))
 
         with open(os.path.join(self.log_dir, prefix + 'closed_list.txt'), "w") as f:
-            for (row, col) in self.closed_list:
+            for (row, col) in self.closed_list_rc:
                 f.write("%sr,%sc\n" % (row, col))
 
         with open(os.path.join(self.log_dir, prefix + 'state.txt'), "w") as f:
             print("stw %u, sth %u" % (self.stw, self.sth), file=f)
             print("clip_width %u, clip_height %u" % (self.clip_width, self.clip_height), file=f)
 
+        tile_freqs = dict()
+        for st_bounds in self.gen_supertiles():
+            for (tile_y, tile_x) in self.gen_supertile_tiles(st_bounds):
+                tile_freqs[(tile_y, tile_x)] = tile_freqs.get((tile_y, tile_x), 0) + 1
+
         with open(os.path.join(self.log_dir, prefix + 'supertiles.txt'), "w") as f:
+            maxfreq = 0
             for st_bounds in self.gen_supertiles():
-                [x0, x1, y0, y1] = st_bounds
+                x0, x1, y0, y1 = st_bounds
                 st_bounds = tuple(st_bounds)
                 is_closed = st_bounds in self.closed_sts
                 print("st %ux0 %ux1 %uy0 %uy1 %uc" % (x0, x1, y0, y1, is_closed), file=f)                
                 for (tile_y, tile_x) in self.gen_supertile_tiles(st_bounds):
-                    is_open = (tile_y, tile_x) in self.open_list
-                    is_closed = (tile_y, tile_x) in self.closed_list
-                    print("    tile %ux %uy o%u c%u" % (tile_x, tile_y, is_open, is_closed), file=f)
+                    is_open = (tile_y, tile_x) in self.open_list_rc
+                    is_closed = (tile_y, tile_x) in self.closed_list_rc
+                    freq = tile_freqs[(tile_y, tile_x)]
+                    maxfreq = max(freq, maxfreq)
+                    print("    tile %ux %uy o%u c%u f%u" % (tile_x, tile_y, is_open, is_closed, freq), file=f)
+            print("Max tile freq: %u" % maxfreq)
 
     def calc_vars(self):
         # in form (row, col)
-        self.open_list = set()
-        self.closed_list = set()
+        self.open_list_rc = set()
+        self.closed_list_rc = set()
         for row in xrange(self.rows()):
             for col in xrange(self.cols()):
-                self.open_list.add((row, col))
+                self.open_list_rc.add((row, col))
         self.closed_sts = set()
 
     def run(self):
@@ -1115,6 +1119,7 @@ class Tiler:
         """
 
         self.calc_vars()
+        self.worker_failures = 0
 
         print('Input images width %d, height %d' % (self.img_width,
                                                     self.img_height))
@@ -1125,9 +1130,6 @@ class Tiler:
                                                    self.super_t_ystep))
         print('Supertile clip width %d, height %d' % (self.clip_width,
                                                       self.clip_height))
-
-        if self.merge and self.force:
-            raise Exception('Can not merge and force')
 
 
         if not self.ignore_crop and self.pto.get_panorama_line().getv(
@@ -1190,8 +1192,8 @@ class Tiler:
         print('S' * 80)
         print('M: Serial end')
         print('P' * 80)
-        n_closed = len(self.closed_list)
-        n_open = len(self.open_list)
+        n_closed = len(self.closed_list_rc)
+        n_open = len(self.open_list_rc)
         n_tiles = self.n_tiles()
         print("closed list %u / %u tiles" % (n_closed, n_tiles))
         print("open list %u / %u tiles" % (n_open, n_tiles))
@@ -1264,6 +1266,7 @@ class Tiler:
                         if not self.ignore_errors:
                             raise Exception('M: shutdown on worker failure')
                         print('M WARNING: continuing despite worker failure')
+                        self.worker_failures += 1
                     else:
                         print('M: %s' % (out, ))
                         raise Exception(
@@ -1291,9 +1294,9 @@ class Tiler:
 
                             [x0, x1, y0, y1] = st_bounds
                             self.n_supertiles += 1
-                            print('M: checking supertile x(%d:%d) y(%d:%d)' % (
-                                x0, x1, y0, y1))
-                            if not self.should_try_supertile(st_bounds):
+                            (st_solves, st_net) = self.should_try_supertile(st_bounds)
+                            print('M: check st %u (x(%d:%d) y(%d:%d)) keep %u / %u tiles' % (self.n_supertiles, x0, x1, y0, y1, st_solves, st_net))
+                            if not st_solves:
                                 print('M WARNING: skipping supertile %d as it would not generate any new tiles' % self.n_supertiles)
                                 continue
 
@@ -1325,20 +1328,21 @@ class Tiler:
                         last_progress = time.time()
                         time.sleep(0.1)
 
-            print("All pairs allocated and complete")
+            print("All pairs allocated and complete w/ %u failures" % self.worker_failures)
             bench.stop()
             print('M Processed %d supertiles to generate %d new (%d total) tiles in %s' % (
-                self.n_expected_sts, self.this_tiles_done, len(self.closed_list),
+                self.n_expected_sts, self.this_tiles_done, len(self.closed_list_rc),
                 str(bench)))
             tiles_s = self.this_tiles_done / bench.delta_s()
             print('M %f tiles / sec, %f pix / sec' % (
                 tiles_s, tiles_s * self.tw * self.th))
 
-            if len(self.closed_list) != self.net_expected_tiles:
+            if len(self.closed_list_rc) != self.net_expected_tiles:
                 print('M ERROR: expected to do %d basic tiles but did %d' % (
-                    self.net_expected_tiles, len(self.closed_list)))
+                    self.net_expected_tiles, len(self.closed_list_rc)))
                 self.dump_open_list()
-                raise Exception('State mismatch')
+                raise Exception('State mismatch: expected %u basic tiles but open %u, closed %u, %u worker failures' % (
+                    self.net_expected_tiles, len(self.open_list_rc), len(self.closed_list_rc), self.worker_failures))
 
             # Gather up supertile filenames generated by workers
             # xxx: maybe we should tell slaves the file they should use?
