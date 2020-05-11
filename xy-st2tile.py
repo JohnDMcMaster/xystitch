@@ -14,6 +14,7 @@ import re
 import sys
 import time
 from PIL import Image
+from collections import OrderedDict
 
 
 def run(args):
@@ -70,6 +71,7 @@ def run(args):
         os.mkdir(args.single_dir)
 
     t.calc_expected_tiles()
+    t.calc_vars()
 
     print('Forcing tiler on all images')
     for fn in glob.glob(args.st_dir + "/*.jpg"):
@@ -80,31 +82,8 @@ def run(args):
         x0, y0 = coord(fn)
         #t.make_tile(im, x, y, row, col)
         st_bounds = [x0, x0 + width, y0, y0 + height]
-        t.process_image(im, st_bounds)
+        t.process_image(fn, im, st_bounds)
 
-    print('Creating single image')
-    single_fn = args.single_fn
-    if single_fn is None:
-        single_fn = 'out.jpg'
-    if args.single_dir:
-        single_fn = os.path.join(args.single_dir, single_fn)
-    # sometimes I restitch with different supertile size
-    # this results in excessive merge, although really I should just delete the old files
-    if args.merge:
-        print('Single: using glob strategy on merge')
-        s_fns = glob.glob(os.path.join(args.st_dir, 'st_*x_*y.jpg'))
-    else:
-        print('Single: using output strategy')
-        s_fns = t.st_fns
-
-    single_fn_alt = None
-    if args.single_fn is None:
-        single_fn_alt = single_fn.replace('.jpg', '.tif')
-
-    try:
-        singlify(s_fns, single_fn, single_fn_alt)
-    except HugeJPEG:
-        print('WARNING: single: exceeds max image size')
 
 def main():
     parser = argparse.ArgumentParser(
