@@ -1073,6 +1073,7 @@ class Tiler:
             print("stw %u, sth %u" % (self.stw, self.sth), file=f)
             print("clip_width %u, clip_height %u" % (self.clip_width, self.clip_height), file=f)
             print("mem_worker_max %0.3f GB" % (self.mem_worker_max/1e9,), file=f)
+            print("mem_net_last %0.3f GB" % (self.mem_net_last/1e9,), file=f)
             print("mem_net_max %0.3f GB" % (self.mem_net_max/1e9,), file=f)
 
         tile_freqs = dict()
@@ -1114,9 +1115,11 @@ class Tiler:
             self.mem_worker_max = max(self.mem_worker_max, mem_worker)
             mem_net += mem_worker
         self.mem_net_max = max(self.mem_net_max, mem_net)
+        self.mem_net_last = mem_net
 
 
     def run(self):
+        self.mem_net_last = 0
         self.mem_net_max = 0
         self.mem_worker_max = 0
 
@@ -1225,6 +1228,7 @@ class Tiler:
 
             all_allocated = False
             last_progress = time.time()
+            last_print = time.time()
             pair_submit = 0
             pair_complete = 0
             idle = False
@@ -1329,6 +1333,15 @@ class Tiler:
                             pair_submit += 1
                             break
 
+                def print_mem():
+                    print("mem_worker_max %0.3f GB" % (self.mem_worker_max/1e9,))
+                    print("mem_net_last %0.3f GB" % (self.mem_net_last/1e9,))
+                    print("mem_net_max %0.3f GB" % (self.mem_net_max/1e9,))
+
+                if time.time() - last_print > 5 * 60:
+                    print_mem()
+                    last_print = time.time()
+                
                 if progress:
                     last_progress = time.time()
                     self.core_dump()
@@ -1336,8 +1349,8 @@ class Tiler:
                 else:
                     if not idle:
                         print('M Server thread idle. dry %s, all %u, complete %u / %u' % (self.dry, all_allocated, pair_complete, pair_submit))
-                        print("mem_worker_max %0.3f GB" % (self.mem_worker_max/1e9,))
-                        print("mem_net_max %0.3f GB" % (self.mem_net_max/1e9,))
+                        print_mem()
+                        last_print = time.time()
                         #print(len(self.workers))
                         #print(self.workers[0].qo.qsize())
                         #print(self.workers[1].qo.qsize())
@@ -1345,8 +1358,6 @@ class Tiler:
                     # can take some time, but should be using smaller tiles now
                     if time.time() - last_progress > 4 * 60 * 60:
                         print('M WARNING: server thread stalled')
-                        print("mem_worker_max %0.3f GB" % (self.mem_worker_max/1e9,))
-                        print("mem_net_max %0.3f GB" % (self.mem_net_max/1e9,))
                         last_progress = time.time()
                         time.sleep(0.1)
 
