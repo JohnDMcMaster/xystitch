@@ -60,7 +60,7 @@ import datetime
 import math
 import os
 import Queue
-import shutil
+import psutil
 import subprocess
 import sys
 import multiprocessing
@@ -1072,6 +1072,8 @@ class Tiler:
         with open(os.path.join(self.log_dir, prefix + 'state.txt'), "w") as f:
             print("stw %u, sth %u" % (self.stw, self.sth), file=f)
             print("clip_width %u, clip_height %u" % (self.clip_width, self.clip_height), file=f)
+            print("mem_worker_max %0.3f GB" % (self.mem_worker_max/1e9,), file=f)
+            print("mem_net_max %0.3f GB" % (self.mem_net_max/1e9,), file=f)
 
         tile_freqs = dict()
         for st_bounds in self.gen_supertiles():
@@ -1102,7 +1104,22 @@ class Tiler:
                 self.open_list_rc.add((row, col))
         self.closed_sts = set()
 
+    def profile(self):
+        mem_net = 0
+        for worker in self.workers:
+            # mem_worker = worker.process.memory_info().rss
+            pid = worker.process.pid
+            process = psutil.Process(pid)
+            mem_worker = process.memory_info()[0]
+            self.mem_worker_max = max(self.mem_worker_max, mem_worker)
+            mem_net += mem_worker
+        self.mem_net_max = max(self.mem_net_max, mem_net)
+
+
     def run(self):
+        self.mem_net_max = 0
+        self.mem_worker_max = 0
+
         """
         if not self.dry:
             self.dry = True
@@ -1213,6 +1230,7 @@ class Tiler:
             idle = False
             while not (all_allocated and pair_complete == pair_submit):
                 progress = False
+                self.profile()
                 # Check for completed jobs
                 for wi, worker in enumerate(self.workers):
                     # print("worker %u qo size %u" % (wi, worker.qo.qsize()))
@@ -1318,6 +1336,8 @@ class Tiler:
                 else:
                     if not idle:
                         print('M Server thread idle. dry %s, all %u, complete %u / %u' % (self.dry, all_allocated, pair_complete, pair_submit))
+                        print("mem_worker_max %0.3f GB" % (self.mem_worker_max/1e9,))
+                        print("mem_net_max %0.3f GB" % (self.mem_net_max/1e9,))
                         #print(len(self.workers))
                         #print(self.workers[0].qo.qsize())
                         #print(self.workers[1].qo.qsize())
@@ -1325,6 +1345,8 @@ class Tiler:
                     # can take some time, but should be using smaller tiles now
                     if time.time() - last_progress > 4 * 60 * 60:
                         print('M WARNING: server thread stalled')
+                        print("mem_worker_max %0.3f GB" % (self.mem_worker_max/1e9,))
+                        print("mem_net_max %0.3f GB" % (self.mem_net_max/1e9,))
                         last_progress = time.time()
                         time.sleep(0.1)
 
@@ -1360,6 +1382,8 @@ class Tiler:
             print("    all_allocated: %s" % (all_allocated,))
             print("    pair_complete: %s" % (pair_complete,))
             print("    pair_submit: %s" % (pair_submit,))
+            print("    mem_worker_max %0.3f GB" % (self.mem_worker_max/1e9,))
+            print("    mem_net_max %0.3f GB" % (self.mem_net_max/1e9,))
             self.wkill()
             self.core_dump("final")
             self.workers = None
