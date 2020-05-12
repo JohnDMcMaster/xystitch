@@ -74,6 +74,17 @@ class InvalidClip(Exception):
 class NoTilesGenerated(Exception):
     pass
 
+def pid_memory_recursive(pid, indent=""):
+    ret = 0
+    process = psutil.Process(pid)
+    children = process.children(recursive=True)
+    this = process.memory_info()[0]
+    # print("%smem %u: %u" % (indent, pid, this))
+    ret += this
+    for child in children:
+        ret += pid_memory_recursive(child.pid, indent=indent + "  ")
+    return ret
+
 class PartialStitcher(object):
     def __init__(self, pto, bounds, out, worki, work_run, pprefix):
         self.pto = pto
@@ -1109,9 +1120,7 @@ class Tiler:
         mem_net = 0
         for worker in self.workers:
             # mem_worker = worker.process.memory_info().rss
-            pid = worker.process.pid
-            process = psutil.Process(pid)
-            mem_worker = process.memory_info()[0]
+            mem_worker = pid_memory_recursive(worker.process.pid)
             self.mem_worker_max = max(self.mem_worker_max, mem_worker)
             mem_net += mem_worker
         self.mem_net_max = max(self.mem_net_max, mem_net)
