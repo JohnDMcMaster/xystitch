@@ -76,13 +76,16 @@ class NoTilesGenerated(Exception):
 
 def pid_memory_recursive(pid, indent=""):
     ret = 0
-    process = psutil.Process(pid)
-    children = process.children(recursive=True)
-    this = process.memory_info()[0]
-    # print("%smem %u: %u" % (indent, pid, this))
-    ret += this
-    for child in children:
-        ret += pid_memory_recursive(child.pid, indent=indent + "  ")
+    try:
+        process = psutil.Process(pid)
+        children = process.children(recursive=True)
+        this = process.memory_info()[0]
+        # print("%smem %u: %u" % (indent, pid, this))
+        ret += this
+        for child in children:
+            ret += pid_memory_recursive(child.pid, indent=indent + "  ")
+    except psutil.NoSuchProcess:
+        pass
     return ret
 
 class PartialStitcher(object):
