@@ -1405,6 +1405,7 @@ class Tiler:
             print("    all_allocated: %s" % (all_allocated,))
             print("    pair_complete: %s" % (pair_complete,))
             print("    pair_submit: %s" % (pair_submit,))
+            print("    worker_failures: %s" % (self.worker_failures,))
             print("    mem_worker_max %0.3f GB" % (self.mem_worker_max/1e9,))
             print("    mem_net_max %0.3f GB" % (self.mem_net_max/1e9,))
             self.wkill()
