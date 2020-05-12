@@ -1329,7 +1329,7 @@ class Tiler:
                             [x0, x1, y0, y1] = st_bounds
                             self.n_supertiles += 1
                             (st_solves, st_net) = self.should_try_supertile(st_bounds)
-                            print('M: check st %u (x(%d:%d) y(%d:%d)) keep %u / %u tiles' % (self.n_supertiles, x0, x1, y0, y1, st_solves, st_net))
+                            print('M: check st %u (x(%d:%d) y(%d:%d)) want %u / %u tiles' % (self.n_supertiles, x0, x1, y0, y1, st_solves, st_net))
                             if not st_solves:
                                 print('M WARNING: skipping supertile %d as it would not generate any new tiles' % self.n_supertiles)
                                 continue
@@ -1346,9 +1346,9 @@ class Tiler:
                             break
 
                 def print_mem():
-                    print("mem_worker_max %0.3f GB" % (self.mem_worker_max/1e9,))
                     print("mem_net_last %0.3f GB" % (self.mem_net_last/1e9,))
-                    print("mem_net_max %0.3f GB" % (self.mem_net_max/1e9,))
+                    print("  mem_net_max %0.3f GB" % (self.mem_net_max/1e9,))
+                    print("  mem_worker_max %0.3f GB" % (self.mem_worker_max/1e9,))
 
                 if time.time() - last_print > 5 * 60:
                     print_mem()
