@@ -13,6 +13,7 @@ from xystitch.pto.util import optimize_xy_only, fixup_i_lines, fixup_p_lines
 from xystitch.pimage import PImage
 from xystitch.temp_file import ManagedTempFile
 from xystitch.benchmark import Benchmark
+from xystitch import microscopej
 
 import json
 import os
@@ -93,26 +94,7 @@ class CommonStitch:
         # Only used if regular image
         self.subimage_control_points = True
 
-        # Fraction shared between images
-        self.x_overlap = 0.7
-        self.y_overlap = 0.7
-        if os.path.exists('scan.json'):
-            j = json.load(open('scan.json'))
-            if 'overlap' in j:
-                self.x_overlap = j['overlap']
-                self.y_overlap = j['overlap']
-            if 'computed' in j:
-                self.x_overlap = j['computed']['x']['overlap']
-                self.y_overlap = j['computed']['y']['overlap']
-        # Newer file
-        # Decided want to keep scan.json verbatim
-        if os.path.exists('out.json'):
-            j = json.load(open('out.json', 'r'))
-            self.x_overlap = j['x']['overlap']
-            self.y_overlap = j['y']['overlap']
-        print 'Overlap'
-        print '  X: %g' % (self.x_overlap, )
-        print '  Y: %g' % (self.y_overlap, )
+        self.x_overlap, self.y_overlap = microscopej.load_parameters()
 
         self.dry = False
         self.log_dir = 'pr0nstitch'

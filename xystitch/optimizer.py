@@ -27,7 +27,7 @@ it is a good idea to at least assert that all images are in the same focal plane
 '''
 
 from xystitch import execute
-from xystitch.pimage import PImage
+from xystitch import microscopej
 from xystitch.pto.util import *
 from xystitch.benchmark import Benchmark
 from xystitch import statistics
@@ -1042,12 +1042,7 @@ def check_poor_opt(project, icm=None):
     imgx = 1632
     imgy = 1224
 
-    ox = 0.7
-    oy = 0.7
-    if os.path.exists('out.json'):
-        j = json.load(open('out.json', 'r'))
-        ox = j['x']['overlap']
-        oy = j['y']['overlap']
+    ox, oy = microscopej.load_parameters()
     ox *= imgx
     oy *= imgy
     # First order tolerance
@@ -1128,12 +1123,7 @@ def check_pair_outlier_angle(icm, pairsx, pairsy):
     imgx = 1632
     imgy = 1224
 
-    ox = 0.7
-    oy = 0.7
-    if os.path.exists('out.json'):
-        j = json.load(open('out.json', 'r'))
-        ox = j['x']['overlap']
-        oy = j['y']['overlap']
+    ox, oy = microscopej.load_parameters()
     ox *= imgx
     oy *= imgy
     # First order tolerance
