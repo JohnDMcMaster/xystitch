@@ -7,6 +7,7 @@ Licensed under a 2 clause BSD license, see COPYING for details
 import math
 import os
 from xystitch.pimage import PImage
+import shutil
 
 
 class MissingImage(Exception):
@@ -133,7 +134,7 @@ class ImageCoordinateMap:
 
     def images(self):
         '''Returns a generator giving (file name, row, col) tuples'''
-        for (col, row), image, in self.layout.iteritems():
+        for (col, row), image, in self.layout.items():
             yield (image, row, col)
 
     def n_images(self):
@@ -159,11 +160,11 @@ class ImageCoordinateMap:
                     raise Exception('Row %d, col %d unexpected' % (row, col))
 
     def debug_print(self):
-        print 'height %d rows, width %d cols' % (self.height(), self.width())
+        print('height %d rows, width %d cols' % (self.height(), self.width()))
         for row in range(self.height()):
             for col in range(self.width()):
-                print '  [r%d][c%d] = %s' % (row, col, self.get_image(
-                    col, row))
+                print('  [r%d][c%d] = %s' % (row, col, self.get_image(
+                    col, row)))
 
     def get_image_safe(self, col, row):
         '''Returns none if out of bounds'''
@@ -226,7 +227,7 @@ class ImageCoordinateMap:
                                check_bounds=True):
         '''Partial: if set will allow gaps and consider it a smaller set'''
 
-        print 'Constructing image coordinate map from tagged file names...'
+        print('Constructing image coordinate map from tagged file names...')
         '''
         rows: hard code number input rows
         cols: hard code number input cols
@@ -237,7 +238,7 @@ class ImageCoordinateMap:
             cols = math.ceil(len(file_names) / rows)
 
         if rows is None or cols is None:
-            print 'Row / col hints insufficient, guessing row / col layout from file names'
+            print('Row / col hints insufficient, guessing row / col layout from file names')
             row_parts = set([0])
             col_parts = set([0])
 
@@ -248,13 +249,13 @@ class ImageCoordinateMap:
 
             # Assume X first so that files read x_y.jpg which seems most intuitive (to me FWIW)
             if cols is None:
-                print 'Constructing columns from set %s' % str(col_parts)
+                print('Constructing columns from set %s' % str(col_parts))
                 cols = max(col_parts) + 1
             if rows is None:
-                print 'Constructing rows from set %s' % str(row_parts)
+                print('Constructing rows from set %s' % str(row_parts))
                 rows = max(row_parts) + 1
-        print 'initial cols / X dim / width: %d, rows / Y dim / height: %d' % (
-            cols, rows)
+        print('initial cols / X dim / width: %d, rows / Y dim / height: %d' % (
+            cols, rows))
 
         ret = ImageCoordinateMap(cols, rows)
         file_names = sorted(file_names)
@@ -318,3 +319,23 @@ class ImageCoordinateMap:
             y0 = min(y0, row)
             y1 = max(y1, row)
         return ((x0, x1), (y0, y1))
+
+def icm_flip_lr(icm):
+    """
+    10 cols
+        4 <=> 5
+    9 cols
+        4 <=> 4
+    """
+    for coll in range(icm.cols // 2):
+        colr = icm.cols - coll - 1
+        if coll >= colr:
+            break
+        for row in range(icm.rows):
+            icm.layout[(coll, row)], icm.layout[(colr, row)] = icm.layout.get((colr, row), None), icm.layout.get((coll, row), None)
+
+def icm_save(icm, dir_out, dry=False):
+    for fn_in, row, col in icm.images():
+        fn_out = "%s/r%03u_c%03u.jpg" % (dir_out, row, col)
+        print("%s => %s" % (fn_in, fn_out))
+        shutil.copyfile(fn_in, fn_out)
