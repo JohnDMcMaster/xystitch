@@ -32,8 +32,8 @@ class PImage:
             row_label_str = ''
             if row_label:
                 row_label_str = '%02d: ' % y
-            print(row_label_str + self.debug_row_string(
-                y, char_limit, row_label_str))
+            print(row_label_str +
+                  self.debug_row_string(y, char_limit, row_label_str))
 
     def debug_row_string(self, y, char_limit=None, row_label=None):
         if row_label is None:
@@ -86,8 +86,8 @@ class PImage:
 
         #print (x_min, x_max, y_min, y_max)
         #print 'Trimming: doing subimage'
-        return (self.subimage(x_min, x_max, y_min, y_max), x_min, x_max, y_min,
-                y_max)
+        return (self.subimage(x_min, x_max, y_min,
+                              y_max), x_min, x_max, y_min, y_max)
 
     def save(self, *args, **kwargs):
         '''save(file name[, format, kw options]) where kw_options includes quality=<val>'''

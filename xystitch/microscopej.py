@@ -1,28 +1,33 @@
 import os
 import json
 
-def load_scanj_v1( j):
+
+def load_scanj_v1(j):
     x_overlap = j['overlap']
     y_overlap = j['overlap']
     return x_overlap, y_overlap
 
-def load_scanj_v2( j):
+
+def load_scanj_v2(j):
     x_overlap = j['computed']['x']['overlap']
     y_overlap = j['computed']['y']['overlap']
     return x_overlap, y_overlap
 
-def load_outj_v1( j):
+
+def load_outj_v1(j):
     x_overlap = j['x']['overlap']
     y_overlap = j['y']['overlap']
     return x_overlap, y_overlap
 
-def load_outj_v2( j):
+
+def load_outj_v2(j):
     """
     This is the first format that was thought out in any meaningful way
     """
     x_overlap = j['planner']['x']['overlap']
     y_overlap = j['planner']['y']['overlap']
     return x_overlap, y_overlap
+
 
 def load_parameters():
     # Fraction shared between images
@@ -50,4 +55,3 @@ def load_parameters():
     print('  X: %g' % (x_overlap, ))
     print('  Y: %g' % (y_overlap, ))
     return x_overlap, y_overlap
-

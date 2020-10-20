@@ -119,7 +119,6 @@ class ImageCoordinateMap:
     y    1        [0, 1]    [1, 1]    [2, 1]
          2        [0, 2]    [1, 2]    [2, 2] 
     '''
-
     def __init__(self, cols, rows):
         # The actual imageimage_file_names position mapping
         # Maps rows and cols to image file names
@@ -163,8 +162,8 @@ class ImageCoordinateMap:
         print('height %d rows, width %d cols' % (self.height(), self.width()))
         for row in range(self.height()):
             for col in range(self.width()):
-                print('  [r%d][c%d] = %s' % (row, col, self.get_image(
-                    col, row)))
+                print('  [r%d][c%d] = %s' %
+                      (row, col, self.get_image(col, row)))
 
     def get_image_safe(self, col, row):
         '''Returns none if out of bounds'''
@@ -238,7 +237,9 @@ class ImageCoordinateMap:
             cols = math.ceil(len(file_names) / rows)
 
         if rows is None or cols is None:
-            print('Row / col hints insufficient, guessing row / col layout from file names')
+            print(
+                'Row / col hints insufficient, guessing row / col layout from file names'
+            )
             row_parts = set([0])
             col_parts = set([0])
 
@@ -254,8 +255,8 @@ class ImageCoordinateMap:
             if rows is None:
                 print('Constructing rows from set %s' % str(row_parts))
                 rows = max(row_parts) + 1
-        print('initial cols / X dim / width: %d, rows / Y dim / height: %d' % (
-            cols, rows))
+        print('initial cols / X dim / width: %d, rows / Y dim / height: %d' %
+              (cols, rows))
 
         ret = ImageCoordinateMap(cols, rows)
         file_names = sorted(file_names)
@@ -278,14 +279,12 @@ class ImageCoordinateMap:
     def gen_pairs(self, row_spread=1, col_spread=1):
         '''Returns a generator of ImageCoordinatePair's, sorted'''
         for col_0 in range(0, self.cols):
-            for col_1 in range(
-                    max(0, col_0 - col_spread),
-                    min(self.cols, col_0 + col_spread)):
+            for col_1 in range(max(0, col_0 - col_spread),
+                               min(self.cols, col_0 + col_spread)):
                 for row_0 in range(0, self.rows):
                     # Don't repeat elements, don't pair with self, keep a delta of row_spread
-                    for row_1 in range(
-                            max(0, row_0 - row_spread),
-                            min(self.rows, row_0 + row_spread)):
+                    for row_1 in range(max(0, row_0 - row_spread),
+                                       min(self.rows, row_0 + row_spread)):
                         if col_0 == col_1 and row_0 == row_1:
                             continue
                         # For now just allow manhatten distance of 1
@@ -320,6 +319,7 @@ class ImageCoordinateMap:
             y1 = max(y1, row)
         return ((x0, x1), (y0, y1))
 
+
 def icm_flip_lr(icm):
     """
     10 cols
@@ -332,7 +332,9 @@ def icm_flip_lr(icm):
         if coll >= colr:
             break
         for row in range(icm.rows):
-            icm.layout[(coll, row)], icm.layout[(colr, row)] = icm.layout.get((colr, row), None), icm.layout.get((coll, row), None)
+            icm.layout[(coll, row)], icm.layout[(colr, row)] = icm.layout.get(
+                (colr, row), None), icm.layout.get((coll, row), None)
+
 
 def icm_save(icm, dir_out, dry=False):
     for fn_in, row, col in icm.images():

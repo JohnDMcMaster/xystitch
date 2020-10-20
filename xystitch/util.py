@@ -11,6 +11,7 @@ import shutil
 import sys
 import re
 
+
 def rjust_str(s, nchars):
     '''right justify string, space padded to nchars spaces'''
     return ('%% %ds' % nchars) % s
@@ -152,10 +153,16 @@ class IOLog(object):
 def add_bool_arg(parser, yes_arg, default=False, **kwargs):
     dashed = yes_arg.replace('--', '')
     dest = dashed.replace('-', '_')
-    parser.add_argument(
-        yes_arg, dest=dest, action='store_true', default=default, **kwargs)
-    parser.add_argument(
-        '--no-' + dashed, dest=dest, action='store_false', **kwargs)
+    parser.add_argument(yes_arg,
+                        dest=dest,
+                        action='store_true',
+                        default=default,
+                        **kwargs)
+    parser.add_argument('--no-' + dashed,
+                        dest=dest,
+                        action='store_false',
+                        **kwargs)
+
 
 def size2str(d):
     if d < 1000:
@@ -165,6 +172,7 @@ def size2str(d):
     if d < 1000**3:
         return '%gm' % (d / 1000.0**2)
     return '%gg' % (d / 1000.0**3)
+
 
 def mksize(s):
     # To make feeding args easier
@@ -203,6 +211,7 @@ def mksize(s):
             raise ValueError('Bad modifier %s on number string %s', mod, s)
     return num
 
+
 def mem2pix(mem):
     # Rough heuristic from some of my trials (1 GB => 51 MP)
     return mem * 51 / 1000
@@ -211,4 +220,3 @@ def mem2pix(mem):
     # ahah: I think it was disk space and I had misinterpreted it as memory
     # since the files got deleted after the run it wasn't obvious
     #return mem * 35 / 1000
-

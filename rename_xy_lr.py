@@ -9,6 +9,7 @@ import os
 import shutil
 import math
 
+
 def run(dir_in, dir_out, dry):
     fns_in = []
     for fn in sorted(glob.glob("%s/*.jpg" % dir_in)):
@@ -20,8 +21,7 @@ def run(dir_in, dir_out, dry):
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description='Mirror grid left to right')
+    parser = argparse.ArgumentParser(description='Mirror grid left to right')
     add_bool_arg(parser, '--dry', default=True, help='')
     parser.add_argument('dir_in', help='')
     parser.add_argument('dir_out', help='')
@@ -29,6 +29,6 @@ def main():
 
     run(args.dir_in, args.dir_out, dry=args.dry)
 
+
 if __name__ == "__main__":
     main()
-

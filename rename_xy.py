@@ -8,6 +8,7 @@ import os
 import shutil
 import math
 
+
 def run(dir_in, dir_out, endrows, dry):
     # Bucket into rows
     endrows = endrows.split(",")
@@ -56,7 +57,9 @@ def run(dir_in, dir_out, endrows, dry):
             col = int(round(1.0 * raw_coli / this_cols * ncols))
             print("%s: %uc, %ur" % (fn, col, row))
             if not dry:
-                shutil.copyfile("%s/%s" % (dir_in, fn), "%s/r%03u_c%03u.jpg" % (dir_out, row, col))
+                shutil.copyfile("%s/%s" % (dir_in, fn),
+                                "%s/r%03u_c%03u.jpg" % (dir_out, row, col))
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -69,6 +72,6 @@ def main():
 
     run(args.dir_in, args.dir_out, args.endrows, dry=args.dry)
 
+
 if __name__ == "__main__":
     main()
-

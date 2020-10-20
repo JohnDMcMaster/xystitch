@@ -11,8 +11,10 @@ Image.MAX_IMAGE_PIXELS = None
 class HugeImage(Exception):
     pass
 
+
 class HugeJPEG(HugeImage):
     pass
+
 
 class HugeTIF(HugeImage):
     pass
@@ -23,6 +25,7 @@ def coord(fn):
     # st_021365x_005217y.jpg
     m = re.match('.*st_([0-9]*)x_([0-9]*)y.jpg', fn)
     return (int(m.group(1), 10), int(m.group(2), 10))
+
 
 def singlify(fns_in, fn_out, fn_out_alt=None):
     if not fns_in:
@@ -59,13 +62,17 @@ def singlify(fns_in, fn_out, fn_out_alt=None):
         if fn_out.find('.jpg') >= 0:
             if w >= 2**16 or h >= 2**16:
                 if fn_out_alt:
-                    print('WARNING: image exceeds maximum JPEG w/h.  Forcing alt format')
+                    print(
+                        'WARNING: image exceeds maximum JPEG w/h.  Forcing alt format'
+                    )
                     return fn_out_alt
                 raise HugeJPEG('Image exceeds maximum JPEG w/h')
             # think this was tiff, not jpg...?
             if w * h >= 2**32:
                 if fn_out_alt:
-                    print('WARNING: image exceeds maximum JPEG size.  Forcing alt format')
+                    print(
+                        'WARNING: image exceeds maximum JPEG size.  Forcing alt format'
+                    )
                     return fn_out_alt
                 raise HugeJPEG('Image exceeds maximum JPEG size')
         '''
@@ -95,5 +102,6 @@ def singlify(fns_in, fn_out, fn_out_alt=None):
             os.remove(fn_out)
         except OSError:
             pass
-        raise HugeTIF("Failed to save image of size %uw x %uh" % (width, height))
+        raise HugeTIF("Failed to save image of size %uw x %uh" %
+                      (width, height))
     print('Done!')

@@ -18,8 +18,8 @@ class RemoveImages:
         def start_element(name, attrs):
             if name == 'image':
                 if not self.cur_layer or not self.in_image_layer:
-                    raise Exception(
-                        'Unexpected image in layer %s' % self.cur_layer)
+                    raise Exception('Unexpected image in layer %s' %
+                                    self.cur_layer)
             elif name == 'g':
                 '''
 				<g

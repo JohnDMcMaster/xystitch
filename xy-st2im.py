@@ -11,4 +11,3 @@ if __name__ == "__main__":
 
     # Warning: will throw HugeJPEG if too big
     singlify(args.fns_in, args.fn_out)
-
