@@ -612,21 +612,17 @@ def attach_image_linear(project, icm, closed_set, pairsx, pairsy, xbase,
     def avg(vals, s):
         vals = filter(lambda x: x is not None, vals)
         vals = [s(val) for val in vals]
+        if len(vals) == 0:
+            return None
         return sum(vals) / len(vals)
 
-    if len(pairsx) > 0:
-        pairsx_avg = (avg(pairsx.values(),
-                          lambda x: x[0]), avg(pairsx.values(),
-                                               lambda x: x[1]))
-    else:
-        pairsx_avg = None
+    pairsx_avg = (avg(pairsx.values(),
+                      lambda x: x[0]), avg(pairsx.values(),
+                                           lambda x: x[1]))
     print('pairsx: %s' % (pairsx_avg, ))
-    if len(pairsy) > 0:
-        pairsy_avg = (avg(pairsy.values(),
-                          lambda x: x[0]), avg(pairsy.values(),
-                                               lambda x: x[1]))
-    else:
-        pairsy_avg = None
+    pairsy_avg = (avg(pairsy.values(),
+                      lambda x: x[0]), avg(pairsy.values(),
+                                           lambda x: x[1]))
     print('pairsy: %s' % (pairsy_avg, ))
 
     # Only anchor to cleanly solved images
@@ -680,6 +676,10 @@ def compute_u_sd(icm, pairs, xbase, xorder, ybase, yorder):
             dx, dy = d
             pointsx.append(dx)
             pointsy.append(dy)
+
+    if len(pointsx) == 0:
+        print("WARNING: insufficient data to compute u/sd")
+        return None
 
     x_sd = statistics.stdev(pointsx)
     x_u = statistics.mean(pointsx)
@@ -739,12 +739,12 @@ def check_pair_outlier_u_sd(icm, pairs, xbase, xorder, ybase, yorder, stdev=3):
     print(
         'Checking for outliers by u/sd, x=range(%u, w+1, %u), y=range(%u, h+1, %u)'
         % (xbase, xorder, ybase, yorder))
-    x_u, x_sd, y_u, y_sd = compute_u_sd(icm, pairs, xbase, xorder, ybase,
+    val = compute_u_sd(icm, pairs, xbase, xorder, ybase,
                                         yorder)
-
-    if not stdev:
+    if not stdev or val is None:
         print('stdev filter: none')
     else:
+        x_u, x_sd, y_u, y_sd = val
         print('stdev filter: %0.3f' % stdev)
         remove_u_sd(icm, pairs, stdev, xbase, xorder, ybase, yorder, x_u, x_sd,
                     y_u, y_sd)
@@ -855,7 +855,7 @@ def icm_il_pairs(project, icm):
                                                     project.img_fn2il[img],
                                                     ili)
                 else:
-                    pairsx[(x, y)] = None
+                    pairsy[(x, y)] = None
     return pairsx, pairsy
 
 
