@@ -332,24 +332,22 @@ Return positive left/up convention to match global coordinate system
 '''
 
 
-def il_pair_deltas(project, l_il, r_il):
+def il_pair_deltas(cpl_index, l_il, r_il):
     # lesser line
     l_ili = l_il.get_index()
     # Find matching control points
     cps_x = []
     cps_y = []
-    for cpl in project.control_point_lines:
-        # applicable?
-        if cpl.getv('n') == l_ili and cpl.getv('N') == r_il:
-            # compute distance
-            # note: these are relative coordinates to each image
-            # and strictly speaking can't be directly compared
-            # however, because the images are the same size the width/height can be ignored
-            cps_x.append(cpl.getv('x') - cpl.getv('X'))
-            cps_y.append(cpl.getv('y') - cpl.getv('Y'))
-        elif cpl.getv('n') == r_il and cpl.getv('N') == l_ili:
-            cps_x.append(cpl.getv('X') - cpl.getv('x'))
-            cps_y.append(cpl.getv('Y') - cpl.getv('y'))
+    for cpl in cpl_index.get((l_ili, r_il), []):
+        # compute distance
+        # note: these are relative coordinates to each image
+        # and strictly speaking can't be directly compared
+        # however, because the images are the same size the width/height can be ignored
+        cps_x.append(cpl.getv('x') - cpl.getv('X'))
+        cps_y.append(cpl.getv('y') - cpl.getv('Y'))
+    for cpl in cpl_index.get((r_il, l_ili), []):
+        cps_x.append(cpl.getv('X') - cpl.getv('x'))
+        cps_y.append(cpl.getv('Y') - cpl.getv('y'))
 
     # Possible that no control points due to failed stitch
     # or due to edge case
@@ -365,57 +363,6 @@ def pto2icm(pto):
     for il in pto.get_image_lines():
         fns.append(il.get_name())
     return ImageCoordinateMap.from_tagged_file_names(fns)
-
-
-'''
-def gen_cps_delete(pto, icm=None):
-    """
-    For every control point yield
-    ((fnl, fnr), (lx, ly) (rx, ry))
-    Where x and y are global coordinates
-    """
-
-    if icm is None:
-        icm = pto2icm(pto)
-
-    for cpl in project.control_point_lines:
-        imgn = project.image_lines[cpl.get_variable('n')]
-        imgN = project.image_lines[cpl.get_variable('N')]
-
-    for y in xrange(1, icm.height()):
-        print('Gen IL pairs with Y %d / %d' % (y + 1, icm.height()))
-        for x in xrange(1, icm.width()):
-            r_fn = icm.get_image(x, y)
-            # Skip missing images
-            if r_fn is None:
-                continue
-            r_il = pto.img_fn2il[r_fn]
-
-            def process_pair(l_il, r_il):
-                l_ili = l_il.get_index()
-                r_ili = r_il.get_index()
-                for cpl in pto.control_point_lines:
-                    if cpl.getv('n') == l_ili and cpl.getv('N') == r_ili:
-                        # invert the sign so that the math works out
-                        l_xy = ((l_il.getv('d') - cpl.getv('x')) -
-                                (l_il.getv('d') - cpl.getv('X')))**2
-                        r_xy = ((r_il.getv('e') - cpl.getv('y')) -
-                                (r_il.getv('e') - cpl.getv('Y')))**2
-                        yield (l_fn, r_fn), l_xy, r_xy
-
-            if x > 0:
-                l_fn = icm.get_image(x - 1, y)
-                if l_fn:
-                    for x in process_pair(pto.img_fn2il[l_fn], r_il):
-                        yield x
-            if y > 0:
-                l_fn = icm.get_image(x, y - 1)
-                if l_fn:
-                    for x in process_pair(pto.img_fn2il[l_fn], r_il):
-                        yield x
-'''
-
-tmpdbg = 0
 
 
 def cpl_im_abs(cpl, n_il, N_il):
@@ -438,16 +385,6 @@ def cpl_im_abs(cpl, n_il, N_il):
             n_il.getv('e') - (cpl.getv('y') - height / 2))
     N_xy = (N_il.getv('d') - (cpl.getv('X') - width / 2),
             N_il.getv('e') - (cpl.getv('Y') - height / 2))
-    if tmpdbg and (n_il.get_index(), N_il.get_index()) == (74, 75):
-        print("")
-        print(n_il.getv('d'), cpl.getv('x'), n_il.getv('e'), cpl.getv('y'))
-        print('debug n', n_xy)
-        print((N_il.getv('d'), cpl.getv('X'), N_il.getv('e'), cpl.getv('Y')))
-        print('debug N', N_xy)
-
-        (nx, ny), (Nx, Ny) = n_xy, N_xy
-        delta = ((nx - Nx)**2 + (ny - Ny)**2)**0.5
-        print('debug delta', delta)
     return (n_xy, N_xy)
 
 
@@ -471,7 +408,12 @@ def gen_cps(pto, icm=None):
 
 
 def set_il_by_points(il, points):
-    # TODO: throw out outliers
+    """
+    Set image based on neighboring image (control point) distances
+    As of 2020-10-23 control points are aggregated into image sets
+    Typically there are 1-2 existing images at a time, but in theory there could be 4
+    Could throw out outliers but probably doesn't buy a lot
+    """
 
     points_x = [p[0] for p in points]
     xpos = 1.0 * sum(points_x) / len(points_x)
@@ -482,6 +424,50 @@ def set_il_by_points(il, points):
     il.set_y(ypos)
 
     return xpos, ypos
+
+
+def get_neighbor_distances(closed_set, pairsx, pairsy, x, y, order):
+    """
+    Create a set of estimates for an image based on known neighboring image distances
+    """
+
+    # see what we can gather from
+    # list of [xcalc, ycalc]
+    points = []
+
+    # X
+    # left
+    # do we have a fixed point to the left?
+    o = closed_set.get((x - order, y), None)
+    if o:
+        d = pairsx.get((x - order + 1, y), None)
+        # and a delta to get to it?
+        if d:
+            dx, dy = d
+            points.append((o[0] - dx * order, o[1] - dy * order))
+    # right
+    o = closed_set.get((x + order, y), None)
+    if o:
+        d = pairsx.get((x + order, y), None)
+        if d:
+            dx, dy = d
+            points.append((o[0] + dx * order, o[1] + dy * order))
+
+    # Y
+    o = closed_set.get((x, y - order), None)
+    if o:
+        d = pairsy.get((x, y - order + 1), None)
+        if d:
+            dx, dy = d
+            points.append((o[0] - dx * order, o[1] - dy * order))
+    o = closed_set.get((x, y + order), None)
+    if o:
+        d = pairsy.get((x, y + order), None)
+        if d:
+            dx, dy = d
+            points.append((o[0] + dx * order, o[1] + dy * order))
+
+    return points
 
 
 def attach_image_adjacent(project,
@@ -513,41 +499,8 @@ def attach_image_adjacent(project,
                 if img is None:
                     continue
 
-                # see what we can gather from
-                # list of [xcalc, ycalc]
-                points = []
-
-                # X
-                # left
-                # do we have a fixed point to the left?
-                o = closed_set.get((x - order, y), None)
-                if o:
-                    d = pairsx.get((x - order + 1, y), None)
-                    # and a delta to get to it?
-                    if d:
-                        dx, dy = d
-                        points.append((o[0] - dx * order, o[1] - dy * order))
-                # right
-                o = closed_set.get((x + order, y), None)
-                if o:
-                    d = pairsx.get((x + order, y), None)
-                    if d:
-                        dx, dy = d
-                        points.append((o[0] + dx * order, o[1] + dy * order))
-
-                # Y
-                o = closed_set.get((x, y - order), None)
-                if o:
-                    d = pairsy.get((x, y - order + 1), None)
-                    if d:
-                        dx, dy = d
-                        points.append((o[0] - dx * order, o[1] - dy * order))
-                o = closed_set.get((x, y + order), None)
-                if o:
-                    d = pairsy.get((x, y + order), None)
-                    if d:
-                        dx, dy = d
-                        points.append((o[0] + dx * order, o[1] + dy * order))
+                points = get_neighbor_distances(closed_set, pairsx, pairsy, x,
+                                                y, order)
 
                 # Nothing useful?
                 if len(points) == 0:
@@ -581,17 +534,7 @@ def closest_solved_cr(icm, closed_set, cin, rin, xbase, xorder, ybase, yorder):
     raise Exception("Failed to find a solved image to interpolate from")
 
 
-def attach_image_linear(project, icm, closed_set, pairsx, pairsy, xbase,
-                        xorder, ybase, yorder):
-    '''
-    Take average delta and space tiles based on any adjacent placed tile
-    '''
-
-    print('Linear approximation x=range(%u, w+1, %u), y=range(%u, h+1, %u)' %
-          (xbase, xorder, ybase, yorder))
-    """
-    Filter out any pairs that aren't in our linear set
-    """
+def filter_pairs_order(pairsx, pairsy, xbase, xorder, ybase, yorder):
     pairsx2 = dict()
     for k, v in pairsx.items():
         col, row = k
@@ -599,7 +542,7 @@ def attach_image_linear(project, icm, closed_set, pairsx, pairsy, xbase,
         if row % yorder == ybase:
             pairsx2[k] = v
     print("filter pairsx %u => %u" % (len(pairsx), len(pairsx2)))
-    pairsx = pairsx2
+
     pairsy2 = dict()
     for k, v in pairsy.items():
         col, row = k
@@ -607,7 +550,28 @@ def attach_image_linear(project, icm, closed_set, pairsx, pairsy, xbase,
         if col % xorder == xbase:
             pairsy2[k] = v
     print("filter pairsy %u => %u" % (len(pairsy), len(pairsy2)))
-    pairsy = pairsy2
+
+    return pairsx2, pairsy2
+
+
+def attach_image_linear(project, icm, closed_set, pairsx, pairsy, xbase,
+                        xorder, ybase, yorder):
+    '''
+    Last ditch effort to solve an image
+    Find the closest solved image (even if far away)
+    and do linear approximation to its position
+    
+    XXX: could find several close images to improve accuracy?
+    '''
+
+    print('Linear approximation x=range(%u, w+1, %u), y=range(%u, h+1, %u)' %
+          (xbase, xorder, ybase, yorder))
+    """
+    Filter out any pairs that aren't in our linear set
+    Closest image may be further away but it will be using the same linear model
+    """
+    pairsx, pairsy = filter_pairs_order(pairsx, pairsy, xbase, xorder, ybase,
+                                        yorder)
 
     def avg(vals, s):
         vals = filter(lambda x: x is not None, vals)
@@ -617,12 +581,10 @@ def attach_image_linear(project, icm, closed_set, pairsx, pairsy, xbase,
         return sum(vals) / len(vals)
 
     pairsx_avg = (avg(pairsx.values(),
-                      lambda x: x[0]), avg(pairsx.values(),
-                                           lambda x: x[1]))
+                      lambda x: x[0]), avg(pairsx.values(), lambda x: x[1]))
     print('pairsx: %s' % (pairsx_avg, ))
     pairsy_avg = (avg(pairsy.values(),
-                      lambda x: x[0]), avg(pairsy.values(),
-                                           lambda x: x[1]))
+                      lambda x: x[0]), avg(pairsy.values(), lambda x: x[1]))
     print('pairsy: %s' % (pairsy_avg, ))
 
     # Only anchor to cleanly solved images
@@ -739,8 +701,7 @@ def check_pair_outlier_u_sd(icm, pairs, xbase, xorder, ybase, yorder, stdev=3):
     print(
         'Checking for outliers by u/sd, x=range(%u, w+1, %u), y=range(%u, h+1, %u)'
         % (xbase, xorder, ybase, yorder))
-    val = compute_u_sd(icm, pairs, xbase, xorder, ybase,
-                                        yorder)
+    val = compute_u_sd(icm, pairs, xbase, xorder, ybase, yorder)
     if not stdev or val is None:
         print('stdev filter: none')
     else:
@@ -825,11 +786,22 @@ def anchor(project, icm, use_cr=None):
     raise Exception('Couldnt find anchor image (no control points?)')
 
 
+def index_cpls(project):
+    """
+    ret[(n, N)] = [list of cpls]
+    """
+    ret = {}
+    for cpl in project.control_point_lines:
+        ret.setdefault((cpl.getv('n'), cpl.getv('N')), []).append(cpl)
+    return ret
+
+
 def icm_il_pairs(project, icm):
     # dictionary of results so that we can play around with post-processing result
     # This step takes by far the longest in the optimization process
     pairsx = {}
     pairsy = {}
+    cpl_index = index_cpls(project)
     # start with simple algorithm where we just sweep left/right
     for y in xrange(0, icm.height()):
         print 'Calc delta with Y %d / %d' % (y + 1, icm.height())
@@ -843,7 +815,7 @@ def icm_il_pairs(project, icm):
             if x > 0:
                 img = icm.get_image(x - 1, y)
                 if img:
-                    pairsx[(x, y)] = il_pair_deltas(project,
+                    pairsx[(x, y)] = il_pair_deltas(cpl_index,
                                                     project.img_fn2il[img],
                                                     ili)
                 else:
@@ -851,7 +823,7 @@ def icm_il_pairs(project, icm):
             if y > 0:
                 img = icm.get_image(x, y - 1)
                 if img:
-                    pairsy[(x, y)] = il_pair_deltas(project,
+                    pairsy[(x, y)] = il_pair_deltas(cpl_index,
                                                     project.img_fn2il[img],
                                                     ili)
                 else:
@@ -949,6 +921,7 @@ def pre_opt(project, icm, verbose=False, stdev=None, anchor_cr=None):
     Removing these now means regression later won't use them
     """
     print("")
+    # Serpentine even rows
     check_pair_outlier_u_sd(icm,
                             pairsx,
                             xbase=0,
@@ -957,6 +930,7 @@ def pre_opt(project, icm, verbose=False, stdev=None, anchor_cr=None):
                             yorder=2,
                             stdev=stdev)
     print("")
+    # Serpentine odd rows
     check_pair_outlier_u_sd(icm,
                             pairsy,
                             xbase=0,
@@ -993,6 +967,7 @@ def pre_opt(project, icm, verbose=False, stdev=None, anchor_cr=None):
 
     print("")
     print("")
+    # Serpentine even rows
     attach_image_linear(project,
                         icm,
                         closed_set,
@@ -1004,6 +979,7 @@ def pre_opt(project, icm, verbose=False, stdev=None, anchor_cr=None):
                         yorder=2)
     print("")
     print("")
+    # Serpentine odd rows
     attach_image_linear(project,
                         icm,
                         closed_set,
@@ -1317,34 +1293,3 @@ class PreOptimizer:
 
         bench.stop()
         print 'Optimized project in %s' % bench
-
-
-def usage():
-    print 'optimizer <file in> [file out]'
-    print 'If file out is not given it will be file in'
-
-
-if __name__ == "__main__":
-    from xystitch.pto.project import PTOProject
-
-    if len(sys.argv) < 2:
-        usage()
-        sys.exit(1)
-    file_name_in = sys.argv[1]
-    if len(sys.argv) > 2:
-        file_name_out = sys.argv[2]
-    else:
-        file_name_out = file_name_in
-
-    print 'Loading raw project...'
-    project = PTOProject.from_file_name(file_name_in)
-    print 'Creating optimizer...'
-    optimizer = PTOptimizer(project)
-    #self.assertTrue(project.text != None)
-    print 'Running optimizer...'
-    print 'Parsed main pre-run: %s' % str(project.parsed)
-    optimizer.run()
-    print 'Parsed main: %d' % project.parsed
-    print 'Saving...'
-    project.save_as(file_name_out)
-    print 'Parsed main done: %s' % str(project.parsed)
