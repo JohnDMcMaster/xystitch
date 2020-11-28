@@ -24,20 +24,24 @@ Tested on:
   * python 2.7.18
 
 
-    cd ~
-    git clone https://github.com/JohnDMcMaster/xystitch.git
-    cd xystitch
-    sudo python setup.py install
-    wget https://siliconpr0n.org/media/xystitch/2020-11-27_stitch_test.tar
-    tar -xf 2020-11-27_stitch_test.tar
-    cd 2020-11-27_stitch_test
-    # Perform feature recognition and place images on a global position grid
-    # On my carbon X1 (gen 4) this took ~10 sec
-    xy-stitch
+```
+cd ~
+git clone https://github.com/JohnDMcMaster/xystitch.git
+cd xystitch
+sudo python setup.py install
+wget https://siliconpr0n.org/media/xystitch/2020-11-27_stitch_test.tar
+tar -xf 2020-11-27_stitch_test.tar
+cd 2020-11-27_stitch_test
+# Perform feature recognition and place images on a global position grid
+# On my carbon X1 (gen 4) this took ~10 sec
+xy-stitch
+```
 
 Now open in Hugin to rotate and crop the image (optional):
 
-    xy-hugin out.pto
+```
+xy-hugin out.pto
+```
  
 Now:
 1. Click on "
@@ -46,9 +50,10 @@ view panorama"
 1. Save project (ctrl-S or file => save)
 1. Close both windows
 
-
-    # On my carbon X1 (gen 4) this took ~45 sec
-    xy-ts
+```
+# On my carbon X1 (gen 4) this took ~45 sec
+xy-ts
+```
 
 If you'd like to see stitch progress, in a new window do "tail -f pr0nts/w00.log"
 
@@ -118,4 +123,3 @@ $ cat ~/.pr0nrc
 This file is output by pyuscope. It is used to automatically load scan parameters and shouldn't be required
 
 TODO: add a link to config and/or describe options digested here
-
