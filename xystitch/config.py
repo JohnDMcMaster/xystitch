@@ -19,7 +19,7 @@ class Config:
         self.json = json.loads(js)
 
         self.imgw = int(os.getenv('XY_IMW', "1632"))
-        self.imgh = int(os.getenv('XY_IMW', "1224"))
+        self.imgh = int(os.getenv('XY_IMH', "1224"))
 
     @staticmethod
     def get_default_fn():
@@ -66,7 +66,7 @@ class Config:
 
     def overlap_outlier_thresh(self):
         """
-        Throw out images that differ by more than given percent vs expected overlap
+        Throw out images that differ by more than given fraction vs expected overlap
         """
         return float(os.getenv('XY_OVERLAP_OUTLIER_THRESH', "0.10"))
 
