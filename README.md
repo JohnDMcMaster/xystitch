@@ -23,6 +23,7 @@ Tested on:
   * Ubuntu 20.04
   * python 2.7.18
 
+`sudo apt install hugin-tools`
 
 ```
 cd ~
