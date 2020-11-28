@@ -104,6 +104,7 @@ if __name__ == "__main__":
     parser.add_argument('--anchor-cr',
                         default=None,
                         help='pre_opt: use col,row instead of guessing anchor')
+    parser_add_bool_arg('--check-poor-opt', default=True, help='')
     parser.add_argument('pto',
                         metavar='.pto in',
                         nargs=1,
@@ -210,7 +211,7 @@ if __name__ == "__main__":
         if args.anchor_cr:
             anchor_c, anchor_r = args.anchor_cr.split(",")
             anchor_cr = int(anchor_c), int(anchor_r)
-        opt.run(anchor_cr=anchor_cr)
+        opt.run(anchor_cr=anchor_cr, check_poor_opt=args.check_poor_opt)
         # Default
         if args.center != False:
             print 'Centering...'

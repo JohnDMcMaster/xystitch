@@ -1,6 +1,6 @@
 import os
 import json
-
+from xystitch.config import config
 
 def load_scanj_v1(j):
     x_overlap = j['overlap']
@@ -30,9 +30,9 @@ def load_outj_v2(j):
 
 
 def load_parameters():
-    # Fraction shared between images
-    x_overlap = 0.7
-    y_overlap = 0.7
+    # Fraction *not* shared between images
+    x_overlap = config.default_overlapi()
+    y_overlap = config.default_overlapi()
     if os.path.exists('scan.json'):
         j = json.load(open('scan.json'))
         if 'p' in j:
@@ -51,7 +51,7 @@ def load_parameters():
             x_overlap, y_overlap = load_outj_v2(j)
         else:
             raise Exception("Unknown out.json format")
-    print('Overlap')
+    print("Overlap'")
     print('  X: %g' % (x_overlap, ))
     print('  Y: %g' % (y_overlap, ))
     return x_overlap, y_overlap

@@ -28,14 +28,12 @@ it is a good idea to at least assert that all images are in the same focal plane
 
 from xystitch import execute
 from xystitch import microscopej
-from xystitch.pto.util import *
+from xystitch.pto.util import img_cpls, PImage, ImageCoordinateMap
 from xystitch.benchmark import Benchmark
 from xystitch import statistics
+from xystitch.config import config
 
-import sys
-import random
-import json
-
+import math
 
 def debug(s=''):
     pass
@@ -639,7 +637,7 @@ def compute_u_sd(icm, pairs, xbase, xorder, ybase, yorder):
             pointsx.append(dx)
             pointsy.append(dy)
 
-    if len(pointsx) == 0:
+    if len(pointsx) <= 1:
         print("WARNING: insufficient data to compute u/sd")
         return None
 
@@ -831,7 +829,7 @@ def icm_il_pairs(project, icm):
     return pairsx, pairsy
 
 
-def pre_opt(project, icm, verbose=False, stdev=None, anchor_cr=None):
+def pre_opt(project, icm, verbose=False, stdev=None, anchor_cr=None, should_check_poor_opt=True):
     '''
     FIXME: implementation is extremely inefficient
     Change to do a single pass on control points, indexing results
@@ -1008,8 +1006,11 @@ def pre_opt(project, icm, verbose=False, stdev=None, anchor_cr=None):
 
     print("")
     print("")
-    print('Checking for poorly optimized images')
-    check_poor_opt(project, icm)
+    if should_check_poor_opt:
+        print('Checking for poorly optimized images')
+        check_poor_opt(project, icm)
+    else:
+        print('Checking for poorly optimized images skipped')
 
     print("")
     print("")
@@ -1052,40 +1053,40 @@ def get_rms(project):
             return None
 
         if 0:
-            print 'iter'
-            print '  ', imgn.text
-            print '  ', imgN.text
-            print '  ', imgn.getv('d'), cpl.getv('x'), imgN.getv(
-                'd'), cpl.getv('X')
-            print '  %f vs %f' % ((imgn.getv('d') + cpl.getv('x')),
-                                  (imgN.getv('d') + cpl.getv('X')))
-            print '  ', imgn.getv('e'), cpl.getv('y'), imgN.getv(
-                'e'), cpl.getv('Y')
-            print '  %f vs %f' % ((imgn.getv('e') + cpl.getv('y')),
-                                  (imgN.getv('e') + cpl.getv('Y')))
+            print('iter')
+            print('  ', imgn.text)
+            print('  ', imgN.text)
+            print('  ', imgn.getv('d'), cpl.getv('x'), imgN.getv(
+                'd'), cpl.getv('X'))
+            print('  %f vs %f' % ((imgn.getv('d') + cpl.getv('x')),
+                                  (imgN.getv('d') + cpl.getv('X'))))
+            print('  ', imgn.getv('e'), cpl.getv('y'), imgN.getv(
+                'e'), cpl.getv('Y'))
+            print('  %f vs %f' % ((imgn.getv('e') + cpl.getv('y')),
+                                  (imgN.getv('e') + cpl.getv('Y'))))
 
         this = math.sqrt(dx2 + dy2)
         if 0:
-            print '  ', this
+            print('  ', this)
         rms += this
     return rms / len(project.control_point_lines)
 
 
 def check_poor_opt(project, icm=None):
-    # FIXME: calculate from actual image size + used overlap
-    # Use an expected max angle
-    imgx = 1632
-    imgy = 1224
+    """
+    Remove images that got moved to a position well outside of expected image position
+    based on linear regression of image positions
+    """
 
     ox, oy = microscopej.load_parameters()
-    ox *= imgx
-    oy *= imgy
+    ox *= config.imgw
+    oy *= config.imgh
     # First order tolerance
     # ie x change in x direction
-    tol_1 = ox + 175
+    tol_1 = ox + config.poor_opt_thresh()
     # Second order tolernace
     # ie x change in y direction
-    tol_2 = 175
+    tol_2 = config.poor_opt_thresh()
 
     def ildiff(imgl, imgr):
         '''
@@ -1113,13 +1114,13 @@ def check_poor_opt(project, icm=None):
                 # Expected delta vs actual
                 got = abs(dx - ox)
                 if got > tol_1:
-                    print '%s-%s: x-x tolerance 1 %d > expect %d' % (
-                        img, imgl, got, tol_1)
+                    print('%s-%s: x-x tolerance 1 %d > expect %d' % (
+                        img, imgl, got, tol_1))
                     ret = False
                 got = abs(dy)
                 if got > tol_2:
-                    print '%s-%s: y-y tolerance 2 %d > expect %d' % (
-                        img, imgl, got, tol_2)
+                    print('%s-%s: y-y tolerance 2 %d > expect %d' % (
+                        img, imgl, got, tol_2))
                     ret = False
         if refr > 0:
             imgl = icm.get_image(refc, refr - 1)
@@ -1128,13 +1129,13 @@ def check_poor_opt(project, icm=None):
                 # Expected delta vs actual
                 got = abs(dx)
                 if got > tol_2:
-                    print '%s-%s: x-x tolerance 2 %d > expect %d' % (
-                        img, imgl, got, tol_2)
+                    print('%s-%s: x-x tolerance 2 %d > expect %d' % (
+                        img, imgl, got, tol_2))
                     ret = False
                 got = abs(dy - oy)
                 if got > tol_1:
-                    print '%s-%s: y-y tolerance 1 %d > expect %d' % (
-                        img, imgl, got, tol_1)
+                    print('%s-%s: y-y tolerance 1 %d > expect %d' % (
+                        img, imgl, got, tol_1))
                     ret = False
         return ret
 
@@ -1144,12 +1145,12 @@ def check_poor_opt(project, icm=None):
             if not check(refr, refc):
                 fails += 1
     if fails:
-        print 'WARNING: %d suspicious optimization result(s)' % fails
+        print('WARNING: %d suspicious optimization result(s)' % fails)
     else:
-        print 'OK'
+        print('OK')
 
 
-def check_pair_outlier_overlap(icm, pairsx, pairsy, thresh=0.10):
+def check_pair_outlier_overlap(icm, pairsx, pairsy):
     """
     Verify images move in roughly an XY grid
     Invalid an image if it goes more than 10% out of expected overlap
@@ -1165,24 +1166,23 @@ def check_pair_outlier_overlap(icm, pairsx, pairsy, thresh=0.10):
 
     # FIXME: calculate from actual image size + used overlap
     # Use an expected max angle
-    imgx = 1632
-    imgy = 1224
 
     # x, y ideal overlap as fraction
     ox_frac, oy_frac = microscopej.load_parameters()
     # Convert to pixels
-    ox_pix = imgx * ox_frac
-    oy_pix = imgy * oy_frac
+    ox_pix = config.imgw * ox_frac
+    oy_pix = config.imgh * oy_frac
 
+    thresh = config.overlap_outlier_thresh()
     # First order tolerance
     # ie x change in x direction
-    tolx_1 = ox_pix + imgx * thresh
+    tolx_1 = ox_pix + config.imgw * thresh
     # Keep same tolerance for X and Y
     # x is wider => larger
-    toly_1 = oy_pix + imgx * thresh
+    toly_1 = oy_pix + config.imgw * thresh
     # Second order tolernace
     # ie x change in y direction
-    tol_2 = imgx * thresh
+    tol_2 = config.imgw * thresh
 
     fails = 0
     # x, y
@@ -1264,13 +1264,13 @@ class PreOptimizer:
                 if self.w != i.width() or self.h != i.height(
                 ) or self.v != i.fov():
                     print i.text
-                    print 'Old width %d, height %d, view %d' % (self.w, self.h,
-                                                                self.v)
-                    print 'Image width %d, height %d, view %d' % (
-                        i.width(), i.height(), i.fov())
+                    print('Old width %d, height %d, view %d' % (self.w, self.h,
+                                                                self.v))
+                    print('Image width %d, height %d, view %d' % (
+                        i.width(), i.height(), i.fov()))
                     raise Exception('Image does not match')
 
-    def run(self, anchor_cr=None):
+    def run(self, anchor_cr=None, check_poor_opt=True):
         bench = Benchmark()
 
         # The following will assume all of the images have the same size
@@ -1283,13 +1283,14 @@ class PreOptimizer:
             fns.append(il.get_name())
         self.icm = ImageCoordinateMap.from_tagged_file_names(fns)
 
-        print 'Verbose: %d' % self.debug
-        print 'working direclty on %s' % self.project.get_a_file_name()
+        print('Verbose: %d' % self.debug)
+        print('working direclty on %s' % self.project.get_a_file_name())
         pre_opt(self.project,
                 self.icm,
                 verbose=self.debug,
                 stdev=self.stdev,
-                anchor_cr=anchor_cr)
+                anchor_cr=anchor_cr,
+                should_check_poor_opt=check_poor_opt)
 
         bench.stop()
-        print 'Optimized project in %s' % bench
+        print('Optimized project in %s' % bench)

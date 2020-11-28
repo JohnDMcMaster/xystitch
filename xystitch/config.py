@@ -18,6 +18,9 @@ class Config:
             js = "{}"
         self.json = json.loads(js)
 
+        self.imgw = int(os.getenv('XY_IMW', "1632"))
+        self.imgh = int(os.getenv('XY_IMW', "1224"))
+
     @staticmethod
     def get_default_fn():
         return os.getenv('HOME') + '/' + '.pr0nrc'
@@ -48,6 +51,24 @@ class Config:
 
     def super_tile_memory(self):
         return self.getx('pr0nts.mem', None)
+
+    def poor_opt_thresh(self):
+        # FIXME:
+        # 1) should be derived from image size
+        # 2) should be configurable
+        return int(os.getenv('XY_OPT_THRESH', "175"))
+
+    def default_overlapi(self):
+        """
+        Fraction of image not overlapping ("overlap inverse")
+        """
+        return float(os.getenv('XY_OVERLAPI', "0.7"))
+
+    def overlap_outlier_thresh(self):
+        """
+        Throw out images that differ by more than given percent vs expected overlap
+        """
+        return float(os.getenv('XY_OVERLAP_OUTLIER_THRESH', "0.10"))
 
 
 config = Config()
