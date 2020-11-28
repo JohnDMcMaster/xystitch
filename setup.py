@@ -15,7 +15,7 @@ def read(fname):
 if not os.path.exists('build'):
     os.mkdir('build')
 scripts = (
-    'clean.sh',
+    #'clean.sh',
     'feature.py',
     'hugin.py',
     'move.sh',
@@ -43,7 +43,7 @@ setup(
     license="BSD",
     keywords="hugin panotools microscope",
     url='https://github.com/JohnDMcMaster/xystitch',
-    packages=['xystitch'],
+    packages=["xystitch", "xystitch.pto", "xystitch.image"],
     scripts=scripts_dist,
     install_requires=[],
     long_description="xystitch go vroom",

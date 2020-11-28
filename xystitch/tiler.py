@@ -903,6 +903,8 @@ class Tiler:
         # The default is 75.
         # Values above 95 should be avoided;
         # 100 completely disables the JPEG quantization stage.
+        if subimage.mode != 'RGB':
+            subimage = subimage.convert('RGB')
         subimage.save(nfn, quality=95)
         self.mark_done_rc(row, col)
 
