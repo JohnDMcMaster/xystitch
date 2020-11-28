@@ -35,6 +35,7 @@ from xystitch.config import config
 
 import math
 
+
 def debug(s=''):
     pass
 
@@ -829,7 +830,12 @@ def icm_il_pairs(project, icm):
     return pairsx, pairsy
 
 
-def pre_opt(project, icm, verbose=False, stdev=None, anchor_cr=None, should_check_poor_opt=True):
+def xy_opt(project,
+           icm,
+           verbose=False,
+           stdev=None,
+           anchor_cr=None,
+           should_check_poor_opt=True):
     '''
     FIXME: implementation is extremely inefficient
     Change to do a single pass on control points, indexing results
@@ -1056,12 +1062,12 @@ def get_rms(project):
             print('iter')
             print('  ', imgn.text)
             print('  ', imgN.text)
-            print('  ', imgn.getv('d'), cpl.getv('x'), imgN.getv(
-                'd'), cpl.getv('X'))
+            print('  ', imgn.getv('d'), cpl.getv('x'), imgN.getv('d'),
+                  cpl.getv('X'))
             print('  %f vs %f' % ((imgn.getv('d') + cpl.getv('x')),
                                   (imgN.getv('d') + cpl.getv('X'))))
-            print('  ', imgn.getv('e'), cpl.getv('y'), imgN.getv(
-                'e'), cpl.getv('Y'))
+            print('  ', imgn.getv('e'), cpl.getv('y'), imgN.getv('e'),
+                  cpl.getv('Y'))
             print('  %f vs %f' % ((imgn.getv('e') + cpl.getv('y')),
                                   (imgN.getv('e') + cpl.getv('Y'))))
 
@@ -1114,13 +1120,13 @@ def check_poor_opt(project, icm=None):
                 # Expected delta vs actual
                 got = abs(dx - ox)
                 if got > tol_1:
-                    print('%s-%s: x-x tolerance 1 %d > expect %d' % (
-                        img, imgl, got, tol_1))
+                    print('%s-%s: x-x tolerance 1 %d > expect %d' %
+                          (img, imgl, got, tol_1))
                     ret = False
                 got = abs(dy)
                 if got > tol_2:
-                    print('%s-%s: y-y tolerance 2 %d > expect %d' % (
-                        img, imgl, got, tol_2))
+                    print('%s-%s: y-y tolerance 2 %d > expect %d' %
+                          (img, imgl, got, tol_2))
                     ret = False
         if refr > 0:
             imgl = icm.get_image(refc, refr - 1)
@@ -1129,13 +1135,13 @@ def check_poor_opt(project, icm=None):
                 # Expected delta vs actual
                 got = abs(dx)
                 if got > tol_2:
-                    print('%s-%s: x-x tolerance 2 %d > expect %d' % (
-                        img, imgl, got, tol_2))
+                    print('%s-%s: x-x tolerance 2 %d > expect %d' %
+                          (img, imgl, got, tol_2))
                     ret = False
                 got = abs(dy - oy)
                 if got > tol_1:
-                    print('%s-%s: y-y tolerance 1 %d > expect %d' % (
-                        img, imgl, got, tol_1))
+                    print('%s-%s: y-y tolerance 1 %d > expect %d' %
+                          (img, imgl, got, tol_1))
                     ret = False
         return ret
 
@@ -1245,7 +1251,7 @@ def check_pair_outlier_overlap(icm, pairsx, pairsy):
         print('OK')
 
 
-class PreOptimizer:
+class XYOptimizer:
     def __init__(self, project):
         self.project = project
         self.debug = False
@@ -1264,10 +1270,10 @@ class PreOptimizer:
                 if self.w != i.width() or self.h != i.height(
                 ) or self.v != i.fov():
                     print i.text
-                    print('Old width %d, height %d, view %d' % (self.w, self.h,
-                                                                self.v))
-                    print('Image width %d, height %d, view %d' % (
-                        i.width(), i.height(), i.fov()))
+                    print('Old width %d, height %d, view %d' %
+                          (self.w, self.h, self.v))
+                    print('Image width %d, height %d, view %d' %
+                          (i.width(), i.height(), i.fov()))
                     raise Exception('Image does not match')
 
     def run(self, anchor_cr=None, check_poor_opt=True):
@@ -1285,12 +1291,12 @@ class PreOptimizer:
 
         print('Verbose: %d' % self.debug)
         print('working direclty on %s' % self.project.get_a_file_name())
-        pre_opt(self.project,
-                self.icm,
-                verbose=self.debug,
-                stdev=self.stdev,
-                anchor_cr=anchor_cr,
-                should_check_poor_opt=check_poor_opt)
+        xy_opt(self.project,
+               self.icm,
+               verbose=self.debug,
+               stdev=self.stdev,
+               anchor_cr=anchor_cr,
+               should_check_poor_opt=check_poor_opt)
 
         bench.stop()
         print('Optimized project in %s' % bench)

@@ -6,7 +6,7 @@ Copyright 2012 John McMaster
 '''
 import argparse
 import sys
-from xystitch.optimizer import PTOptimizer, PreOptimizer
+from xystitch.optimizer import PTOptimizer, XYOptimizer
 from xystitch.pto.project import PTOProject
 from xystitch.pto.util import *
 from xystitch.util import IOTimestamp, IOLog
@@ -55,9 +55,9 @@ if __name__ == "__main__":
                         action="store_true",
                         help='Run PTOptimizer also center by default')
     parser.add_argument(
-        '--pre-opt',
+        '--xy-opt',
         action="store_true",
-        help='Core pr0nstitch optimizer. Statistical based xy optimizer')
+        help='Core xy-stitch optimizer. Statistical based xy optimizer')
     parser.add_argument(
         '--reoptimize',
         action="store_true",
@@ -100,10 +100,10 @@ if __name__ == "__main__":
         '--stdev',
         type=float,
         default=3.0,
-        help='pre_opt: keep points within n standard deviations')
+        help='xy-opt: keep points within n standard deviations')
     parser.add_argument('--anchor-cr',
                         default=None,
-                        help='pre_opt: use col,row instead of guessing anchor')
+                        help='xy-opt: use col,row instead of guessing anchor')
     parser_add_bool_arg('--check-poor-opt', default=True, help='')
     parser.add_argument('pto',
                         metavar='.pto in',
@@ -202,9 +202,9 @@ if __name__ == "__main__":
             print 'Centering...'
             center(pto)
 
-    if args.pre_opt:
+    if args.xy_opt:
         print('Optimizing')
-        opt = PreOptimizer(pto)
+        opt = XYOptimizer(pto)
         opt.debug = args.verbose
         opt.stdev = args.stdev
         anchor_cr = None

@@ -2,6 +2,7 @@ import os
 import json
 from xystitch.config import config
 
+
 def load_scanj_v1(j):
     x_overlap = j['overlap']
     y_overlap = j['overlap']

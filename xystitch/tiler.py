@@ -49,6 +49,7 @@ from xystitch.config import config
 from xystitch.temp_file import ManagedTempFile
 from xystitch.temp_file import ManagedTempDir
 from xystitch.pimage import PImage
+from xystitch import pimage
 from xystitch.benchmark import Benchmark
 from xystitch.geometry import ceil_mult
 from xystitch.execute import CommandFailed
@@ -822,14 +823,19 @@ class Tiler:
         bench = Benchmark()
         [x0, x1, y0, y1] = st_bounds
         gen_tiles = 0
-        print
+        print("")
         # TODO: get the old info back if I miss it after yield refactor
         print('Phase 4: chopping up supertile x%u:%u y%u:%u' %
               (x0, x1, y0, y1))
-        print("%s" % (img_fn, ))
+        print("  Supertile: %s" % (img_fn, ))
         self.msg('step(x: %d, y: %d)' % (self.tw, self.th), 3)
         #self.msg('x in xrange(%d, %d, %d)' % (xt0, xt1, self.tw), 3)
         #self.msg('y in xrange(%d, %d, %d)' % (yt0, yt1, self.th), 3)
+
+        # FIXME: causes issues saving .jpg
+        # think only in newer ubuntu (ie 20.04 but not 16.04)
+        if im.mode == "RGBA":
+            im = pimage.rgba2rgb(im)
 
         for (y, x) in self.gen_supertile_tiles(st_bounds):
             # If we made it this far the tile can be constructed with acceptable enblend artifacts
@@ -881,35 +887,36 @@ class Tiler:
         if self.verbose:
             print('Subtile %s: (x %d:%d, y %d:%d)' %
                   (nfn, xmin, xmax, ymin, ymax))
-        ip = PImage(im).subimage(xmin, xmax, ymin, ymax)
+        subimage = pimage.subimage(im, xmin, xmax, ymin, ymax)
         '''
         Images must be padded
         If they aren't they will be stretched in google maps
         '''
-        if ip.width() != self.tw or ip.height() != self.th:
+        if subimage.size[0] != self.tw or subimage.size[1] != self.th:
             dbg('WARNING: %s: expanding partial tile (%d X %d) to full tile size'
-                % (nfn, ip.width(), ip.height()))
-            ip.set_canvas_size(self.tw, self.th)
+                % (nfn, subimage.size[0], subimage.size[1]))
+            print("WARNING temp")
+            subimage = pimage.set_canvas_size(subimage, self.tw, self.th)
         # http://www.pythonware.com/library/pil/handbook/format-jpeg.htm
         # JPEG is a good quality vs disk space compromise but beware:
         # The image quality, on a scale from 1 (worst) to 95 (best).
         # The default is 75.
         # Values above 95 should be avoided;
         # 100 completely disables the JPEG quantization stage.
-        ip.image.save(nfn, quality=95)
+        subimage.save(nfn, quality=95)
         self.mark_done_rc(row, col)
 
     def x2col(self, x):
         col = int((x - self.x0) / self.tw)
         if col < 0:
-            print(x, self.x0, self.tw)
+            print("ERROR", x, self.x0, self.tw)
             raise Exception("Can't have negative col")
         return col
 
     def y2row(self, y):
         ret = int((y - self.y0) / self.th)
         if ret < 0:
-            print(y, self.y0, self.th)
+            print("ERROR", y, self.y0, self.th)
             raise Exception("can't have negative row")
         return ret
 
@@ -985,13 +992,16 @@ class Tiler:
         #tystep = self.sth - self.clip_height - 1
         pass
 
-    def gen_supertiles(self):
+    def gen_supertiles(self, verbose=None):
+        if verbose is None:
+            verbose = self.verbose
         # 0:256 generates a 256 width pano
         # therefore, we don't want the upper bound included
 
-        print('M: Generating supertiles from y(%d:%d) x(%d:%d)' %
-              (self.top(), self.bottom(), self.left(), self.right()))
-        print("Dry: %u" % self.dry)
+        if verbose:
+            print('M: Generating supertiles from y(%d:%d) x(%d:%d)' %
+                  (self.top(), self.bottom(), self.left(), self.right()))
+            print("Dry: %u" % self.dry)
         #row = 0
         y_done = False
         for y in xrange(self.top(), self.bottom(), self.super_t_ystep):
@@ -1030,7 +1040,8 @@ class Tiler:
             #row +=1
             if y_done:
                 break
-        print('M: All supertiles generated')
+        if verbose:
+            print('M: All supertiles generated')
 
     def n_supertile_tiles(self, st_bounds):
         return len(list(self.gen_supertile_tiles(st_bounds)))
@@ -1225,7 +1236,7 @@ class Tiler:
             else:
                 os.mkdir(self.st_dir)
 
-        self.n_expected_sts = len(list(self.gen_supertiles()))
+        self.n_expected_sts = len(list(self.gen_supertiles(verbose=True)))
         print('M: Generating %d supertiles' % self.n_expected_sts)
 
         self.calc_expected_tiles()

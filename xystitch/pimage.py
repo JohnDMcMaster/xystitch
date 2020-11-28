@@ -16,6 +16,107 @@ import os
 PALETTES = bool(os.getenv('PR0N_PALETTES', ''))
 
 
+def rgba2rgb(im):
+    assert im.mode == "RGBA"
+    ret = Image.new("RGB", im.size, (255, 255, 255))
+    ret.paste(im, mask=im.split()[3])
+    return ret
+
+
+def subimage(image, x_min, x_max, y_min, y_max):
+    if x_min is None:
+        x_min = 0
+    if x_max is None:
+        x_max = image.size[0]
+    if y_min is None:
+        y_min = 0
+    if y_max is None:
+        y_max = image.size[1]
+    #print 'subimage: start.  x_min: %d: x_max: %d, y_min: %d, y_max: %d' % (x_min, x_max, y_min, y_max)
+
+    if x_min < 0 or y_min < 0 or x_max < 0 or y_max < 0:
+        print("ERROR", x_min, y_min, x_max, y_max)
+        raise Exception('out of bounds')
+
+    # Did we truncate the whole image?
+    if x_min > x_max or y_min > y_max:
+        return from_array([], image.mode, image.mode)
+    '''
+    height = y_max - y_min + 1
+    width = x_max - x_min + 1
+
+    array_out = [[0 for i in range(width)] for j in range(height)]
+    for cur_height in range(0, height):
+        for cur_width in range(0, width):
+            array_out[cur_height][cur_width] = self.get_pixel(cur_height + y_min, cur_width + x_min)
+
+    #print 'subimage: beginning from array'
+    return self.from_array(array_out, self.get_mode(), self.get_mode())
+    '''
+    # 4-tuple (x0, y0, x1, y1)
+    #print 'x_min: %d, y_min: %d, x_max: %d, y_max: %d' % (x_min, y_min, x_max, y_max)
+    # This is exclusive, I want inclusive
+    return image.crop((x_min, y_min, x_max, y_max))
+
+
+def get_pixel_mode(pixel):
+    '''Tries to guess pixel mode.  Hack to transition some old code, don't use this'''
+    # FIXME: make sure array mode matches our created image
+    if type(pixel) == type(0):
+        return "L"
+    if len(pixel) == 3:
+        return 'RGB'
+    else:
+        return "L"
+
+
+def from_array(array, mode_in=None, mode_out=None):
+    '''
+    array[y][x]
+    '''
+    #print 'from_array: start'
+    # Make a best guess, we should probably force it though
+    if mode_in is None:
+        mode_in = get_pixel_mode(array[0][0])
+    if mode_out is None:
+        mode_out = mode_in
+
+    ret = None
+    height = len(array)
+    if height > 0:
+        width = len(array[0])
+        if width > 0:
+            # (Xsize, Ysize)
+            # Feed in an arbitrary pixel and assume they are all encoded the same
+            # print 'width: %d, height: %d' % (width, height)
+            ret = PImage(Image.new(mode_out, (width, height), "White"))
+            for y in range(0, height):
+                for x in range(0, width):
+                    # print 'x: %d, y: %d' % (x, y)
+                    ret.set_pixel(x, y, array[y][x])
+    if ret is None:
+        ret = PImage(Image.new(mode_out, (0, 0), "White"))
+    #print 'from_array: end'
+    return ret
+
+
+def set_canvas_size(image, width, height):
+    # Simple case: nothing to do
+    if image.size[0] == width and image.size[1] == height:
+        return
+
+    ret = Image.new(image.mode, (width, height))
+    if PALETTES and image.palette:
+        ret.putpalette(image.palette)
+    ret.paste(image, (0, 0))
+    return ret
+
+
+def is_image_filename(filename):
+    return filename.find('.tif') > 0 or filename.find(
+        '.jpg') > 0 or filename.find('.png') > 0 or filename.find('.bmp') > 0
+
+
 class PImage:
     # We do not copy array, so be careful with modifications
     def __init__(self, image):
@@ -107,40 +208,8 @@ class PImage:
         Maybe we should throw exception instead?
     '''
 
-    def subimage(self, x_min, x_max, y_min, y_max):
-        if x_min is None:
-            x_min = 0
-        if x_max is None:
-            x_max = self.width()
-        if y_min is None:
-            y_min = 0
-        if y_max is None:
-            y_max = self.height()
-        #print 'subimage: start.  x_min: %d: x_max: %d, y_min: %d, y_max: %d' % (x_min, x_max, y_min, y_max)
-
-        if x_min < 0 or y_min < 0 or x_max < 0 or y_max < 0:
-            print(x_min, y_min, x_max, y_max)
-            raise Exception('out of bounds')
-
-        # Did we truncate the whole image?
-        if x_min > x_max or y_min > y_max:
-            return self.from_array([], self.get_mode(), self.get_mode())
-        '''
-        height = y_max - y_min + 1
-        width = x_max - x_min + 1
-
-        array_out = [[0 for i in range(width)] for j in range(height)]
-        for cur_height in range(0, height):
-            for cur_width in range(0, width):
-                array_out[cur_height][cur_width] = self.get_pixel(cur_height + y_min, cur_width + x_min)
-
-        #print 'subimage: beginning from array'
-        return self.from_array(array_out, self.get_mode(), self.get_mode())
-        '''
-        # 4-tuple (x0, y0, x1, y1)
-        #print 'x_min: %d, y_min: %d, x_max: %d, y_max: %d' % (x_min, y_min, x_max, y_max)
-        # This is exclusive, I want inclusive
-        return PImage.from_image(self.image.crop((x_min, y_min, x_max, y_max)))
+    def subimage(self, *args, **kwargs):
+        return PImage.from_image(subimage(self.image, *args, **kwargs))
 
     def copy(self):
         return self.subimage(None, None, None, None)
@@ -210,17 +279,9 @@ class PImage:
     def file_name(self):
         return self.image.fp.name
 
-    def set_canvas_size(self, width, height):
-        # Simple case: nothing to do
-        if self.width() == width and self.height == height:
-            return
-
-        ip = Image.new(self.image.mode, (width, height))
-        if PALETTES and self.image.palette:
-            ip.putpalette(self.image.palette)
-        ip.paste(self.image, (0, 0))
+    def set_canvas_size(self, *args, **kwargs):
         # Shift the old image out
-        self.image = ip
+        self.image = self.set_canvas_size(self.image, *args, **kwargs)
 
     def paste(self, img, x, y):
         #self.image.paste(img, (x, y))
@@ -270,53 +331,6 @@ class PImage:
         if trim:
             ret = ret.trim()
         return ret
-
-    @staticmethod
-    def get_pixel_mode(pixel):
-        '''Tries to guess pixel mode.  Hack to transition some old code, don't use this'''
-        # FIXME: make sure array mode matches our created image
-        if type(pixel) == type(0):
-            return "L"
-        if len(pixel) == 3:
-            return 'RGB'
-        else:
-            return "L"
-
-    @staticmethod
-    def from_array(array, mode_in=None, mode_out=None):
-        '''
-        array[y][x]
-        '''
-        #print 'from_array: start'
-        # Make a best guess, we should probably force it though
-        if mode_in is None:
-            mode_in = PImage.get_pixel_mode(array[0][0])
-        if mode_out is None:
-            mode_out = mode_in
-
-        ret = None
-        height = len(array)
-        if height > 0:
-            width = len(array[0])
-            if width > 0:
-                # (Xsize, Ysize)
-                # Feed in an arbitrary pixel and assume they are all encoded the same
-                # print 'width: %d, height: %d' % (width, height)
-                ret = PImage(Image.new(mode_out, (width, height), "White"))
-                for y in range(0, height):
-                    for x in range(0, width):
-                        # print 'x: %d, y: %d' % (x, y)
-                        ret.set_pixel(x, y, array[y][x])
-        if ret is None:
-            ret = PImage(Image.new(mode_out, (0, 0), "White"))
-        #print 'from_array: end'
-        return ret
-
-    @staticmethod
-    def is_image_filename(filename):
-        return filename.find('.tif') > 0 or filename.find(
-            '.jpg') > 0 or filename.find('.png') > 0 or filename.find(
-                '.bmp') > 0
 
 
 def from_fns(images_in, tw=None, th=None):

@@ -44,8 +44,7 @@ setup(
     url='https://github.com/JohnDMcMaster/xystitch',
     packages=['xystitch'],
     scripts=scripts_dist,
-    install_requires=[
-    ],
+    install_requires=[],
     long_description="xystitch go vroom",
     classifiers=[
         "License :: OSI Approved :: BSD License",

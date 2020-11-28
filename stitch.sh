@@ -2,8 +2,6 @@
 # High level wrapper script to create base .pto from .jpgs
 # Runs feature recognition and optimizes global position
 
-set -x
-
 time (
 
 if [ -f out.pto ] ; then
@@ -30,7 +28,7 @@ echo
 echo
 echo '**********************************'
 echo 'No failures, optimizing'
-time xy-pto --pre-opt out.pto
+time xy-pto --xy-opt out.pto
 
 # fit to screen
 time pano_modify --fov=AUTO --canvas=AUTO -o out.pto out.pto
@@ -41,5 +39,3 @@ echo
 # But doesnt fit well into my flow
 echo 'Done!  Open with Hugin to adjust size and rotate'
 )
-
-
