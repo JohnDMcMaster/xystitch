@@ -87,8 +87,8 @@ class ManagedTempFile:
                     os.remove(self.file_name)
                     verbose('Deleted temp file %s' % self.file_name)
             else:
-                verbose("Didn't delete inexistant temp file %s" %
-                        self.file_name)
+                verbose(
+                    "Didn't delete inexistant temp file %s" % self.file_name)
         # Ignore if it was never created
         except:
             print 'WARNING: failed to delete temp file: %s' % self.file_name

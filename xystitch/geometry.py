@@ -65,6 +65,7 @@ class PolygonQuadTree(object):
 	Acknowledgements:
 	[1] http://mu.arete.cc/pcr/syntax/quadtree/1/quadtree.py
 	"""
+
     def __init__(self, items, depth=8, bounding_rect=None):
         """Creates a quad-tree.
  
@@ -160,6 +161,7 @@ class PolygonQuadTree(object):
 			The bounding rectangle being tested against the quad-tree. This
 			must possess left, top, right and bottom attributes.
 		"""
+
         def overlaps(item):
             return rect.right >= item.left and rect.left <= item.right and \
                 rect.bottom >= item.top and rect.top <= item.bottom

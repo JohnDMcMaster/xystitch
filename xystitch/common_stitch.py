@@ -134,10 +134,9 @@ class CommonStitch:
         }
 
         open('stitch_failures.json', 'w').write(
-            json.dumps(failure_json,
-                       sort_keys=True,
-                       indent=4,
-                       separators=(',', ': ')))
+            json.dumps(
+                failure_json, sort_keys=True, indent=4, separators=(',',
+                                                                    ': ')))
 
     def run(self):
         if self.dry:

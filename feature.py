@@ -40,29 +40,22 @@ def excepthook(excType, excValue, tracebackobj):
 def parser_add_bool_arg(yes_arg, default=False, **kwargs):
     dashed = yes_arg.replace('--', '')
     dest = dashed.replace('-', '_')
-    parser.add_argument(yes_arg,
-                        dest=dest,
-                        action='store_true',
-                        default=default,
-                        **kwargs)
-    parser.add_argument('--no-' + dashed,
-                        dest=dest,
-                        action='store_false',
-                        **kwargs)
+    parser.add_argument(
+        yes_arg, dest=dest, action='store_true', default=default, **kwargs)
+    parser.add_argument(
+        '--no-' + dashed, dest=dest, action='store_false', **kwargs)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description='Stitch images quickly into .pto through hints')
     parser.add_argument('--out', default='out.pto', help='Output file name')
-    parser.add_argument('--log',
-                        default='pr0nstitch',
-                        help='Output log file name')
+    parser.add_argument(
+        '--log', default='pr0nstitch', help='Output log file name')
     parser_add_bool_arg('--grid-only', default=False, help='')
     parser.add_argument('--algorithm', default='grid', help='')
-    parser.add_argument('--threads',
-                        type=int,
-                        default=multiprocessing.cpu_count())
+    parser.add_argument(
+        '--threads', type=int, default=multiprocessing.cpu_count())
     parser_add_bool_arg('--overwrite', default=False, help='')
     parser_add_bool_arg('--regular', default=True, help='')
     # parser.add_argument('--x-step-frac', type=float, default=None, help='image step fraction')

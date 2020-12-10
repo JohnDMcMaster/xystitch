@@ -97,3 +97,19 @@ class Config:
 
 
 config = Config()
+
+
+def config_pto_defaults(pto):
+    imw = None
+    imh = None
+    for il in pto.get_image_lines():
+        if imw is None:
+            imw = il.width()
+        else:
+            assert imw == il.width()
+        if imh is None:
+            imh = il.width()
+        else:
+            assert imh == il.width()
+    config.imgw = imw
+    config.imgh = imh

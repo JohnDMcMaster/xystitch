@@ -520,8 +520,8 @@ def attach_image_adjacent(project,
             print('Break on stable output')
             break
     print('%d iters' % iters)
-    print("Closed set: %u / %u" %
-          (len(closed_set), icm.width() * icm.height()))
+    print(
+        "Closed set: %u / %u" % (len(closed_set), icm.width() * icm.height()))
 
 
 def closest_solved_cr(icm, closed_set, cin, rin, xbase, xorder, ybase, yorder):
@@ -579,11 +579,11 @@ def attach_image_linear(project, icm, closed_set, pairsx, pairsy, xbase,
             return None
         return sum(vals) / len(vals)
 
-    pairsx_avg = (avg(pairsx.values(),
-                      lambda x: x[0]), avg(pairsx.values(), lambda x: x[1]))
+    pairsx_avg = (avg(pairsx.values(), lambda x: x[0]),
+                  avg(pairsx.values(), lambda x: x[1]))
     print('pairsx: %s' % (pairsx_avg, ))
-    pairsy_avg = (avg(pairsy.values(),
-                      lambda x: x[0]), avg(pairsy.values(), lambda x: x[1]))
+    pairsy_avg = (avg(pairsy.values(), lambda x: x[0]),
+                  avg(pairsy.values(), lambda x: x[1]))
     print('pairsy: %s' % (pairsy_avg, ))
 
     # Only anchor to cleanly solved images
@@ -616,8 +616,8 @@ def attach_image_linear(project, icm, closed_set, pairsx, pairsy, xbase,
             il.set_y(ypos)
             closed_set[(c, r)] = (xpos, ypos)
             fixes.add((c, r))
-    print("Closed set %u => %u (%u fixes)" %
-          (len(closed_set_orig), len(closed_set), len(fixes)))
+    print("Closed set %u => %u (%u fixes)" % (len(closed_set_orig),
+                                              len(closed_set), len(fixes)))
 
 
 def compute_u_sd(icm, pairs, xbase, xorder, ybase, yorder):
@@ -814,17 +814,15 @@ def icm_il_pairs(project, icm):
             if x > 0:
                 img = icm.get_image(x - 1, y)
                 if img:
-                    pairsx[(x, y)] = il_pair_deltas(cpl_index,
-                                                    project.img_fn2il[img],
-                                                    ili)
+                    pairsx[(x, y)] = il_pair_deltas(
+                        cpl_index, project.img_fn2il[img], ili)
                 else:
                     pairsx[(x, y)] = None
             if y > 0:
                 img = icm.get_image(x, y - 1)
                 if img:
-                    pairsy[(x, y)] = il_pair_deltas(cpl_index,
-                                                    project.img_fn2il[img],
-                                                    ili)
+                    pairsy[(x, y)] = il_pair_deltas(
+                        cpl_index, project.img_fn2il[img], ili)
                 else:
                     pairsy[(x, y)] = None
     return pairsx, pairsy
@@ -926,22 +924,12 @@ def xy_opt(project,
     """
     print("")
     # Serpentine even rows
-    check_pair_outlier_u_sd(icm,
-                            pairsx,
-                            xbase=0,
-                            xorder=1,
-                            ybase=0,
-                            yorder=2,
-                            stdev=stdev)
+    check_pair_outlier_u_sd(
+        icm, pairsx, xbase=0, xorder=1, ybase=0, yorder=2, stdev=stdev)
     print("")
     # Serpentine odd rows
-    check_pair_outlier_u_sd(icm,
-                            pairsy,
-                            xbase=0,
-                            xorder=1,
-                            ybase=1,
-                            yorder=2,
-                            stdev=stdev)
+    check_pair_outlier_u_sd(
+        icm, pairsy, xbase=0, xorder=1, ybase=1, yorder=2, stdev=stdev)
     print("")
 
     # Chose an image in the center to attach other images to
@@ -953,13 +941,8 @@ def xy_opt(project,
     # Attach images to neighbors starting in middle and working outward
     # For a healthy stitch this should attach all images
     print('First pass: adjacent images')
-    attach_image_adjacent(project,
-                          icm,
-                          closed_set,
-                          pairsx,
-                          pairsy,
-                          order=1,
-                          verbose=verbose)
+    attach_image_adjacent(
+        project, icm, closed_set, pairsx, pairsy, order=1, verbose=verbose)
     """
     print("")
     print("")
@@ -972,27 +955,29 @@ def xy_opt(project,
     print("")
     print("")
     # Serpentine even rows
-    attach_image_linear(project,
-                        icm,
-                        closed_set,
-                        pairsx,
-                        pairsy,
-                        xbase=0,
-                        xorder=1,
-                        ybase=0,
-                        yorder=2)
+    attach_image_linear(
+        project,
+        icm,
+        closed_set,
+        pairsx,
+        pairsy,
+        xbase=0,
+        xorder=1,
+        ybase=0,
+        yorder=2)
     print("")
     print("")
     # Serpentine odd rows
-    attach_image_linear(project,
-                        icm,
-                        closed_set,
-                        pairsx,
-                        pairsy,
-                        xbase=0,
-                        xorder=1,
-                        ybase=1,
-                        yorder=2)
+    attach_image_linear(
+        project,
+        icm,
+        closed_set,
+        pairsx,
+        pairsy,
+        xbase=0,
+        xorder=1,
+        ybase=1,
+        yorder=2)
 
     print("")
     print("")
@@ -1028,8 +1013,8 @@ def xy_opt(project,
                 if p is None:
                     print('  % 3dX, % 3dY: none' % (x, y))
                 else:
-                    print('  % 3dX, % 3dY: %6.1fx, %6.1fy' %
-                          (x, y, p[0], p[1]))
+                    print(
+                        '  % 3dX, % 3dY: %6.1fx, %6.1fy' % (x, y, p[0], p[1]))
 
     rms_this = get_rms(project)
     print('Pre-opt: final RMS error: %f' % rms_this)
@@ -1270,8 +1255,8 @@ class XYOptimizer:
                 if self.w != i.width() or self.h != i.height(
                 ) or self.v != i.fov():
                     print i.text
-                    print('Old width %d, height %d, view %d' %
-                          (self.w, self.h, self.v))
+                    print('Old width %d, height %d, view %d' % (self.w, self.h,
+                                                                self.v))
                     print('Image width %d, height %d, view %d' %
                           (i.width(), i.height(), i.fov()))
                     raise Exception('Image does not match')
@@ -1291,12 +1276,13 @@ class XYOptimizer:
 
         print('Verbose: %d' % self.debug)
         print('working direclty on %s' % self.project.get_a_file_name())
-        xy_opt(self.project,
-               self.icm,
-               verbose=self.debug,
-               stdev=self.stdev,
-               anchor_cr=anchor_cr,
-               should_check_poor_opt=check_poor_opt)
+        xy_opt(
+            self.project,
+            self.icm,
+            verbose=self.debug,
+            stdev=self.stdev,
+            anchor_cr=anchor_cr,
+            should_check_poor_opt=check_poor_opt)
 
         bench.stop()
         print('Optimized project in %s' % bench)

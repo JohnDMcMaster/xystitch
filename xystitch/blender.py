@@ -162,10 +162,8 @@ class Enblend:
         self.lock()
 
         print 'Blender: executing %s' % (' '.join(args), )
-        rc = execute.prefix(args,
-                            stdout=self.stdout,
-                            stderr=self.stderr,
-                            prefix=self.pprefix)
+        rc = execute.prefix(
+            args, stdout=self.stdout, stderr=self.stderr, prefix=self.pprefix)
         if not rc == 0:
             self.p('')
             self.p('')

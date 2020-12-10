@@ -102,6 +102,6 @@ def singlify(fns_in, fn_out, fn_out_alt=None):
             os.remove(fn_out)
         except OSError:
             pass
-        raise HugeTIF("Failed to save image of size %uw x %uh" %
-                      (width, height))
+        raise HugeTIF(
+            "Failed to save image of size %uw x %uh" % (width, height))
     print('Done!')

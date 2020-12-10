@@ -219,6 +219,7 @@ class ImageLine(line.Line):
     # Entire line
     text = None
     """
+
     def __init__(self, text, project):
         line.Line.__init__(self, text, project)
         self.image = None

@@ -11,49 +11,49 @@ from xystitch.pto.project import PTOProject
 from xystitch.pto.util import *
 from xystitch.util import IOTimestamp, IOLog
 from xystitch.benchmark import Benchmark
+from xystitch.config import config_pto_defaults
 
 
 def parser_add_bool_arg(yes_arg, default=False, **kwargs):
     dashed = yes_arg.replace('--', '')
     dest = dashed.replace('-', '_')
-    parser.add_argument(yes_arg,
-                        dest=dest,
-                        action='store_true',
-                        default=default,
-                        **kwargs)
-    parser.add_argument('--no-' + dashed,
-                        dest=dest,
-                        action='store_false',
-                        **kwargs)
+    parser.add_argument(
+        yes_arg, dest=dest, action='store_true', default=default, **kwargs)
+    parser.add_argument(
+        '--no-' + dashed, dest=dest, action='store_false', **kwargs)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Manipulate .pto files')
-    parser.add_argument('--verbose',
-                        action="store_true",
-                        help='Verbose output')
-    parser.add_argument('--center',
-                        action="store_true",
-                        dest="center",
-                        default=None,
-                        help='Center the project')
-    parser.add_argument('--no-center',
-                        action="store_false",
-                        dest="center",
-                        default=None,
-                        help='Center the project')
-    parser.add_argument('--anchor',
-                        action="store_true",
-                        dest="anchor",
-                        help='Re-anchor in the center')
-    parser.add_argument('--set-optimize-xy',
-                        action="store_true",
-                        dest="set_optimize_xy",
-                        default=False,
-                        help='Set project to optimize xy')
-    parser.add_argument('--ptoptimizer',
-                        action="store_true",
-                        help='Run PTOptimizer also center by default')
+    parser.add_argument(
+        '--verbose', action="store_true", help='Verbose output')
+    parser.add_argument(
+        '--center',
+        action="store_true",
+        dest="center",
+        default=None,
+        help='Center the project')
+    parser.add_argument(
+        '--no-center',
+        action="store_false",
+        dest="center",
+        default=None,
+        help='Center the project')
+    parser.add_argument(
+        '--anchor',
+        action="store_true",
+        dest="anchor",
+        help='Re-anchor in the center')
+    parser.add_argument(
+        '--set-optimize-xy',
+        action="store_true",
+        dest="set_optimize_xy",
+        default=False,
+        help='Set project to optimize xy')
+    parser.add_argument(
+        '--ptoptimizer',
+        action="store_true",
+        help='Run PTOptimizer also center by default')
     parser.add_argument(
         '--xy-opt',
         action="store_true",
@@ -70,49 +70,52 @@ if __name__ == "__main__":
         dest="reoptimize",
         default=True,
         help='When optimizing do not remove all existing optimizations')
-    parser.add_argument('--lens-model',
-                        action="store",
-                        default=None,
-                        help='Apply lens model file')
-    parser.add_argument('--reset-photometrics',
-                        action="store_true",
-                        dest="reset_photometrics",
-                        default=False,
-                        help='Reset photometrics')
-    parser.add_argument('--basename',
-                        action="store_true",
-                        dest="basename",
-                        default=False,
-                        help='Strip image file names down to basename')
-    parser.add_argument('--hugin',
-                        action="store_true",
-                        help='Resave using panotools (Hugin form)')
+    parser.add_argument(
+        '--lens-model',
+        action="store",
+        default=None,
+        help='Apply lens model file')
+    parser.add_argument(
+        '--reset-photometrics',
+        action="store_true",
+        dest="reset_photometrics",
+        default=False,
+        help='Reset photometrics')
+    parser.add_argument(
+        '--basename',
+        action="store_true",
+        dest="basename",
+        default=False,
+        help='Strip image file names down to basename')
+    parser.add_argument(
+        '--hugin',
+        action="store_true",
+        help='Resave using panotools (Hugin form)')
     parser.add_argument(
         '--pto-ref',
         action='store',
         default=None,
         help='project to use for creating linear system (default: in)')
-    parser.add_argument('--allow-missing',
-                        action="store_true",
-                        help='Allow missing images')
+    parser.add_argument(
+        '--allow-missing', action="store_true", help='Allow missing images')
     parser_add_bool_arg('--stampout', default=True, help='timestamp output')
     parser.add_argument(
         '--stdev',
         type=float,
         default=3.0,
         help='xy-opt: keep points within n standard deviations')
-    parser.add_argument('--anchor-cr',
-                        default=None,
-                        help='xy-opt: use col,row instead of guessing anchor')
+    parser.add_argument(
+        '--anchor-cr',
+        default=None,
+        help='xy-opt: use col,row instead of guessing anchor')
     parser_add_bool_arg('--check-poor-opt', default=True, help='')
-    parser.add_argument('pto',
-                        metavar='.pto in',
-                        nargs=1,
-                        help='project to work on')
-    parser.add_argument('out',
-                        metavar='.pto out',
-                        nargs='?',
-                        help='output file, default to override input')
+    parser.add_argument(
+        'pto', metavar='.pto in', nargs=1, help='project to work on')
+    parser.add_argument(
+        'out',
+        metavar='.pto out',
+        nargs='?',
+        help='output file, default to override input')
     args = parser.parse_args()
     pto_in = args.pto[0]
     pto_out = args.out
@@ -143,6 +146,8 @@ if __name__ == "__main__":
     pto = PTOProject.from_file_name(pto_in)
     # Make sure we don't accidently override the original
     pto.remove_file_name()
+
+    config_pto_defaults(pto)
 
     if args.center is True:
         center(pto)

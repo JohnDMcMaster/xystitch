@@ -209,8 +209,8 @@ def center_anchor_by_de(pto):
     pto.parse()
     (ybar, xbar) = calc_center(pto)
 
-    dbg('xbar: %f, ybar: %f, images: %d' %
-        (xbar, ybar, len(pto.get_image_lines())))
+    dbg('xbar: %f, ybar: %f, images: %d' % (xbar, ybar,
+                                            len(pto.get_image_lines())))
 
     for i in pto.get_image_lines():
         x = i.x()

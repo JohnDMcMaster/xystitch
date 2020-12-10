@@ -55,6 +55,7 @@ class AutopanoSiftC:
     Example stitch command
     "autopano-sift-c" "--maxmatches" "0" "--maxdim" "10000" "out.pto" "first.png" "second.png"
     '''
+
     def generate_core(self, image_file_names):
         project_file = ManagedTempFile.get(None, ".pto")
 
@@ -158,6 +159,7 @@ class ControlPointGeneratorXX:
     Example stitch command
     Will result in .pto in being in /tmp though
     '''
+
     def generate_core(self, image_file_names):
         command = "autopanoaj"
         args = list()
@@ -243,9 +245,8 @@ class PanoCP:
 
         #(rc, output) = Execute.with_output('cpfind', args, print_output=self.print_output)
         print 'cpfind' + ' '.join(args)
-        (rc, output) = exc_ret_istr('cpfind',
-                                    args,
-                                    print_out=self.print_output)
+        (rc, output) = exc_ret_istr(
+            'cpfind', args, print_out=self.print_output)
 
         print 'PanoCP: cpfind done'
         if not rc == 0:
@@ -270,9 +271,8 @@ class PanoCP:
         # input file
         args.append(project.file_name)
 
-        (rc, output) = exc_ret_istr('cpclean',
-                                    args,
-                                    print_out=self.print_output)
+        (rc, output) = exc_ret_istr(
+            'cpclean', args, print_out=self.print_output)
         print 'PanoCP: cpclean done'
         if not rc == 0:
             print

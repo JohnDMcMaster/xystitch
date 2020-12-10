@@ -56,8 +56,8 @@ def soften_gauss(src_fn, dst_fn=None):
                 dst_fn, )
         time.sleep(0.1)
     else:
-        raise Exception('Missing soften strong blur output file name %s' %
-                        dst_fn)
+        raise Exception(
+            'Missing soften strong blur output file name %s' % dst_fn)
 
 
 def soften_composite(src_fn, dst_fn=None):
@@ -95,5 +95,5 @@ def soften_composite(src_fn, dst_fn=None):
                 dst_fn, )
         time.sleep(0.1)
     else:
-        raise Exception('Missing soften strong blur output file name %s' %
-                        dst_fn)
+        raise Exception(
+            'Missing soften strong blur output file name %s' % dst_fn)

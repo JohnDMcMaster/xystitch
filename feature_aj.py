@@ -22,19 +22,22 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="create Hugin .pto using Andrew Jenny's autopano")
     #parser.add_argument('pto', metavar='pto project', type=str, nargs=1, help='pto project')
-    parser.add_argument('--verbose',
-                        '-v',
-                        action="store_true",
-                        default=False,
-                        help='spew lots of info')
-    parser.add_argument('--overwrite',
-                        action="store_true",
-                        default=False,
-                        help='overwrite existing output file')
-    parser.add_argument('--dry',
-                        action="store_true",
-                        default=False,
-                        help='dont actually stitch')
+    parser.add_argument(
+        '--verbose',
+        '-v',
+        action="store_true",
+        default=False,
+        help='spew lots of info')
+    parser.add_argument(
+        '--overwrite',
+        action="store_true",
+        default=False,
+        help='overwrite existing output file')
+    parser.add_argument(
+        '--dry',
+        action="store_true",
+        default=False,
+        help='dont actually stitch')
     parser.add_argument('files', nargs='+', help='a .pto and some image files')
     args = parser.parse_args()
 

@@ -225,8 +225,8 @@ class GridStitch(common_stitch.CommonStitch):
                             raise Exception('Shutdown on worker failure')
                     else:
                         print '%s' % (out, )
-                        raise Exception('Internal error: bad task type %s' %
-                                        what)
+                        raise Exception(
+                            'Internal error: bad task type %s' % what)
                 # Merge projects
                 if len(final_pair_projects):
                     print 'Merging %d projects' % len(final_pair_projects)

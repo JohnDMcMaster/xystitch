@@ -388,8 +388,8 @@ def linear_reoptimize(pto,
                         fn_old2 = m_ref.get_image(col - 2, row)
                         if fn_old2:
                             il_old2 = pto_ref.get_image_by_fn(fn_old2)
-                            print '    dx2: %g' % (il.x() - 2 * il_old.x() +
-                                                   il_old2.x())
+                            print '    dx2: %g' % (
+                                il.x() - 2 * il_old.x() + il_old2.x())
             if row != 0:
                 fn_old = m_ref.get_image(col, row - 1)
                 if fn_old:
@@ -399,8 +399,8 @@ def linear_reoptimize(pto,
                         fn_old2 = m_ref.get_image(col, row - 2)
                         if fn_old2:
                             il_old2 = pto_ref.get_image_by_fn(fn_old2)
-                            print '    dy2: %g' % (il.y() - 2 * il_old.y() +
-                                                   il_old2.y())
+                            print '    dy2: %g' % (
+                                il.y() - 2 * il_old.y() + il_old2.y())
     x_ref_rms_error = rms_error_diff(calc_ref_xs, ref_xs)
     y_ref_rms_error = rms_error_diff(calc_ref_ys, ref_ys)
     print 'Reference RMS error x%g y%g' % (x_ref_rms_error, y_ref_rms_error)
