@@ -125,11 +125,6 @@ if __name__ == "__main__":
     engine.set_regular(regular)
     engine.set_dry(args.dry)
 
-    if args.x_overlap:
-        engine.x_overlap = args.x_overlap
-    if args.y_overlap:
-        engine.y_overlap = args.y_overlap
-
     if not allow_overwrite:
         if output_project_file_name and os.path.exists(
                 output_project_file_name):
