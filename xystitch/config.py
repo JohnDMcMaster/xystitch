@@ -18,8 +18,13 @@ class Config:
             js = "{}"
         self.json = json.loads(js)
 
-        self.imgw = int(os.getenv('XY_IMW', "1632"))
-        self.imgh = int(os.getenv('XY_IMH', "1224"))
+        # self.imgw = int(os.getenv('XY_IMW', "1632"))
+        # self.imgh = int(os.getenv('XY_IMH', "1224"))
+        self.imgw = None
+        self.imgh = None
+        # Defaults if nothing is specified
+        self.step_frac_x = 0.7
+        self.step_frac_y = 0.7
 
     @staticmethod
     def get_default_fn():
@@ -58,11 +63,31 @@ class Config:
         # 2) should be configurable
         return int(os.getenv('XY_OPT_THRESH', "175"))
 
-    def default_overlapi(self):
+    def set_step_frac(self, x, y):
+        self.step_frac_x = x
+        self.step_frac_y = y
+
+    def default_step_frac_x(self):
         """
         Fraction of image not overlapping ("overlap inverse")
         """
-        return float(os.getenv('XY_OVERLAPI', "0.7"))
+        env = os.getenv('XY_STEP_FRAC_X', None)
+        if env is None:
+            env = os.getenv('XY_STEP_FRAC', None)
+        if env is not None:
+            return float(env)
+        return self.step_frac_x
+
+    def default_step_frac_y(self):
+        """
+        Fraction of image not overlapping ("overlap inverse")
+        """
+        env = os.getenv('XY_STEP_FRAC_Y', None)
+        if env is None:
+            env = os.getenv('XY_STEP_FRAC', None)
+        if env is not None:
+            return float(env)
+        return self.step_frac_y
 
     def overlap_outlier_thresh(self):
         """

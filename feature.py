@@ -20,6 +20,7 @@ import traceback
 import multiprocessing
 from xystitch.grid_stitch import GridStitch
 from xystitch.util import logwt
+from xystitch.config import config
 
 allow_overwrite = True
 
@@ -64,8 +65,8 @@ if __name__ == "__main__":
                         default=multiprocessing.cpu_count())
     parser_add_bool_arg('--overwrite', default=False, help='')
     parser_add_bool_arg('--regular', default=True, help='')
-    parser.add_argument('--x-overlap', type=int, help='in pixels')
-    parser.add_argument('--y-overlap', type=int, help='in pixels')
+    # parser.add_argument('--x-step-frac', type=float, default=None, help='image step fraction')
+    # parser.add_argument('--y-step-frac', type=float, default=None, help='image step fraction')
     parser_add_bool_arg('--dry', default=False, help='')
     parser_add_bool_arg('--skip-missing', default=False, help='')
     parser_add_bool_arg('--ignore-errors', default=False, help='')
@@ -74,6 +75,15 @@ if __name__ == "__main__":
 
     log_dir = args.log
     _dt = logwt(log_dir, 'main.log', shift_d=True)
+
+    """
+    if args.x_step_frac is not None:
+        if args.y_step_frac is None:
+            y_step_frac = args.y_step_frac
+        else:
+            y_step_frac = args.x_step_frac
+        config.set_step_frac(args.x_step_frac, y_step_frac)
+    """
 
     depth = 1
     # CNC like precision?

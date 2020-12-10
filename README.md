@@ -96,7 +96,7 @@ Stitch failures
 Environment variables (see xystitch/config.py):
   * XY_IMW: image width. Default 1632
   * XY_IMH: image height. Default 1224
-  * XY_OVERLAPI: fraction of image that is unique vs adjacent ("overlap inverse")
+  * XY_STEP_FRAC_X, XY_STEP_FRAC_Y (or XY_STEP_FRAC): fraction of image that is stepped to move to next
     * Default: 0.70, but a scan specific config file, if present, will take preference over this variable
     * Ex: default of 0.70 means 30% overlap to adjacent image
       * If there is an image on each side 40% of the image (in the center) will be unique

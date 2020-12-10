@@ -32,8 +32,8 @@ def load_outj_v2(j):
 
 def load_parameters():
     # Fraction *not* shared between images
-    x_overlap = config.default_overlapi()
-    y_overlap = config.default_overlapi()
+    x_overlap = config.default_step_frac_x()
+    y_overlap = config.default_step_frac_y()
     if os.path.exists('scan.json'):
         j = json.load(open('scan.json'))
         if 'p' in j:
@@ -52,7 +52,7 @@ def load_parameters():
             x_overlap, y_overlap = load_outj_v2(j)
         else:
             raise Exception("Unknown out.json format")
-    print("Overlap'")
+    print("Image step fraction:'")
     print('  X: %g' % (x_overlap, ))
     print('  Y: %g' % (y_overlap, ))
     return x_overlap, y_overlap
