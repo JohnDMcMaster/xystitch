@@ -31,7 +31,9 @@ for script in scripts:
     dst_base = dst_base.replace('.sh', '')
     dst_base = dst_base.replace('_', '-')
     dst = 'build/xy-' + dst_base
-    shutil.copy(script, dst)
+    if os.path.exists(dst):
+        os.unlink(dst)
+    os.symlink(os.path.realpath(script), dst)
     scripts_dist.append(dst)
 
 setup(

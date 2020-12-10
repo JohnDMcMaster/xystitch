@@ -75,7 +75,6 @@ if __name__ == "__main__":
 
     log_dir = args.log
     _dt = logwt(log_dir, 'main.log', shift_d=True)
-
     """
     if args.x_step_frac is not None:
         if args.y_step_frac is None:
