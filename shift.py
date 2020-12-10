@@ -216,8 +216,9 @@ def run(actions, im_dir, dry=False):
 def main():
     parser = argparse.ArgumentParser(
         description='Add or delete rows and images in xy directory')
-    parser.add_argument(
-        '--dry', action='store_true', help='Dont actually do anything')
+    parser.add_argument('--dry',
+                        action='store_true',
+                        help='Dont actually do anything')
     parser.add_argument('dir', help='Image directory to work on')
     parser.add_argument('actions', nargs='+', help='Actions to perform')
     args = parser.parse_args()

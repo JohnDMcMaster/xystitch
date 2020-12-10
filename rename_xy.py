@@ -95,11 +95,10 @@ def main():
         description='Rename manually captured images into a grid')
     add_bool_arg(parser, '--dry', default=True, help='')
     parser.add_argument('--layout', default="serp-lr", help='')
-    parser.add_argument(
-        '--cols',
-        type=int,
-        default=None,
-        help='Use evenly distributed columns')
+    parser.add_argument('--cols',
+                        type=int,
+                        default=None,
+                        help='Use evenly distributed columns')
     parser.add_argument(
         '--endrows',
         help=

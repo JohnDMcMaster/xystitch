@@ -123,8 +123,8 @@ class SpatialAxisList:
                 # PPPPP
                 #    CCCCC
                 if point.coordinates[self.axis_index] + point.sizes[
-                        self.axis_index] <= cur_point.coordinates[self.
-                                                                  axis_index]:
+                        self.axis_index] <= cur_point.coordinates[
+                            self.axis_index]:
                     break
             ret.add(cur_point.image_file_name)
 

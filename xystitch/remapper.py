@@ -99,8 +99,8 @@ class Nona:
         if output_prefix is None or len(
                 output_prefix
         ) == 0 or output_prefix == '.' or output_prefix == '..':
-            raise RemapperFailed(
-                'Bad output file base "%s"' % str(output_prefix))
+            raise RemapperFailed('Bad output file base "%s"' %
+                                 str(output_prefix))
 
         self.pto_project = pto_project
         # if true assume pto project is already setup up correctly
@@ -189,8 +189,10 @@ class Nona:
         # p w2673 h2056 f0 v76 n"TIFF_m r:CROP c:LZW" E0.0 R0 S"276,2673,312,2056"
         # m line unchanged
         print('Remapper: executing %s' % (' '.join(args), ))
-        rc = execute.prefix(
-            args, stdout=self.stdout, stderr=self.stderr, prefix=self.pprefix)
+        rc = execute.prefix(args,
+                            stdout=self.stdout,
+                            stderr=self.stderr,
+                            prefix=self.pprefix)
         if not rc == 0:
             self.p()
             self.p()
@@ -214,8 +216,8 @@ class Nona:
                 list(
                     get_nona_files(self.output_prefix,
                                    len(self.pto_project.get_image_lines()))))
-            self.p('Think nona just generated %d files' % (len(
-                self.output_files), ))
+            self.p('Think nona just generated %d files' %
+                   (len(self.output_files), ))
         else:
             raise RemapperFailed('bad image type')
 

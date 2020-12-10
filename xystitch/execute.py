@@ -57,8 +57,10 @@ def with_output(args, print_output=False):
         subp = subprocess.Popen(args, stdout=tee, stderr=tee, shell=False)
     else:
         # Specifying nothing completely throws away the output
-        subp = subprocess.Popen(
-            args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
+        subp = subprocess.Popen(args,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE,
+                                shell=False)
     (stdout, stderr) = subp.communicate()
 
     return (subp.returncode, stdout, stderr)
@@ -176,9 +178,9 @@ class Execute:
         if print_output:
             # ugly...but simple
             # ((false; true; true) 2>&1; echo "***RC_HACK: $?") |tee temp.txt
-            rc = Execute.simple(
-                '(' + working_dir_str + cmd +
-                ') 2>&1 |tee %s; exit $PIPESTATUS' % tmp_file.file_name)
+            rc = Execute.simple('(' + working_dir_str + cmd +
+                                ') 2>&1 |tee %s; exit $PIPESTATUS' %
+                                tmp_file.file_name)
         else:
             rc = Execute.simple(working_dir_str + cmd +
                                 ' &> %s' % tmp_file.file_name)
@@ -244,8 +246,10 @@ def timestamp(args, stdout=sys.stdout, stderr=sys.stderr):
 
 def prefix(args, stdout=sys.stdout, stderr=sys.stderr, prefix=lambda: ''):
     '''Execute, prepending timestamps to newlines'''
-    subp = subprocess.Popen(
-        args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
+    subp = subprocess.Popen(args,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE,
+                            shell=False)
     try:
         p_stdout = Prefixer(stdout, prefix)
         p_stderr = Prefixer(stderr, prefix)
@@ -282,12 +286,11 @@ def prefix(args, stdout=sys.stdout, stderr=sys.stderr, prefix=lambda: ''):
 def exc_ret_istr(cmd, args, print_out=True):
     '''Execute command, returning status and output.  Optionally print as it runs'''
 
-    p = subprocess.Popen(
-        [cmd] + args,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        stdin=subprocess.PIPE,
-        close_fds=True)
+    p = subprocess.Popen([cmd] + args,
+                         stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE,
+                         stdin=subprocess.PIPE,
+                         close_fds=True)
     output = bytearray()
 
     def check():

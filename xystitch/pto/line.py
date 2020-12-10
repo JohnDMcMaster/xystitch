@@ -199,8 +199,8 @@ class Line:
                     # Note we skip the "
                     while True:
                         if i >= len(self.text):
-                            raise Exception(
-                                'Missing closing " on %s' % self.text)
+                            raise Exception('Missing closing " on %s' %
+                                            self.text)
                         c = self.text[i]
                         if c == '"':
                             i += 1

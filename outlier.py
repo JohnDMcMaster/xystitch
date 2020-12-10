@@ -83,17 +83,21 @@ def run_print(pto_fn, stdev=3):
 
 def main():
     parser = argparse.ArgumentParser(description='Manipulate .pto files')
-    parser.add_argument(
-        '--verbose', action="store_true", help='Verbose output')
-    parser.add_argument(
-        '--stdev',
-        type=float,
-        default=3.0,
-        help='Max healthy standard deviation')
-    parser.add_argument(
-        'pto_in', nargs='?', default="out.pto", help='project to work on')
-    parser.add_argument(
-        'pto_out', nargs='?', default=None, help='project to work on')
+    parser.add_argument('--verbose',
+                        action="store_true",
+                        help='Verbose output')
+    parser.add_argument('--stdev',
+                        type=float,
+                        default=3.0,
+                        help='Max healthy standard deviation')
+    parser.add_argument('pto_in',
+                        nargs='?',
+                        default="out.pto",
+                        help='project to work on')
+    parser.add_argument('pto_out',
+                        nargs='?',
+                        default=None,
+                        help='project to work on')
     args = parser.parse_args()
     run(args.pto_in, args.pto_out, stdev=args.stdev)
 

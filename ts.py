@@ -58,16 +58,15 @@ def run(args):
                 print 'WARNING: reducing to maximum tile size'
                 stp = 2**32 / 4
 
-    t = Tiler(
-        project,
-        out_dir,
-        stw=mksize(args.stw),
-        sth=mksize(args.sth),
-        stp=stp,
-        clip_width=args.clip_width,
-        clip_height=args.clip_height,
-        log_dir=log_dir,
-        is_full=args.full)
+    t = Tiler(project,
+              out_dir,
+              stw=mksize(args.stw),
+              sth=mksize(args.sth),
+              stp=stp,
+              clip_width=args.clip_width,
+              clip_height=args.clip_height,
+              log_dir=log_dir,
+              is_full=args.full)
     t.threads = args.threads
     t.verbose = args.verbose
     t.st_dir = args.st_dir
@@ -139,8 +138,10 @@ def run(args):
 def main():
     parser = argparse.ArgumentParser(
         description='create tiles from unstitched images')
-    parser.add_argument(
-        'pto', default='out.pto', nargs='?', help='pto project')
+    parser.add_argument('pto',
+                        default='out.pto',
+                        nargs='?',
+                        help='pto project')
     parser.add_argument('--stw', help='Supertile width')
     parser.add_argument('--sth', help='Supertile height')
     parser.add_argument('--stp', help='Supertile pixels')
@@ -149,68 +150,65 @@ def main():
         '--out-ext',
         default='.jpg',
         help='Select output image extension (and type), .jpg, .png, .tif, etc')
-    parser.add_argument(
-        '--full', action="store_true", help='use only 1 supertile')
-    parser.add_argument(
-        '--st-xstep',
-        action="store",
-        dest="super_t_xstep",
-        type=int,
-        help='Supertile x step (advanced)')
-    parser.add_argument(
-        '--st-ystep',
-        action="store",
-        dest="super_t_ystep",
-        type=int,
-        help='Supertile y step (advanced)')
-    parser.add_argument(
-        '--clip-width',
-        action="store",
-        dest="clip_width",
-        type=int,
-        help='x clip (advanced)')
-    parser.add_argument(
-        '--clip-height',
-        action="store",
-        dest="clip_height",
-        type=int,
-        help='y clip (advanced)')
-    parser.add_argument(
-        '--ignore-crop',
-        action="store_true",
-        help='Continue even if not cropped')
+    parser.add_argument('--full',
+                        action="store_true",
+                        help='use only 1 supertile')
+    parser.add_argument('--st-xstep',
+                        action="store",
+                        dest="super_t_xstep",
+                        type=int,
+                        help='Supertile x step (advanced)')
+    parser.add_argument('--st-ystep',
+                        action="store",
+                        dest="super_t_ystep",
+                        type=int,
+                        help='Supertile y step (advanced)')
+    parser.add_argument('--clip-width',
+                        action="store",
+                        dest="clip_width",
+                        type=int,
+                        help='x clip (advanced)')
+    parser.add_argument('--clip-height',
+                        action="store",
+                        dest="clip_height",
+                        type=int,
+                        help='y clip (advanced)')
+    parser.add_argument('--ignore-crop',
+                        action="store_true",
+                        help='Continue even if not cropped')
     parser.add_argument('--nona-args')
     parser.add_argument('--enblend-args')
-    parser.add_argument(
-        '--ignore-errors',
-        action="store_true",
-        dest="ignore_errors",
-        help='skip broken tile stitches (advanced)')
-    parser.add_argument(
-        '--verbose', '-v', action="store_true", help='spew lots of info')
-    parser.add_argument(
-        '--st-dir',
-        default='st',
-        help='store intermediate supertiles to given dir')
+    parser.add_argument('--ignore-errors',
+                        action="store_true",
+                        dest="ignore_errors",
+                        help='skip broken tile stitches (advanced)')
+    parser.add_argument('--verbose',
+                        '-v',
+                        action="store_true",
+                        help='spew lots of info')
+    parser.add_argument('--st-dir',
+                        default='st',
+                        help='store intermediate supertiles to given dir')
     parser.add_argument(
         '--st-limit',
         default='inf',
         help=
         'debug (exit after # supertiles, typically --st-limit 1 --threads 1)')
-    parser.add_argument(
-        '--single-dir',
-        default='single',
-        help='folder to put final output composite image')
-    parser.add_argument(
-        '--single-fn', default=None, help='file name to write in single dir')
+    parser.add_argument('--single-dir',
+                        default='single',
+                        help='folder to put final output composite image')
+    parser.add_argument('--single-fn',
+                        default=None,
+                        help='file name to write in single dir')
     add_bool_arg(
         parser,
         '--enblend-lock',
         default=False,
         help=
         'use lock file to only enblend (memory intensive part) one at a time')
-    parser.add_argument(
-        '--threads', type=int, default=multiprocessing.cpu_count())
+    parser.add_argument('--threads',
+                        type=int,
+                        default=multiprocessing.cpu_count())
     parser.add_argument('--log', default='pr0nts', help='Output log file name')
     args = parser.parse_args()
 

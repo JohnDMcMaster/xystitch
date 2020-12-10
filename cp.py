@@ -29,10 +29,10 @@ def pto2cps(pto):
         N = cpl.getv('N')
         imgn = pto.image_lines[n]
         imgN = pto.image_lines[N]
-        dx = (imgn.getv('d') - cpl.getv('x')) - (
-            imgN.getv('d') - cpl.getv('X'))
-        dy = (imgn.getv('e') - cpl.getv('y')) - (
-            imgN.getv('e') - cpl.getv('Y'))
+        dx = (imgn.getv('d') - cpl.getv('x')) - (imgN.getv('d') -
+                                                 cpl.getv('X'))
+        dy = (imgn.getv('e') - cpl.getv('y')) - (imgN.getv('e') -
+                                                 cpl.getv('Y'))
 
         # Make canonical
         # Usually n < N
@@ -124,23 +124,30 @@ def check_cp(pto):
 def parser_add_bool_arg(yes_arg, default=False, **kwargs):
     dashed = yes_arg.replace('--', '')
     dest = dashed.replace('-', '_')
-    parser.add_argument(
-        yes_arg, dest=dest, action='store_true', default=default, **kwargs)
-    parser.add_argument(
-        '--no-' + dashed, dest=dest, action='store_false', **kwargs)
+    parser.add_argument(yes_arg,
+                        dest=dest,
+                        action='store_true',
+                        default=default,
+                        **kwargs)
+    parser.add_argument('--no-' + dashed,
+                        dest=dest,
+                        action='store_false',
+                        **kwargs)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Manipulate .pto files')
-    parser.add_argument(
-        '--verbose', action="store_true", help='Verbose output')
-    parser.add_argument(
-        'pto', metavar='.pto in', nargs=1, help='project to work on')
-    parser.add_argument(
-        'out',
-        metavar='.pto out',
-        nargs='?',
-        help='output file, default to override input')
+    parser.add_argument('--verbose',
+                        action="store_true",
+                        help='Verbose output')
+    parser.add_argument('pto',
+                        metavar='.pto in',
+                        nargs=1,
+                        help='project to work on')
+    parser.add_argument('out',
+                        metavar='.pto out',
+                        nargs='?',
+                        help='output file, default to override input')
     args = parser.parse_args()
     pto_in = args.pto[0]
     pto_out = args.out

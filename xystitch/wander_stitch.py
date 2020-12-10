@@ -91,7 +91,7 @@ class WanderStitch(CommonStitch):
                                 control_point_line.get_variable('Y')))
 
         print 'Output:'
-        print[i[0] for i in image_0_points]
+        print [i[0] for i in image_0_points]
         image_0_x_average = sum([i[0] for i in image_0_points
                                  ]) / len(image_0_points)
         image_0_y_average = sum([i[1] for i in image_0_points
@@ -234,9 +234,10 @@ class WanderStitch(CommonStitch):
         print 'PHASE 1: done'
 
         print 'PHASE 2: fortify'
-        fortify_stitch = FortifyStitch.from_wander(
-            phase_1_project, self.image_file_names, self.tried_pairs,
-            self.spatial_map)
+        fortify_stitch = FortifyStitch.from_wander(phase_1_project,
+                                                   self.image_file_names,
+                                                   self.tried_pairs,
+                                                   self.spatial_map)
         fortify_stitch.set_output_project_file_name(self.project.file_name)
         fortify_stitch.run()
         self.project = fortify_stitch.project

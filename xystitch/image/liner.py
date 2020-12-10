@@ -196,8 +196,8 @@ def contour_line_diff(contour_in, line):
     #contour = list2contour(segment_contour(contour_in, max_segment))
     contour = segment_contour(contour_in, max_segment)
     #draw_contour(contour)
-    dbg('  Polygon segmented from %u => %u points' % (len(contour_in),
-                                                      len(contour)),
+    dbg('  Polygon segmented from %u => %u points' %
+        (len(contour_in), len(contour)),
         level=2)
 
     # Now approximate the regression
@@ -359,8 +359,8 @@ def segment_contour(contour, max_segment):
         n_ideal = float(l) / max_segment
         # Nothing special to do?
         if n_ideal <= 1:
-            dbg('    Optimizing short vertex (%dx, %dy) size %g' % (p1[0],
-                                                                    p1[1], l),
+            dbg('    Optimizing short vertex (%dx, %dy) size %g' %
+                (p1[0], p1[1], l),
                 level=4)
             ret.append(p1)
             continue
@@ -376,8 +376,8 @@ def segment_contour(contour, max_segment):
         for n in xrange(1, n_points + 1):
             per = float(n) / n_points
             p = f(per)
-            dbg('      split to (%dx, %dy) w/ %g percent' % (p[0], p[1],
-                                                             per * 100),
+            dbg('      split to (%dx, %dy) w/ %g percent' %
+                (p[0], p[1], per * 100),
                 level=3)
             ret.append(p)
 
@@ -582,8 +582,8 @@ class LinerBase():
         this_diff = contour_line_diff(self.cur_contour, self.line)
         dbg('  diff %f' % this_diff, level=2)
         if this_diff >= self.best_diff:
-            dbg("  Rejected: worse diff %f >= %f" % (this_diff,
-                                                     self.best_diff),
+            dbg("  Rejected: worse diff %f >= %f" %
+                (this_diff, self.best_diff),
                 level=2)
             if draw_thresh_contours:
                 # Teal
@@ -600,9 +600,8 @@ class LinerBase():
                 #cv.PolyLine(self.contours_map, [self.cur_contour], True, cv.CV_RGB(255, 255, 0) )
                 cv.PolyLine(
                     self.contours_map, [self.cur_contour], True,
-                    cv.CV_RGB(
-                        random.randint(0, 256), random.randint(0, 256),
-                        random.randint(0, 256)))
+                    cv.CV_RGB(random.randint(0, 256), random.randint(0, 256),
+                              random.randint(0, 256)))
             return
         dbg('  Accepted: new best contour', level=2)
         self.best_contour = self.cur_contour
@@ -628,8 +627,8 @@ class LinerBase():
         # Select this by some metric with tagged features, say smallest - 10%
         self.min_area = 100.0
         self.max_area = self.total_area * 0.9
-        dbg('Size: %dw X %dh = %g' % (self.image.width, self.image.height,
-                                      self.total_area),
+        dbg('Size: %dw X %dh = %g' %
+            (self.image.width, self.image.height, self.total_area),
             level=3)
 
         size = cv.GetSize(self.image)
