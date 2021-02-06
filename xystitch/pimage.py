@@ -89,13 +89,13 @@ def from_array(array, mode_in=None, mode_out=None):
             # (Xsize, Ysize)
             # Feed in an arbitrary pixel and assume they are all encoded the same
             # print 'width: %d, height: %d' % (width, height)
-            ret = PImage(Image.new(mode_out, (width, height), "White"))
+            ret = Image.new(mode_out, (width, height), "White")
             for y in range(0, height):
                 for x in range(0, width):
                     # print 'x: %d, y: %d' % (x, y)
-                    ret.set_pixel(x, y, array[y][x])
+                    ret.putpixel((x, y), array[y][x])
     if ret is None:
-        ret = PImage(Image.new(mode_out, (0, 0), "White"))
+        ret = Image.new(mode_out, (0, 0), "White")
     #print 'from_array: end'
     return ret
 

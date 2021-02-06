@@ -185,6 +185,8 @@ class Worker(object):
         self.running = multiprocessing.Event()
         self.exit = False
         self.log_fn = log_fn
+        # Master drains one line at a time to print to screen
+        self.master_log_file = None
 
         self.dry = tiler.dry
         self.ignore_errors = tiler.ignore_errors
@@ -194,6 +196,17 @@ class Worker(object):
         self.nona_args = tiler.nona_args
         self.enblend_args = tiler.enblend_args
         self.st_fns = multiprocessing.Queue()
+
+    def master_log_file_init(self):
+        self.master_log_file = open(self.log_fn, 'r')
+
+    def master_log_file_print(self):
+        if self.master_log_file:
+            while True:
+                s = self.master_log_file.readline()
+                if not s:
+                    break
+                print(s.strip())
 
     def pprefix(self):
         # hack: ocassionally get io
@@ -1175,6 +1188,14 @@ class Tiler:
         self.mem_net_max = max(self.mem_net_max, mem_net)
         self.mem_net_last = mem_net
 
+    def print_worker_logs_init(self):
+        for worker in self.workers:
+            worker.master_log_file_init()
+
+    def print_worker_logs(self):
+        for worker in self.workers:
+            worker.master_log_file_print()
+
     def run(self):
         self.mem_net_last = 0
         self.mem_net_max = 0
@@ -1273,6 +1294,7 @@ class Tiler:
         print("closed list %u / %u tiles" % (n_closed, n_tiles))
         print("open list %u / %u tiles" % (n_open, n_tiles))
         self.core_dump("begin")
+        self.print_worker_logs_init()
         assert n_closed <= n_tiles
         assert n_open <= n_tiles
 
@@ -1413,6 +1435,8 @@ class Tiler:
                     self.core_dump()
                     idle = False
                 else:
+                    # Prioritize master tasks, only print workers when idle
+                    self.print_worker_logs()
                     if not idle:
                         print(
                             'M Server thread idle. dry %s, all %u, complete %u / %u'
