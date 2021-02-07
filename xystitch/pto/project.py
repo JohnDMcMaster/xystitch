@@ -172,6 +172,17 @@ class PTOProject:
         self.ensure_text_loaded()
         self.file_name = None
 
+    def update_lines_project(self):
+        # Update project references on sub-objects
+        for l in self.control_point_lines:
+            l.project = self
+        for l in self.image_lines:
+            l.project = self
+        if self.panorama_line:
+            self.panorama_line.project = self
+        if self.mode_line:
+            self.mode_line.project = self
+
     def copy(self, control_points=True):
         '''Return an unsaved but identical project'''
         # slow
@@ -189,6 +200,10 @@ class PTOProject:
         if not control_points:
             self.control_point_lines = cp_tmp
             self.absolute_control_point_lines = cp_tmp_abs
+
+        # does deepcopy update references?
+        ret.update_lines_project()
+
         return ret
 
     def i2img(self, index):
@@ -242,11 +257,13 @@ class PTOProject:
         self.img_fn2il = {}
         for il in self.get_image_lines():
             self.img_fn2il[il.get_name()] = il
+        return self.img_fn2il
 
     def build_il2i(self):
         self.il2i = {}
         for i, il in enumerate(self.image_lines):
             self.il2i[il] = i
+        return self.il2i
 
     def get_image_by_fn(self, fn):
         if self.img_fn2il:
@@ -294,11 +311,11 @@ class PTOProject:
             try:
                 ii_old2new[img_fn2ii_old[fn]] = ii_new
             except:
-                print 'ERROR'
-                print fn
-                print img_fn2ii_old
-                print img_fn2ii_new
-                print ii_old2new
+                print('ERROR')
+                print(fn)
+                print(img_fn2ii_old)
+                print(img_fn2ii_new)
+                print(ii_old2new)
                 raise
 
         # remove unneeded control points
@@ -444,7 +461,7 @@ m g1.0 i0 f0 m2
     def reparse(self):
         '''Force a parse'''
         if False:
-            print 'WARNING: pto parsing disabled'
+            print('WARNING: pto parsing disabled')
             return
 
         self.unparse()
@@ -515,7 +532,7 @@ m g1.0 i0 f0 m2
         elif k == "o":
             self.optimizer_lines.append(OptimizerLine(line, self))
         else:
-            print 'WARNING: unknown line type: %s' % line
+            print('WARNING: unknown line type: %s' % line)
             self.misc_lines.append(line)
 
     # These functions are fragile....should probably just stick to the get string versions
@@ -537,7 +554,7 @@ m g1.0 i0 f0 m2
         #print 'Pano line: %s' % self.panorama_line
 
         if ptoptimizer_form:
-            print 'generating ptopt form'
+            print('generating ptopt form')
 
         key_blacklist = None
         if ptoptimizer_form:
@@ -630,7 +647,7 @@ m g1.0 i0 f0 m2
 
     def merge_into(self, ptos):
         '''Merge project into this one.  Output file is updated'''
-        print 'merge_into: others: %d' % len(ptos)
+        print('merge_into: others: %d' % len(ptos))
 
         this = []
         if self.file_name and os.path.exists(self.file_name):
@@ -663,7 +680,7 @@ m g1.0 i0 f0 m2
              -h, --help             Shows this help
         '''
         if len(ptos) == 0:
-            print 'WARNING: skipping merge due to no other files'
+            print('WARNING: skipping merge due to no other files')
             raise Exception('Nothing to merge')
             return None
         this = []
@@ -773,8 +790,8 @@ m g1.0 i0 f0 m2
             print
             if rc == 35072:
                 # ex: empty projects seem to cause this
-                print 'Out of memory, expect malformed project file'
-            print 'output:%s' % output
+                print('Out of memory, expect malformed project file')
+            print('output:%s' % output)
             raise Exception('Bad rc: %d' % rc)
 
         self.reopen()

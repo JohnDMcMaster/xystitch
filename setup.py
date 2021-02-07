@@ -15,6 +15,7 @@ def read(fname):
 if not os.path.exists('build'):
     os.mkdir('build')
 scripts = (
+    'cphugin.py',
     'clean.sh',
     'feature.py',
     'hugin.py',

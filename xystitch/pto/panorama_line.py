@@ -44,6 +44,9 @@ class PanoramaLine(line.Line):
     def fov(self):
         return self.get_variable('v')
 
+    def uncrop(self):
+        self.remove_variable("S")
+
     def set_crop(self, crop):
         self.set_variable('S', '%d,%d,%d,%d' % tuple(crop))
 

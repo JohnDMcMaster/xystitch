@@ -341,7 +341,7 @@ class ImageLine(line.Line):
             if line is self:
                 return i
             i += 1
-        raise Exception('Image is no in panorama')
+        raise Exception('Image %s is not in panorama w/ %u images' % (self.get_name(), len(self.project.image_lines)))
 
     def get_image(self):
         if self.image is None:

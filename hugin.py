@@ -39,26 +39,26 @@ if __name__ == "__main__":
             if im is None:
                 continue
             ils_del.append(pto_orig.img_fn2il[im])
-    print 'Deleting %d / %d images' % (len(ils_del),
-                                       icm.width() * icm.height())
+    print('Deleting %d / %d images' % (len(ils_del),
+                                       icm.width() * icm.height()))
     pto_red.del_images(ils_del)
     pto_red.save_as(pto_orig.file_name.replace('.pto', '_sm.pto'),
                     is_new_filename=True)
 
-    print 'Opening temp file %s' % pto_red.file_name
+    print('Opening temp file %s' % pto_red.file_name)
     subp = subprocess.Popen(['hugin', pto_red.file_name], shell=False)
     subp.communicate()
-    print 'Hugin exited with code %d' % subp.returncode
+    print('Hugin exited with code %d' % subp.returncode)
 
     pto_red.reopen()
 
     # has crop + dimensions
     # p f0 w2673 h2056 v76  E0 R0 S100,2673,100,2056 n"TIFF_m c:LZW"
-    print 'Replacing p line...'
+    print('Replacing p line...')
     pto_orig.panorama_line = pto_red.panorama_line
 
     # shouldn't be necessary but just in case
-    print 'Replacing m line...'
+    print('Replacing m line...')
     pto_orig.mode_line = pto_red.mode_line
 
     # copy over rotation
@@ -73,14 +73,14 @@ if __name__ == "__main__":
         else:
             return '%0.2f' % f
 
-    print 'Rotation %s => %s' % (floats(
-        pto_orig.image_lines[0].getv('r')), floats(r))
+    print('Rotation %s => %s' % (floats(
+        pto_orig.image_lines[0].getv('r')), floats(r)))
     for il in pto_orig.image_lines:
         il.setv('r', r)
 
-    print 'Saving final project'
+    print('Saving final project')
     # small backup in case something went wrong
     shutil.copy(pto_orig.file_name, '/tmp/pr0n-prehugin.pto')
     pto_orig.save_as(pto_orig.file_name)
 
-    print 'Done!'
+    print('Done!')

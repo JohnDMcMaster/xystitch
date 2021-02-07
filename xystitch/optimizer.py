@@ -745,6 +745,11 @@ def iter_center_cr(icm, col, row):
     deltas = max(icm.width(), icm.height())
     return iter_center(icm, cent_col=col, cent_row=row, deltas=deltas)
 
+def iter_center_cr_max(icm, col, row, xydelta):
+    for acol, arow in iter_center_cr(icm, col, row):
+        if abs(col - acol) > xydelta or abs(row - arow) > xydelta:
+            return
+        yield acol, arow
 
 def anchor(project, icm, use_cr=None):
     '''
@@ -1038,12 +1043,12 @@ def xy_opt(project,
     return closed_set
 
 
-def get_rms(project):
-    '''Calculate the root mean square error between control points'''
-    rms = 0.0
+def iter_rms(project):
     for cpl in project.control_point_lines:
-        imgn = project.image_lines[cpl.get_variable('n')]
-        imgN = project.image_lines[cpl.get_variable('N')]
+        n = cpl.get_variable('n')
+        imgn = project.image_lines[n]
+        N = cpl.get_variable('N')
+        imgN = project.image_lines[N]
 
         # global coordinates (d/e) are positive upper left
         # but image coordinates (x/X//y/Y) are positive down right
@@ -1056,7 +1061,7 @@ def get_rms(project):
                    (imgN.getv('e') - cpl.getv('Y')))**2
         # Abort RMS if not all variables defined
         except TypeError:
-            return None
+            raise Exception("Missing variable")
 
         if 0:
             print('iter')
@@ -1071,10 +1076,14 @@ def get_rms(project):
             print('  %f vs %f' % ((imgn.getv('e') + cpl.getv('y')),
                                   (imgN.getv('e') + cpl.getv('Y'))))
 
-        this = math.sqrt(dx2 + dy2)
-        if 0:
-            print('  ', this)
-        rms += this
+        rms_this = math.sqrt(dx2 + dy2)
+        yield cpl, n, imgn, N, imgN, rms_this 
+
+def get_rms(project):
+    '''Calculate the root mean square error between control points'''
+    rms = 0.0
+    for _cpl, _n, _imgn, _N, _imgN, rms_this in iter_rms(project):
+        rms += rms_this
     return rms / len(project.control_point_lines)
 
 
