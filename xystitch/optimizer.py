@@ -35,6 +35,8 @@ from xystitch.config import config
 
 import math
 
+class NoRMS(Exception):
+    pass
 
 def debug(s=''):
     pass
@@ -867,9 +869,12 @@ def xy_opt(project,
         if verbose:
             print s
 
-    rms_this = get_rms(project)
-    if rms_this is not None:
-        print 'Pre-opt: exiting project RMS error: %f' % rms_this
+    try:
+        rms_this = get_rms(project)
+        if rms_this is not None:
+            print('Pre-opt: exiting project RMS error: %f' % rms_this)
+    except NoRMS:
+        pass
 
     # NOTE: algorithm will still run with missing control points to best of its ability
     # however, its expected that user will only run it on copmlete data sets
@@ -881,7 +886,7 @@ def xy_opt(project,
             counts[n] = counts.get(n, 0) + 1
             N = cpl.getv('N')
             counts[N] = counts.get(N, 0) + 1
-        print 'Control point counts:'
+        print('Control point counts:')
         for y in xrange(0, icm.height()):
             for x in xrange(0, icm.width()):
                 img = icm.get_image(x, y)
@@ -890,9 +895,9 @@ def xy_opt(project,
                 il = project.img_fn2il[img]
                 ili = il.get_index()
                 count = counts.get(ili, 0)
-                print '  %03dX, %03dY: %d' % (x, y, count)
+                print('  %03dX, %03dY: %d' % (x, y, count))
                 if count == 0:
-                    print '    ERROR: no control points'
+                    print('    ERROR: no control points')
                     fail = True
         if fail:
             raise Exception('One or more images do not have control points')
@@ -1061,8 +1066,7 @@ def iter_rms(project):
                    (imgN.getv('e') - cpl.getv('Y')))**2
         # Abort RMS if not all variables defined
         except TypeError:
-            print(imgn, imgN, cpl)
-            raise Exception("Missing variable")
+            raise NoRMS("Missing variable (%s, %s, %s)" % (imgn.text, imgN.text, cpl.text))
 
         if 0:
             print('iter')
