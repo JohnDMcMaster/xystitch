@@ -1061,6 +1061,7 @@ def iter_rms(project):
                    (imgN.getv('e') - cpl.getv('Y')))**2
         # Abort RMS if not all variables defined
         except TypeError:
+            print(imgn, imgN, cpl)
             raise Exception("Missing variable")
 
         if 0:
