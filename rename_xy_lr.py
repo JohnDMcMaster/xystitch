@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 from xystitch.util import add_bool_arg
 from xystitch.image_coordinate_map import ImageCoordinateMap, icm_flip_lr, icm_save

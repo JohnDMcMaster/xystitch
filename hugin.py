@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 '''
 pr0nhugin: allows editing a reduced project to speed up hugin editing
 Copyright 2012 John McMaster <JohnDMcMaster@gmail.com>
@@ -33,22 +33,22 @@ if __name__ == "__main__":
     # Delete all lines not in the peripheral
     pto_orig.build_image_fn_map()
     ils_del = []
-    for y in xrange(args.border, icm.height() - args.border):
-        for x in xrange(args.border, icm.width() - args.border):
+    for y in range(args.border, icm.height() - args.border):
+        for x in range(args.border, icm.width() - args.border):
             im = icm.get_image(x, y)
             if im is None:
                 continue
             ils_del.append(pto_orig.img_fn2il[im])
-    print('Deleting %d / %d images' % (len(ils_del),
-                                       icm.width() * icm.height()))
+    print(('Deleting %d / %d images' % (len(ils_del),
+                                       icm.width() * icm.height())))
     pto_red.del_images(ils_del)
     pto_red.save_as(pto_orig.file_name.replace('.pto', '_sm.pto'),
                     is_new_filename=True)
 
-    print('Opening temp file %s' % pto_red.file_name)
+    print(('Opening temp file %s' % pto_red.file_name))
     subp = subprocess.Popen(['hugin', pto_red.file_name], shell=False)
     subp.communicate()
-    print('Hugin exited with code %d' % subp.returncode)
+    print(('Hugin exited with code %d' % subp.returncode))
 
     pto_red.reopen()
 
@@ -73,8 +73,8 @@ if __name__ == "__main__":
         else:
             return '%0.2f' % f
 
-    print('Rotation %s => %s' % (floats(
-        pto_orig.image_lines[0].getv('r')), floats(r)))
+    print(('Rotation %s => %s' % (floats(
+        pto_orig.image_lines[0].getv('r')), floats(r))))
     for il in pto_orig.image_lines:
         il.setv('r', r)
 

@@ -102,8 +102,8 @@ class SpatialAxisList:
                 rejected_str = 'REJECTED'
             else:
                 rejected_str = 'KEEP'
-            print 'overlap %d is %f from %s and %s: %s' % (
-                self.axis_index, overlap, point, cur_point, rejected_str)
+            print('overlap %d is %f from %s and %s: %s' % (
+                self.axis_index, overlap, point, cur_point, rejected_str))
 
             if was_rejected:
                 # Sorted so not continue
@@ -169,8 +169,8 @@ class SpatialMap:
         y_intersection = self.y_list.intersection(point, ignore_upper)
         x_intersection = self.x_list.intersection(point, ignore_upper)
         intersection = y_intersection.intersection(x_intersection)
-        print 'insersection y raw: %d, x raw: %d, full: %d' % (
-            len(y_intersection), len(x_intersection), len(intersection))
+        print('insersection y raw: %d, x raw: %d, full: %d' % (
+            len(y_intersection), len(x_intersection), len(intersection)))
         # Now convert to pair list
         ret = list()
         for name in intersection:

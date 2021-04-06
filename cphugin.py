@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 '''
 pr0nhugin: allows editing a reduced project to speed up hugin editing
 Copyright 2012 John McMaster <JohnDMcMaster@gmail.com>
@@ -23,7 +23,7 @@ def worst_image(project):
 
     worst_n = None
     worst_rms = None
-    for imn, rms in images.items():
+    for imn, rms in list(images.items()):
         if worst_rms is None or rms > worst_rms:
             worst_n = imn
             worst_rms = rms
@@ -46,11 +46,11 @@ def main():
 
     print("Finding worst image optimization")
     n, rms = worst_image(pto_orig)
-    print("got", n, rms)
+    print(("got", n, rms))
     il = pto_orig.image_lines[n]
     fn = il.get_name()
     refrow, refcol = get_row_col(fn)
-    print(fn, refcol, refrow)
+    print((fn, refcol, refrow))
 
 
     img_fns = []
@@ -67,15 +67,15 @@ def main():
             continue
         ils_keep.add(pto_orig.img_fn2il[im])
     ils_del = set(pto_orig.image_lines) - ils_keep
-    print("%s - %s image lines, keeping %s" % (len(pto_orig.image_lines), len(ils_del), len(ils_keep)))
+    print(("%s - %s image lines, keeping %s" % (len(pto_orig.image_lines), len(ils_del), len(ils_keep))))
 
     # Reduced .pto
     pto_red = pto_orig.copy()
 
-    print('Deleting %d / %d images' % (len(ils_del),
-                                       icm.width() * icm.height()))
+    print(('Deleting %d / %d images' % (len(ils_del),
+                                       icm.width() * icm.height())))
     pto_red.del_images(ils_del)
-    print(len(pto_orig.image_lines), len(pto_red.image_lines))
+    print((len(pto_orig.image_lines), len(pto_red.image_lines)))
 
     print("Centering...")
     center(pto_red)
@@ -92,10 +92,10 @@ def main():
     print("Fitting FOV")
     subprocess.check_call("pano_modify --fov=AUTO --canvas=AUTO -o %s %s" % (pto_red_fn, pto_red_fn), shell=True)
 
-    print('Opening temp file %s' % pto_red.file_name)
+    print(('Opening temp file %s' % pto_red.file_name))
     subp = subprocess.Popen(['hugin', pto_red.file_name], shell=False)
     subp.communicate()
-    print('Hugin exited with code %d' % subp.returncode)
+    print(('Hugin exited with code %d' % subp.returncode))
 
     red_orig_ncpls = len(pto_red.control_point_lines)
     pto_red.reopen()
@@ -121,13 +121,13 @@ def main():
         if not (n in iln_keep and N in iln_keep):
             cpls_new.append(cpl)
     # Shift into main object, discarding munged cpls
-    print("cpl filtering %u => %u" % (len(pto_orig.control_point_lines), len(cpls_new)))
+    print(("cpl filtering %u => %u" % (len(pto_orig.control_point_lines), len(cpls_new))))
     pto_orig.control_point_lines = cpls_new
 
     red_fn2il = pto_red.build_image_fn_map()
-    red_il2fn = dict([(v, k) for k, v in red_fn2il.items()])
+    red_il2fn = dict([(v, k) for k, v in list(red_fn2il.items())])
     red_il2i = pto_red.build_il2i()
-    red_i2il = dict([(v, k) for k, v in red_il2i.items()])
+    red_i2il = dict([(v, k) for k, v in list(red_il2i.items())])
 
     full_fn2il = pto_orig.build_image_fn_map()
     full_il2i = pto_orig.build_il2i()
@@ -150,7 +150,7 @@ def main():
         cpl.project = pto_orig
         pto_orig.control_point_lines.append(cpl)
 
-    print("image lines", len(pto_orig.image_lines), len(pto_red.image_lines))
+    print(("image lines", len(pto_orig.image_lines), len(pto_red.image_lines)))
 
     print('Saving final project')
     # small backup in case something went wrong
@@ -158,8 +158,8 @@ def main():
     pto_orig.save_as(pto_orig.file_name)
 
     new_ncpls = len(pto_orig.control_point_lines)
-    print("roi %u => %u cpls" % (red_orig_ncpls, red_new_ncpls))
-    print("pto %u => %u cpls" % (orig_ncpls, new_ncpls))
+    print(("roi %u => %u cpls" % (red_orig_ncpls, red_new_ncpls)))
+    print(("pto %u => %u cpls" % (orig_ncpls, new_ncpls)))
 
     print('Done!')
 

@@ -56,7 +56,7 @@ class RemoveImages:
 
         p.Parse(self.ink.text, 1)
         for layer in self.image_layers:
-            print 'Image layer %s' % self.image_layer
+            print('Image layer %s' % self.image_layer)
         self.ink.mark_dirty()
 
 
@@ -171,7 +171,7 @@ class InkSVG:
                     if self.cur_layer:
                         raise Exception('Nester layer?')
                     layer_name = attrs['inkscape:label']
-                    print 'Found layer %s' % layer_name
+                    print('Found layer %s' % layer_name)
                     if layer_name in self.layers:
                         raise Exception("Duplicate layer %s" % layer_name)
                     self.cur_layer = Layer()

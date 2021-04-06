@@ -108,7 +108,7 @@ class Enblend:
         self._lock_fp = None
 
         def p(s=''):
-            print '%s: %s' % (datetime.datetime.utcnow().isoformat(), s)
+            print('%s: %s' % (datetime.datetime.utcnow().isoformat(), s))
 
         self.p = p
         self.pprefix = lambda: datetime.datetime.utcnow().isoformat() + ': '
@@ -161,7 +161,7 @@ class Enblend:
 
         self.lock()
 
-        print 'Blender: executing %s' % (' '.join(args), )
+        print('Blender: executing %s' % (' '.join(args), ))
         rc = execute.prefix(args,
                             stdout=self.stdout,
                             stderr=self.stderr,

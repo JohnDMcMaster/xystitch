@@ -4,7 +4,7 @@ Copyright 2011 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under a 2 clause BSD license, see COPYING for details
 '''
 
-from temp_file import ManagedTempFile
+from .temp_file import ManagedTempFile
 import datetime
 import os
 import select
@@ -49,7 +49,7 @@ def with_output(args, print_output=False):
     Return (rc, stdout+stderr))
     Echos stdout/stderr to screen as it 
     '''
-    print('going to execute: %s' % (args, ))
+    print(('going to execute: %s' % (args, )))
     if print_output:
         # Specifying pipe will cause communicate to read to it
         print('tst')
@@ -71,7 +71,7 @@ def without_output(args, print_output=True):
     Return rc
     Echos stdout/stderr to screen
     '''
-    print('going to execute: %s' % (args, ))
+    print(('going to execute: %s' % (args, )))
     if print_output:
         subp = subprocess.Popen(args, shell=False)
     else:
@@ -87,7 +87,7 @@ class Execute:
     def simple(cmd, working_dir=None):
         '''Returns rc of process, no output'''
 
-        print('cmd in: %s' % cmd)
+        print(('cmd in: %s' % cmd))
 
         # Probably reliable but does not stream output to screen
         if 0:
@@ -108,7 +108,7 @@ class Execute:
             cmd = "/bin/bash " + cmd
             output = ''
             to_exec = cmd.split(' ')
-            print('going to execute: %s' % to_exec)
+            print(('going to execute: %s' % to_exec))
             subp = subprocess.Popen(to_exec)
             while subp.returncode is None:
                 # Hmm how to treat stdout  vs stderror?
@@ -133,7 +133,7 @@ class Execute:
         if working_dir:
             cmd = 'cd %s && ' % working_dir + cmd
 
-        print('cmd in: %s' % cmd)
+        print(('cmd in: %s' % cmd))
         # Streams output to screen but may be causing synchronization issues
         #print 'Executing'
         os.sys.stdout.flush()
@@ -148,7 +148,7 @@ class Execute:
         if working_dir:
             cmd = 'cd %s && ' % working_dir + cmd
 
-        print('cmd in: %s' % cmd)
+        print(('cmd in: %s' % cmd))
         # Streams output to screen but may be causing synchronization issues
         #print 'Executing'
         os.sys.stdout.flush()

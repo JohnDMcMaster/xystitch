@@ -76,7 +76,7 @@ def dbg(s, level=1):
         return
     s = 'pr0nliner-lib: %s' % str(s)
     if pdbg:
-        print s
+        print(s)
     if logf:
         logf.write('%s\n' % str(s))
 
@@ -149,7 +149,7 @@ def contour_len(contour, closed=False):
     cv.ArchLength exists but cv.ContourPerimeter does not
     '''
     ret = 0.0
-    for pointi in xrange(len(contour) - 1):
+    for pointi in range(len(contour) - 1):
         p0 = contour[pointi]
         p1 = contour[pointi + 1]
         #print point
@@ -167,7 +167,7 @@ def print_contour(contour, prefix='', level=3):
     if level > dbgl:
         return
     dbg('%sContour:' % prefix)
-    for pointi in xrange(len(contour) - 1):
+    for pointi in range(len(contour) - 1):
         p = contour[pointi]
         '''
         (x, y) w/ origin in upper left hand corner of images
@@ -259,16 +259,16 @@ def contour_line_diff(contour_in, line):
                 if vertexi < vertexi_tail:
                     gened = 0
                     #print 'Left wrap around'
-                    for i in xrange(vertexi_tail, len(contour), 1):
+                    for i in range(vertexi_tail, len(contour), 1):
                         yield i
                         gened += 1
-                    for i in xrange(0, vertexi + 1, 1):
+                    for i in range(0, vertexi + 1, 1):
                         yield i
                         gened += 1
                     if gened != n_contour_indices():
                         raise Exception('Wrong number of points %d' % gened)
                 else:
-                    for i in xrange(vertexi_tail, vertexi, 1):
+                    for i in range(vertexi_tail, vertexi, 1):
                         yield i
 
             l = diff_line(lgen())
@@ -277,12 +277,12 @@ def contour_line_diff(contour_in, line):
                 # Wrapped around?  Discrete intervals
                 if vertexi < vertexi_tail:
                     #print 'Right wrap around'
-                    for i in xrange(vertexi, -1, -1):
+                    for i in range(vertexi, -1, -1):
                         yield i
-                    for i in xrange(n_contour_indices() - 1, vertexi - 1, -1):
+                    for i in range(n_contour_indices() - 1, vertexi - 1, -1):
                         yield i
                 else:
-                    for i in xrange(vertexi - 1, vertexi_tail - 1, -1):
+                    for i in range(vertexi - 1, vertexi_tail - 1, -1):
                         yield i
 
             r = diff_line(rgen())
@@ -327,7 +327,7 @@ def contour_line_diff(contour_in, line):
 
     dbg('  Best len from %u to %u' % (best_start, best_end), level=3)
     if dbgl > 3:
-        for i in xrange(best_start, best_end + 1, 1):
+        for i in range(best_start, best_end + 1, 1):
             dbg('    (%dx, %dy)' % (contour[i][0], contour[i][1]))
     return best_diff
 
@@ -335,7 +335,7 @@ def contour_line_diff(contour_in, line):
 def list2contour(l):
     # FIXME: look into this
     ret = cv.CreateMat(len(l), 2, cv.CV_32FC1)
-    for i in xrange(len(l)):
+    for i in range(len(l)):
         ret[i][0] = l[i][0]
         ret[i][1] = l[i][1]
     return ret
@@ -348,7 +348,7 @@ def segment_contour(contour, max_segment):
         raise ValueError("Bad contour of len %d" % len(contour))
     # Always anchor at the first point
     ret = [contour[0]]
-    for pointi in xrange(len(contour) - 1):
+    for pointi in range(len(contour) - 1):
         #print
         # Even if broken up end point still exists
         p0 = contour[pointi]
@@ -373,7 +373,7 @@ def segment_contour(contour, max_segment):
         Skip 0 since previous covers it
         '''
         f = linearized_pgen(p0, p1)
-        for n in xrange(1, n_points + 1):
+        for n in range(1, n_points + 1):
             per = float(n) / n_points
             p = f(per)
             dbg('      split to (%dx, %dy) w/ %g percent' %
@@ -408,15 +408,15 @@ def segment_contour(contour, max_segment):
 
 
 def pplane(name, plane, prefix=''):
-    print '%sPlane %s (%dw X %dh)' % (prefix, name, plane.width, plane.height)
-    for x in xrange(plane.width):
-        print prefix,
-        for y in xrange(plane.height):
+    print('%sPlane %s (%dw X %dh)' % (prefix, name, plane.width, plane.height))
+    for x in range(plane.width):
+        print(prefix, end=' ')
+        for y in range(plane.height):
             p = plane[x, y]
             if y % 2 == 1:
-                print '(%03d) ' % (p),
-        print
-    print
+                print('(%03d) ' % (p), end=' ')
+        print()
+    print()
 
 
 def hs_histogram(src, mask=None):
@@ -702,7 +702,7 @@ class LinerBase():
         #for g_thresh in xrange(0, 256, 8):
         # somewhat arbitrary "reasonable" range
         # TODO: tune based off of training data
-        for self.cur_thresh in xrange(64, 168, 8):
+        for self.cur_thresh in range(64, 168, 8):
             self.try_thresh()
         if self.best_contour is None:
             raise Exception('Failed to match a contour')
@@ -789,7 +789,7 @@ class SimpleLiner(LinerBase):
         '''Takes in list of (contour, color) tuples where contour is iterable for (x, y) tuples'''
         cv.PolyLine(draw_img, [self.best_contour], True, cv.CV_RGB(255, 0, 0))
         cv.PolyLine(draw_img, [self.ref_polygon], True, cv.CV_RGB(0, 0, 255))
-        print self.line
+        print(self.line)
         cv.PolyLine(draw_img, [self.line], True, cv.CV_RGB(0, 255, 0))
 
         cv.ShowImage("Contours", draw_img)

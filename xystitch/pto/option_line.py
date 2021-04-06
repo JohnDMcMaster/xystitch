@@ -31,7 +31,7 @@ import os
 import shutil
 from xystitch.temp_file import ManagedTempFile
 from xystitch.execute import Execute
-import comment_line
+from . import comment_line
 
 
 class OptionLine(comment_line.CommentLine):

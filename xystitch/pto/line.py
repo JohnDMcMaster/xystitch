@@ -252,9 +252,9 @@ class Line:
             if first:
                 prefix = k
                 if not v is None and len(v) > 0:
-                    print 'Line: %s' % self.text
-                    print 'ERROR: line type should not have value: %s' % repr(
-                        v)
+                    print('Line: %s' % self.text)
+                    print('ERROR: line type should not have value: %s' % repr(
+                        v))
                     raise Exception('confused')
                 first = False
                 continue
@@ -271,12 +271,12 @@ class Line:
                     # Already in string form
                     pass
                 else:
-                    print 'WARNING: unknown data type on %s (full: %s)' % (
-                        k, self.text)
+                    print('WARNING: unknown data type on %s (full: %s)' % (
+                        k, self.text))
                     raise Exception('Unknown key %s' % k)
             except:
-                print 'line: %s' % self.text
-                print 'key: %s, value: %s' % (repr(k), repr(v))
+                print('line: %s' % self.text)
+                print('key: %s, value: %s' % (repr(k), repr(v)))
                 self.print_variables()
                 raise
 
@@ -284,8 +284,8 @@ class Line:
             self.set_variable(k, v)
 
     def print_variables(self):
-        print 'Variables:'
-        print '  key: %s' % str(self.key_variables())
-        print '  int: %s' % str(self.int_variables())
-        print '  float: %s' % str(self.float_variables())
-        print '  string: %s' % str(self.string_variables())
+        print('Variables:')
+        print('  key: %s' % str(self.key_variables()))
+        print('  int: %s' % str(self.int_variables()))
+        print('  float: %s' % str(self.float_variables()))
+        print('  string: %s' % str(self.string_variables()))

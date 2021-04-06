@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 '''
 pr0pto
 .pto utilities
@@ -64,10 +64,10 @@ def rm_image_cps(self, indexes):
 
 
 def check_cp(pto):
-    print 'Building CP map'
+    print('Building CP map')
     cps = pto2cps(pto)
     errors = []
-    for cpk, diffs in sorted(cps.iteritems()):
+    for cpk, diffs in sorted(cps.items()):
         n, N = cpk
         img1 = pto.i2img(n).get_name()
         img2 = pto.i2img(N).get_name()
@@ -79,16 +79,16 @@ def check_cp(pto):
             rms += math.sqrt(dx**2 + dy**2)
         rms /= len(diffs)
 
-        print '%s - %s: % 6.1f:' % (img1, img2, rms)
+        print('%s - %s: % 6.1f:' % (img1, img2, rms))
         for diff in diffs:
             dx, dy = diff
-            print '  % 6.1f % 6.1f' % (dx, dy)
+            print('  % 6.1f % 6.1f' % (dx, dy))
         errors.append((rms, (img1, img2)))
 
     errors = sorted(errors)
-    print 'Worst:'
+    print('Worst:')
     rms, (img1, img2) = errors[-1]
-    print '  %s - %s: % 6.1f' % (img1, img2, rms)
+    print('  %s - %s: % 6.1f' % (img1, img2, rms))
 
     if 0:
         rmss = []
@@ -103,22 +103,22 @@ def check_cp(pto):
         # 1 translation error is about 25
         # These are way outside valid range
         thresh = 50.0
-        print
+        print()
         bad = 0
-        print 'Thresh = % 6.1f' % thresh
+        print('Thresh = % 6.1f' % thresh)
         toremove = set()
         for rms, (img1, img2) in errors:
             if rms > thresh:
                 bad += 1
-                print '  %s - %s: % 6.1f' % (img1, img2, rms)
+                print('  %s - %s: % 6.1f' % (img1, img2, rms))
                 i1 = pto.get_image_by_fn(img1).get_index()
                 i2 = pto.get_image_by_fn(img2).get_index()
                 toremove.add((i1, i2))
             bad += 1
         if 1:
-            print 'Removing CPs between %d image pairs' % len(toremove)
+            print('Removing CPs between %d image pairs' % len(toremove))
             removed = rm_image_cps(pto, toremove)
-            print 'Removed %d CPs' % removed
+            print('Removed %d CPs' % removed)
 
 
 def parser_add_bool_arg(yes_arg, default=False, **kwargs):
@@ -170,21 +170,21 @@ if __name__ == "__main__":
         _outlog.out_fd.write('*' * 80 + '\n')
         _outlog.out_fd.write('*' * 80 + '\n')
         _outlog.out_fd.write('*' * 80 + '\n')
-    print 'pr0npto starting'
-    print 'In: %s' % pto_in
-    print 'Out: %s' % pto_out
+    print('pr0npto starting')
+    print('In: %s' % pto_in)
+    print('Out: %s' % pto_out)
     bench = Benchmark()
 
     pto = PTOProject.from_file_name(pto_in)
     # Make sure we don't accidently override the original
     pto.remove_file_name()
 
-    print 'Checking for bad CPs'
+    print('Checking for bad CPs')
     check_cp(pto)
 
     if 1:
-        print 'Saving to %s' % pto_out
+        print('Saving to %s' % pto_out)
         pto.save_as(pto_out)
 
     bench.stop()
-    print 'Completed in %s' % bench
+    print('Completed in %s' % bench)

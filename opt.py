@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 '''
 pr0opt
 .pto optimization
@@ -42,8 +42,8 @@ if __name__ == "__main__":
     pto_ref_fn = args.pto_ref[0]
     pto_out_fn = args.pto_out
 
-    print 'Reference in: %s' % pto_ref_fn
-    print 'Out: %s' % pto_out_fn
+    print('Reference in: %s' % pto_ref_fn)
+    print('Out: %s' % pto_out_fn)
 
     # Have to start somewhere...
     pto_out = PTOProject.from_default()
@@ -60,11 +60,11 @@ if __name__ == "__main__":
                       order=2,
                       border=args.border)
 
-    print 'Centering...'
+    print('Centering...')
     center(pto_out)
 
-    print 'Converting to Hugin form...'
+    print('Converting to Hugin form...')
     resave_hugin(pto_out)
 
-    print 'Saving to %s' % pto_out_fn
+    print('Saving to %s' % pto_out_fn)
     pto_out.save_as(pto_out_fn)

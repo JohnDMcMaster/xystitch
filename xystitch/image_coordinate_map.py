@@ -133,7 +133,7 @@ class ImageCoordinateMap:
 
     def images(self):
         '''Returns a generator giving (file name, row, col) tuples'''
-        for (col, row), image, in self.layout.items():
+        for (col, row), image, in list(self.layout.items()):
             yield (image, row, col)
 
     def n_images(self):
@@ -149,21 +149,21 @@ class ImageCoordinateMap:
 
     def is_complete(self, check_bounds=True):
         '''Raise MissingImage on first missing image found or return if no missing images'''
-        for col in xrange(self.cols):
-            for row in xrange(self.rows):
+        for col in range(self.cols):
+            for row in range(self.rows):
                 if self.layout.get((col, row), None) is None:
                     raise MissingImage('Row %d, col %d missing' % (row, col))
         if check_bounds:
-            for (col, row), image, in self.layout.iteritems():
+            for (col, row), image, in self.layout.items():
                 if col < 0 or col >= self.cols or row < 0 or row >= self.rows:
                     raise Exception('Row %d, col %d unexpected' % (row, col))
 
     def debug_print(self):
-        print('height %d rows, width %d cols' % (self.height(), self.width()))
+        print(('height %d rows, width %d cols' % (self.height(), self.width())))
         for row in range(self.height()):
             for col in range(self.width()):
-                print('  [r%d][c%d] = %s' %
-                      (row, col, self.get_image(col, row)))
+                print(('  [r%d][c%d] = %s' %
+                      (row, col, self.get_image(col, row))))
 
     def get_image_safe(self, col, row):
         '''Returns none if out of bounds'''
@@ -250,13 +250,13 @@ class ImageCoordinateMap:
 
             # Assume X first so that files read x_y.jpg which seems most intuitive (to me FWIW)
             if cols is None:
-                print('Constructing columns from set %s' % str(col_parts))
+                print(('Constructing columns from set %s' % str(col_parts)))
                 cols = max(col_parts) + 1
             if rows is None:
-                print('Constructing rows from set %s' % str(row_parts))
+                print(('Constructing rows from set %s' % str(row_parts)))
                 rows = max(row_parts) + 1
-        print('initial cols / X dim / width: %d, rows / Y dim / height: %d' %
-              (cols, rows))
+        print(('initial cols / X dim / width: %d, rows / Y dim / height: %d' %
+              (cols, rows)))
 
         ret = ImageCoordinateMap(cols, rows)
         file_names = sorted(file_names)
@@ -339,5 +339,5 @@ def icm_flip_lr(icm):
 def icm_save(icm, dir_out, dry=False):
     for fn_in, row, col in icm.images():
         fn_out = "%s/r%03u_c%03u.jpg" % (dir_out, row, col)
-        print("%s => %s" % (fn_in, fn_out))
+        print(("%s => %s" % (fn_in, fn_out)))
         shutil.copyfile(fn_in, fn_out)

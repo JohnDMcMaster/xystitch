@@ -62,10 +62,10 @@ class ImageMap:
 
         mapper = ImageMap()
 
-        print '{'
+        print('{')
         comma = ''
         for point in getPointsEx():
-            print '\t{"x": %f, "y": %f, "z": %f, "row": %d, "col": %d, "file_name": "%s"}%s' % \
-              (point[0], point[1], point[2], point[3], point[4], genBasename(point, ".jpg"), comma)
+            print('\t{"x": %f, "y": %f, "z": %f, "row": %d, "col": %d, "file_name": "%s"}%s' % \
+              (point[0], point[1], point[2], point[3], point[4], genBasename(point, ".jpg"), comma))
             comma = ','
-        print '}'
+        print('}')

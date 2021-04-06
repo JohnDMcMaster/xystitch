@@ -37,23 +37,23 @@ def soften_gauss(src_fn, dst_fn=None):
     args.append("Gaussian:0x3")
     args.append(dst_fn)
 
-    print 'going to execute: %s' % (args, )
+    print('going to execute: %s' % (args, ))
     # Specifying nothing completely throws away the output
     subp = subprocess.Popen(args, stdout=None, stderr=None, shell=False)
     subp.communicate()
-    print 'Execute done, rc: %s' % (subp.returncode, )
+    print('Execute done, rc: %s' % (subp.returncode, ))
     if not subp.returncode == 0:
         raise Exception('soften failed')
 
     # having some problems that looks like file isn't getting written to disk
     # monitoring for such errors
     # remove if I can root cause the source of these glitches
-    for i in xrange(30):
+    for i in range(30):
         if os.path.exists(dst_fn):
             break
         if i == 0:
-            print 'WARNING: soften missing strong blur dest file name %s, waiting a bit...' % (
-                dst_fn, )
+            print('WARNING: soften missing strong blur dest file name %s, waiting a bit...' % (
+                dst_fn, ))
         time.sleep(0.1)
     else:
         raise Exception('Missing soften strong blur output file name %s' %
@@ -77,22 +77,22 @@ def soften_composite(src_fn, dst_fn=None):
     args.append("-composite")
     # If we got a dest file, use it
     args.append(dst_fn)
-    print 'going to execute: %s' % (args, )
+    print('going to execute: %s' % (args, ))
     subp = subprocess.Popen(args, stdout=None, stderr=None, shell=False)
     subp.communicate()
-    print 'Execute done, rc: %s' % (subp.returncode, )
+    print('Execute done, rc: %s' % (subp.returncode, ))
     if not subp.returncode == 0:
         raise Exception('failed to form strong blur')
 
     # having some problems that looks like file isn't getting written to disk
     # monitoring for such errors
     # remove if I can root cause the source of these glitches
-    for i in xrange(30):
+    for i in range(30):
         if os.path.exists(dst_fn):
             break
         if i == 0:
-            print 'WARNING: soften missing strong blur dest file name %s, waiting a bit...' % (
-                dst_fn, )
+            print('WARNING: soften missing strong blur dest file name %s, waiting a bit...' % (
+                dst_fn, ))
         time.sleep(0.1)
     else:
         raise Exception('Missing soften strong blur output file name %s' %

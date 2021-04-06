@@ -27,7 +27,7 @@ debugging = 0
 
 def dbg(s=''):
     if debugging:
-        print 'DEBUG: %s' % s
+        print('DEBUG: %s' % s)
 
 
 def calc_center(pto):
@@ -84,16 +84,16 @@ def center(pto):
     try:
         pto.assert_uniform_images()
     except Exception:
-        print 'WARNING: images not uniform, may not be completely centered'
+        print('WARNING: images not uniform, may not be completely centered')
 
     # We require the high level representation
     pto.parse()
 
     if debugging:
-        print 'lines old:'
+        print('lines old:')
         for i in range(3):
             il = pto.get_image_lines()[i]
-            print il
+            print(il)
 
     (ybar, xbar) = calc_center(pto)
     dbg('Center adjustment by x %f, y %f' % (xbar, ybar))
@@ -103,10 +103,10 @@ def center(pto):
         i.set_y(i.y() - ybar)
 
     if debugging:
-        print 'lines new:'
+        print('lines new:')
         for i in range(3):
             il = pto.get_image_lines()[i]
-            print il
+            print(il)
     #import sys
     #sys.exit(1)
 
@@ -186,7 +186,7 @@ def anchor(pto, i_in):
     '''
     This could be any number of values if it was empty before
     '''
-    for i in xrange(pto.nimages()):
+    for i in range(pto.nimages()):
         if not i in closed_set and i != iindex:
             dbg('Index %d not in closed set' % i)
             '''
@@ -314,11 +314,11 @@ def optimize_xy_only(self):
             new_project_text += line + '\n'
     self.set_text(new_project_text)
     if 0:
-        print
-        print
+        print()
+        print()
         dbg(self.text)
-        print
-        print
+        print()
+        print()
 
 
 """
@@ -335,7 +335,7 @@ def fixup_p_lines(self):
     # p f2 w8000 h24 v179  E0 R0 n"TIFF_m c:NONE"
     # p f0 w8000 h24 v179  E0 R0 n"TIFF_m c:NONE"
     '''
-    print 'Fixing up single lines'
+    print('Fixing up single lines')
     new_project_text = ''
     for line in self.get_text().split('\n'):
         if line == '':
@@ -355,15 +355,15 @@ def fixup_p_lines(self):
             new_project_text += line + '\n'
     self.set_text(new_project_text)
     if debugging:
-        print
-        print
-        print self.text
-        print
-        print
+        print()
+        print()
+        print(self.text)
+        print()
+        print()
 
 
 def fixup_i_lines(self):
-    print 'Fixing up i (image attributes) lines...'
+    print('Fixing up i (image attributes) lines...')
     new_project_text = ''
     for line in self.get_text().split('\n'):
         if line == '':
@@ -392,11 +392,11 @@ def fixup_i_lines(self):
             new_project_text += line + '\n'
     self.set_text(new_project_text)
     if 0:
-        print
-        print
-        print self.text
-        print
-        print
+        print()
+        print()
+        print(self.text)
+        print()
+        print()
 
 
 def make_basename(pto):
@@ -450,7 +450,7 @@ def img_cpls(pto, img_i):
 def rm_red_img(pto):
     '''Remove redundant images given crop selection'''
     # see coordinate warnings at top
-    print 'Removing redundant images'
+    print('Removing redundant images')
     pl = pto.panorama_line
     (c_left_, c_right_, c_top_, c_bottom_) = pl.get_crop_ez()
     # translate crop coordinates into image coordinates
@@ -465,9 +465,9 @@ def rm_red_img(pto):
     c_right = canvas_w / 2 - c_right_
     c_top = canvas_h / 2 - c_top_
     c_bottom = canvas_h / 2 - c_bottom_
-    print 'Canvas: %dw X %dh' % (canvas_w, canvas_h)
-    print 'Crop [%s, %s, %s, %s] => [%s, %s, %s, %s]' % (
-        c_left_, c_right_, c_top_, c_bottom_, c_left, c_right, c_top, c_bottom)
+    print(('Canvas: %dw X %dh' % (canvas_w, canvas_h)))
+    print(('Crop [%s, %s, %s, %s] => [%s, %s, %s, %s]' % (
+        c_left_, c_right_, c_top_, c_bottom_, c_left, c_right, c_top, c_bottom)))
 
     to_rm = []
     for il in pto.image_lines:
@@ -502,29 +502,29 @@ def rm_red_img(pto):
         il_w = il.width()
         il_h = il.height()
         if 0:
-            print 'check %s [%s, %s, %s, %s]' % (il.get_name(), im_left,
-                                                 im_right, im_top, im_bottom)
-            print '  x %0.1f => %0.1f' % (x, xp)
-            print '  y %0.1f => %0.1f' % (y, yp)
-            print '  %s < %s' % (c_left - im_right, il_w * overlap_thresh)
-            print '  %s < %s' % (im_left - c_right, il_w * overlap_thresh)
-            print '  %s < %s' % (c_top - im_bottom, il_h * overlap_thresh)
-            print '  %s < %s' % (im_top - c_bottom, il_h * overlap_thresh)
+            print('check %s [%s, %s, %s, %s]' % (il.get_name(), im_left,
+                                                 im_right, im_top, im_bottom))
+            print('  x %0.1f => %0.1f' % (x, xp))
+            print('  y %0.1f => %0.1f' % (y, yp))
+            print('  %s < %s' % (c_left - im_right, il_w * overlap_thresh))
+            print('  %s < %s' % (im_left - c_right, il_w * overlap_thresh))
+            print('  %s < %s' % (c_top - im_bottom, il_h * overlap_thresh))
+            print('  %s < %s' % (im_top - c_bottom, il_h * overlap_thresh))
         if (c_left - im_right < il_w * overlap_thresh
                 or im_left - c_right < il_w * overlap_thresh
                 or c_top - im_bottom < il_h * overlap_thresh
                 or im_top - c_bottom < il_h * overlap_thresh):
             #print 'Removing %s' % il
             if 0:
-                print 'rm %s [%s, %s, %s, %s]' % (il.get_name(), im_left,
-                                                  im_right, im_top, im_bottom)
+                print('rm %s [%s, %s, %s, %s]' % (il.get_name(), im_left,
+                                                  im_right, im_top, im_bottom))
             to_rm.append(il)
 
-    print 'Removing %d / %d images' % (len(to_rm), len(pto.image_lines))
+    print('Removing %d / %d images' % (len(to_rm), len(pto.image_lines)))
     if len(to_rm) == len(pto.image_lines):
         raise Exception("Removed all images.  remapper will fail")
     pto.del_images(to_rm)
-    print 'Remaining'
+    print('Remaining')
     for il in pto.image_lines:
-        print '  %s w/ [%s, %s, %s, %s]' % (il.get_name(), il.left(),
-                                            il.right(), il.top(), il.bottom())
+        print('  %s w/ [%s, %s, %s, %s]' % (il.get_name(), il.left(),
+                                            il.right(), il.top(), il.bottom()))

@@ -30,7 +30,7 @@ def now():
 
 
 def msg(s=''):
-    print('%s: %s' % (now(), s))
+    print(('%s: %s' % (now(), s)))
 
 
 def logwt(d, fn, shift_d=True, shift_f=False, stampout=True):

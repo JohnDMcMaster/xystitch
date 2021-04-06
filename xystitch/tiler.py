@@ -1,4 +1,4 @@
-from __future__ import print_function
+
 '''
 xystitch
 Copyright 2012 John McMaster <JohnDMcMaster@gmail.com>
@@ -44,7 +44,7 @@ Greedy algorithm to generate a tile if its legal (and safe)
 
 from xystitch.remapper import Nona
 from xystitch.blender import Enblend
-from image_coordinate_map import ImageCoordinateMap
+from .image_coordinate_map import ImageCoordinateMap
 from xystitch.config import config
 from xystitch.temp_file import ManagedTempFile
 from xystitch.temp_file import ManagedTempDir
@@ -59,7 +59,7 @@ from xystitch.util import IOTimestamp
 import datetime
 import math
 import os
-import Queue
+import queue
 import psutil
 import subprocess
 import sys
@@ -242,7 +242,7 @@ class Worker(object):
                 # print("Check queue, %u rx (q %u), %u tx (q %u)..." % (messages_rx, self.qi.qsize(), messages_tx, self.qo.qsize()))
                 try:
                     task = self.qi.get(True, 0.1)
-                except Queue.Empty:
+                except queue.Empty:
                     continue
 
                 try:
@@ -351,7 +351,7 @@ class Worker(object):
                     # having some problems that looks like file isn't getting written to disk
                     # monitoring for such errors
                     # remove if I can root cause the source of these glitches
-                    for i in xrange(30):
+                    for i in range(30):
                         if os.path.exists(dst):
                             break
                         if i == 0:
@@ -586,7 +586,7 @@ class Tiler:
         # Arbitrary step at 1000
         # Even for large sets we want to optimize
         # for small sets we don't care
-        for check_w in xrange(min_stwh, max_stwh, 100):
+        for check_w in range(min_stwh, max_stwh, 100):
             check_h = stp / check_w
             print('Checking supertile size %dw X %dh (area %d)' %
                   (check_w, check_h, check_w * check_h))
@@ -604,7 +604,7 @@ class Tiler:
                               clip_height=self.clip_height)
             except InvalidClip as e:
                 print('Discarding: invalid clip: %s' % (e, ))
-                print
+                print()
                 continue
 
             # The area will float around a little due to truncation
@@ -613,7 +613,7 @@ class Tiler:
             # XXX: is this a bug or something that I should just skip?
             if n_expected == 0:
                 print('Invalid STs 0')
-                print
+                print()
                 continue
 
             p = (check_w + check_h) * 2
@@ -683,7 +683,7 @@ class Tiler:
         else:
             h_sts = 0
             h_extra = 0
-            for y in xrange(self.top(), self.bottom(), self.super_t_ystep):
+            for y in range(self.top(), self.bottom(), self.super_t_ystep):
                 h_sts += 1
                 y1 = y + self.sth
                 if y1 >= self.bottom():
@@ -692,7 +692,7 @@ class Tiler:
 
             w_sts = 0
             w_extra = 0
-            for x in xrange(self.left(), self.right(), self.super_t_xstep):
+            for x in range(self.left(), self.right(), self.super_t_xstep):
                 w_sts += 1
                 x1 = x + self.stw
                 if x1 >= self.right():
@@ -804,7 +804,7 @@ class Tiler:
             #print('Y check skip (%d): bottom border' % y1)
             skip_yh_check = True
 
-        for y in xrange(yt0, yt1, self.th):
+        for y in range(yt0, yt1, self.th):
             # Are we trying to construct a tile in the buffer zone?
             if (not skip_yl_check) and y < y0 + self.clip_height:
                 if self.verbose:
@@ -814,7 +814,7 @@ class Tiler:
                 if self.verbose:
                     print('Rejecting tile @ y%d, x*: yh clip' % (y))
                 continue
-            for x in xrange(xt0, xt1, self.tw):
+            for x in range(xt0, xt1, self.tw):
                 # Are we trying to construct a tile in the buffer zone?
                 if (not skip_xl_check) and x < x0 + self.clip_width:
                     if self.verbose:
@@ -1019,7 +1019,7 @@ class Tiler:
             print("Dry: %u" % self.dry)
         #row = 0
         y_done = False
-        for y in xrange(self.top(), self.bottom(), self.super_t_ystep):
+        for y in range(self.top(), self.bottom(), self.super_t_ystep):
             y0 = y
             y1 = y + self.sth
             if y1 >= self.bottom():
@@ -1033,7 +1033,7 @@ class Tiler:
 
             #col = 0
             x_done = False
-            for x in xrange(self.left(), self.right(), self.super_t_xstep):
+            for x in range(self.left(), self.right(), self.super_t_xstep):
                 x0 = x
                 x1 = x + self.stw
                 # If we have reached the right side align to it rather than truncating
@@ -1173,8 +1173,8 @@ class Tiler:
         # in form (row, col)
         self.open_list_rc = set()
         self.closed_list_rc = set()
-        for row in xrange(self.rows()):
-            for col in xrange(self.cols()):
+        for row in range(self.rows()):
+            for col in range(self.cols()):
                 self.open_list_rc.add((row, col))
         self.closed_sts = set()
 
@@ -1269,7 +1269,7 @@ class Tiler:
             self.threads = 1
         print('M: Initializing %d workers' % self.threads)
         self.workers = []
-        for ti in xrange(self.threads):
+        for ti in range(self.threads):
             print('Bringing up W%02d' % ti)
             # print(to individual log files if many threaded to avoid garbling stream
             # can still conflict with master, but mostly safe...
@@ -1318,7 +1318,7 @@ class Tiler:
                     try:
                         # out = worker.qo.get(False)
                         out = worker.qo.get_nowait()
-                    except Queue.Empty:
+                    except queue.Empty:
                         continue
 
                     # FIXME
@@ -1384,7 +1384,7 @@ class Tiler:
                     if worker.qi.empty():
                         while True:
                             try:
-                                st_bounds = st_gen.next()
+                                st_bounds = next(st_gen)
                             except StopIteration:
                                 print('M: all tasks allocated')
                                 all_allocated = True
@@ -1481,7 +1481,7 @@ class Tiler:
                 while True:
                     try:
                         st_fn = worker.st_fns.get(False)
-                    except Queue.Empty:
+                    except queue.Empty:
                         break
                     self.st_fns.append(st_fn)
 

@@ -47,15 +47,15 @@ def singlify(fns_in, fn_out, fn_out_alt=None):
             xmax = max(xmax, x)
             ymax = max(ymax, y)
 
-    print('X: %d:%d' % (xmin, xmax))
-    print('Y: %d:%d' % (ymin, ymax))
+    print(('X: %d:%d' % (xmin, xmax)))
+    print(('Y: %d:%d' % (ymin, ymax)))
     #with Image.open(fns_in[0]) as im0:
     im0 = Image.open(fns_in[0])
     if 1:
-        print('Supertile 0 size: %dw x %dh' % (im0.size[0], im0.size[1]))
+        print(('Supertile 0 size: %dw x %dh' % (im0.size[0], im0.size[1])))
         w = im0.size[0] + xmax - xmin
         h = im0.size[1] + ymax - ymin
-        print('Output size: %dw x %dh' % (w, h))
+        print(('Output size: %dw x %dh' % (w, h)))
         dst = Image.new(im0.mode, (w, h))
 
     def verify_format():
@@ -86,12 +86,12 @@ def singlify(fns_in, fn_out, fn_out_alt=None):
     fn_out = verify_format()
 
     for fni, fn in enumerate(fns_in):
-        print('Merging %d/%d %s...' % (fni + 1, len(fns_in), fn))
+        print(('Merging %d/%d %s...' % (fni + 1, len(fns_in), fn)))
         (x, y) = coord(fn)
         im = Image.open(fn)
         dst.paste(im, (x - xmin, y - ymin))
     width, height = im.size
-    print('Saving %uw x %uh %s...' % (width, height, fn_out))
+    print(('Saving %uw x %uh %s...' % (width, height, fn_out)))
     try:
         dst.save(fn_out, quality=95)
     # File "/usr/lib/python2.7/dist-packages/PIL/TiffImagePlugin.py", line 550, in _pack

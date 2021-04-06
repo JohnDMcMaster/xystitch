@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 '''
 pr0nstitchaj: AJ's autopano WINE wrapper for Hugin
 Copyright 2011 John McMaster <JohnDMcMaster@gmail.com>
@@ -13,7 +13,7 @@ from xystitch.all_stitch import AllStitch
 
 
 def arg_fatal(s):
-    print s
+    print(s)
     help()
     sys.exit(1)
 
@@ -41,7 +41,7 @@ if __name__ == "__main__":
     pto_fn = "out.pto"
     image_fns = []
     for fn in args.files:
-        print fn
+        print(fn)
         if fn.find(".pto") >= 0:
             pto_fn = fn
         else:
@@ -56,8 +56,8 @@ if __name__ == "__main__":
 
     if not args.overwrite:
         if pto_fn and os.path.exists(pto_fn):
-            print 'ERROR: cannot overwrite existing project file: %s' % pto_fn
+            print('ERROR: cannot overwrite existing project file: %s' % pto_fn)
             sys.exit(1)
 
     engine.run()
-    print 'Done!'
+    print('Done!')

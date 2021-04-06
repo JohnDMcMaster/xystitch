@@ -8,14 +8,14 @@ I get this using my CNC microscope because the pictures *are* taken as fairly pr
 This allows considerable optimization since we know where all the picture are
 '''
 
-import image_coordinate_map
-from image_coordinate_map import ImageCoordinateMap
+from . import image_coordinate_map
+from .image_coordinate_map import ImageCoordinateMap
 import os
 import sys
 from xystitch.pto.util import dbg
-import Queue
+import queue
 import traceback
-import common_stitch
+from . import common_stitch
 import time
 import shutil
 import multiprocessing
@@ -53,7 +53,7 @@ class Worker(object):
         while self.running.is_set():
             try:
                 task = self.qi.get(True, 0.1)
-            except Queue.Empty:
+            except queue.Empty:
                 self.idle = True
                 continue
             self.idle = False
@@ -61,25 +61,25 @@ class Worker(object):
             try:
                 (pair, pair_fns) = task
 
-                print
-                print
-                print
-                print
-                print
-                print '*' * 80
-                print 'w%d: task rx' % self.i
+                print()
+                print()
+                print()
+                print()
+                print()
+                print('*' * 80)
+                print('w%d: task rx' % self.i)
 
                 pto = self.generate_control_points_by_pair(pair, pair_fns)
 
                 if not pto:
-                    print 'WARNING: bad project @ %s, %s' % (repr(pair),
-                                                             pair_fns)
+                    print('WARNING: bad project @ %s, %s' % (repr(pair),
+                                                             pair_fns))
                 else:
                     if len(pto.get_text().strip()) == 0:
                         raise Exception('Generated empty pair project')
 
                 self.qo.put(('done', (task, pto)))
-                print 'w%d: task done, pto: %s' % (self.i, pto)
+                print('w%d: task done, pto: %s' % (self.i, pto))
 
             except Exception as e:
                 traceback.print_exc()
@@ -129,27 +129,27 @@ class GridStitch(common_stitch.CommonStitch):
         '''
         #temp_projects = list()
 
-        print
+        print()
         n_pairs = len(list(self.coordinate_map.gen_pairs(1, 1)))
-        print '***Pairs: %d***' % n_pairs
-        print
+        print('***Pairs: %d***' % n_pairs)
+        print()
         pair_submit = 0
         pair_complete = 0
 
         if self.skip_missing:
-            print 'Not verifying image map'
+            print('Not verifying image map')
         else:
-            print 'Verifying image map'
+            print('Verifying image map')
             try:
                 self.coordinate_map.is_complete()
             except image_coordinate_map.MissingImage as e:
-                print '!' * 80
-                print 'Missing images.  Use --skip-missing to continue'
-                print '!' * 80
+                print('!' * 80)
+                print('Missing images.  Use --skip-missing to continue')
+                print('!' * 80)
                 raise e
 
-        print 'Initializing %d workers' % self.threads
-        for ti in xrange(self.threads):
+        print('Initializing %d workers' % self.threads)
+        for ti in range(self.threads):
             w = Worker(ti, os.path.join(self.log_dir, 'w%02d.log' % ti))
             w.generate_control_points_by_pair = self.generate_control_points_by_pair
             self.workers.append(w)
@@ -176,7 +176,7 @@ class GridStitch(common_stitch.CommonStitch):
                 for wi, worker in enumerate(self.workers):
                     try:
                         out = worker.qo.get(False)
-                    except Queue.Empty:
+                    except queue.Empty:
                         continue
                     pair_complete += 1
                     what = out[0]
@@ -185,9 +185,9 @@ class GridStitch(common_stitch.CommonStitch):
                     if what == 'done':
                         (task, pto) = out[1]
                         prog = 'complete %d/%d' % (pair_complete, n_pairs)
-                        print 'W%d: done w/ submit %d, %s' % (wi, pair_submit,
-                                                              prog)
-                        print task
+                        print('W%d: done w/ submit %d, %s' % (wi, pair_submit,
+                                                              prog))
+                        print(task)
                         #print pto
 
                         (_pair, pair_fns) = task
@@ -203,33 +203,33 @@ class GridStitch(common_stitch.CommonStitch):
                         if pto:
                             final_pair_projects.append(pto)
                             if pair_complete % 10 == 0:
-                                print 'Saving intermediate result to %s' % self.project.file_name
+                                print('Saving intermediate result to %s' % self.project.file_name)
                                 self.project.save()
-                                print 'Saved'
+                                print('Saved')
 
                     elif what == 'exception':
                         #(_task, e) = out[1]
-                        print '!' * 80
-                        print 'ERROR: W%d failed w/ exception' % wi
+                        print('!' * 80)
+                        print('ERROR: W%d failed w/ exception' % wi)
                         (_task, _e, estr) = out[1]
-                        print 'Stack trace:'
+                        print('Stack trace:')
                         for l in estr.split('\n'):
-                            print l
-                        print '!' * 80
+                            print(l)
+                        print('!' * 80)
 
                         if self.ignore_errors:
-                            print 'Continuing anyway on ignore errors'
+                            print('Continuing anyway on ignore errors')
                         else:
                             for worker in self.workers:
                                 worker.running.clear()
                             raise Exception('Shutdown on worker failure')
                     else:
-                        print '%s' % (out, )
+                        print('%s' % (out, ))
                         raise Exception('Internal error: bad task type %s' %
                                         what)
                 # Merge projects
                 if len(final_pair_projects):
-                    print 'Merging %d projects' % len(final_pair_projects)
+                    print('Merging %d projects' % len(final_pair_projects))
                     self.project.merge_into(final_pair_projects)
 
                 # Any workers need more work?
@@ -239,24 +239,24 @@ class GridStitch(common_stitch.CommonStitch):
                     if worker.qi.empty():
                         while True:
                             try:
-                                pair = coord_pairs.next()
+                                pair = next(coord_pairs)
                             except StopIteration:
-                                print 'All tasks allocated'
+                                print('All tasks allocated')
                                 all_allocated = True
                                 break
 
                             progress = True
 
-                            print '*' * 80
-                            print 'W%d: submit %s (%d / %d)' % (
-                                wi, repr(pair), pair_submit, n_pairs)
+                            print('*' * 80)
+                            print('W%d: submit %s (%d / %d)' % (
+                                wi, repr(pair), pair_submit, n_pairs))
 
                             # Image file names as list
                             pair_images = self.coordinate_map.get_images_from_pair(
                                 pair)
-                            print 'pair images: ' + repr(pair_images)
+                            print('pair images: ' + repr(pair_images))
                             if pair_images[0] is None or pair_images[1] is None:
-                                print 'WARNING: skipping missing image'
+                                print('WARNING: skipping missing image')
                                 continue
 
                             worker.qi.put((pair, pair_images))
@@ -267,19 +267,19 @@ class GridStitch(common_stitch.CommonStitch):
                     last_progress = time.time()
                 else:
                     if time.time() - last_progress > 30:
-                        print 'WARNING: server thread stalled'
+                        print('WARNING: server thread stalled')
                         last_progress = time.time()
 
                 time.sleep(0.1)
 
-            print 'pairs done'
+            print('pairs done')
 
         finally:
-            print 'Shutting down workers'
+            print('Shutting down workers')
             for worker in self.workers:
                 worker.running.clear()
 
-        print 'Reverting canonical file names to original input...'
+        print('Reverting canonical file names to original input...')
         # Fixup the canonical hack
         for can_fn in self.canon2orig:
             # FIXME: if we have issues with images missing from the project due to bad stitch
@@ -289,7 +289,7 @@ class GridStitch(common_stitch.CommonStitch):
             if il:
                 il.set_name(orig)
             else:
-                print 'WARNING: adding image without feature match %s' % orig
+                print('WARNING: adding image without feature match %s' % orig)
                 self.project.add_image(orig)
 
         self.project.save()
@@ -316,6 +316,6 @@ class GridStitch(common_stitch.CommonStitch):
         ret = common_stitch.CommonStitch.do_generate_control_points_by_pair(
             self, pair, image_fn_pair)
         if ret is None and pair.adjacent():
-            print 'WARNING: last ditch effort, increasing field of view'
+            print('WARNING: last ditch effort, increasing field of view')
 
         return ret

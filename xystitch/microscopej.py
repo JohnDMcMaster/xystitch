@@ -53,6 +53,6 @@ def load_parameters():
         else:
             raise Exception("Unknown out.json format")
     print("Image step fraction:'")
-    print('  X: %g' % (x_overlap, ))
-    print('  Y: %g' % (y_overlap, ))
+    print(('  X: %g' % (x_overlap, )))
+    print(('  Y: %g' % (y_overlap, )))
     return x_overlap, y_overlap

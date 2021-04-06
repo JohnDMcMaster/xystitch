@@ -8,7 +8,7 @@ import os
 import shutil
 from xystitch.temp_file import ManagedTempFile
 from xystitch.execute import Execute
-import line
+from . import line
 
 
 class ControlPointLine(line.Line):

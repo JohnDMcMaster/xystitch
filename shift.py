@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 """
 Utility to salvage bad captures with missing or duplicate images
 
@@ -22,7 +22,7 @@ def row_right(icm, row, pos):
     # need to grow map? (most of the time yes)
     if (icm.cols - 1, row) in icm.layout:
         icm.cols += 1
-    for col in xrange(icm.cols, pos - 1, -1):
+    for col in range(icm.cols, pos - 1, -1):
         try:
             del icm.layout[(col + 1, row)]
         except KeyError:
@@ -38,7 +38,7 @@ def row_right(icm, row, pos):
 
 def row_left(icm, row, pos):
     '''Shift elements left starting at pos'''
-    for col in xrange(0, icm.cols):
+    for col in range(0, icm.cols):
         try:
             del icm.layout[(col, row)]
         except KeyError:
@@ -54,10 +54,10 @@ def row_left(icm, row, pos):
 
 def remove_row(icm, m):
     row = int(m.group(1))
-    print('Remove row %d' % row)
+    print(('Remove row %d' % row))
     # if additional rows exist shift them
-    for cur_row in xrange(row + 1, icm.rows):
-        for cur_col in xrange(icm.cols):
+    for cur_row in range(row + 1, icm.rows):
+        for cur_col in range(icm.cols):
             fn = icm.get_image(cur_col, cur_row)
             icm.set_image(cur_col, cur_row - 1, fn)
             icm.set_image(cur_col, cur_row, None)
@@ -67,7 +67,7 @@ def remove_image(icm, m):
     rm_col = int(m.group(1))
     rm_row = int(m.group(2))
     # The image given is removed (specify the second image taken)
-    print('Remove double image @ %dc, %dr' % (rm_col, rm_row))
+    print(('Remove double image @ %dc, %dr' % (rm_col, rm_row)))
 
     # remove the bad image
     del icm.layout[(rm_col, rm_row)]
@@ -80,7 +80,7 @@ def remove_image(icm, m):
             raise Exception("Row must be > 0")
         # to avoid getting negative columns, shift previous rows right
         # shift previous rows right
-        for row in xrange(0, rm_row):
+        for row in range(0, rm_row):
             row_right(icm, row, 0)
         # Shift remaining images this row
         row_left(icm, rm_row, rm_col + 1)
@@ -90,14 +90,14 @@ def remove_image(icm, m):
         # Shift remaining images this row
         row_right(icm, rm_row, rm_col - 1)
         # Shift remaining images
-        for row in xrange(rm_row + 1, icm.rows):
+        for row in range(rm_row + 1, icm.rows):
             row_right(icm, row, 0)
 
 
 def insert_image(icm, m):
     skip_col = int(m.group(1))
     skip_row = int(m.group(2))
-    print('Add skipped image @ %dc, %dr' % (skip_col, skip_row))
+    print(('Add skipped image @ %dc, %dr' % (skip_col, skip_row)))
 
     # No image to remove: a gap is going to form
 
@@ -107,13 +107,13 @@ def insert_image(icm, m):
         # Shift remaining images this row
         row_right(icm, skip_row, skip_col)
         # Shift remaining images
-        for row in xrange(skip_row + 1, icm.rows):
+        for row in range(skip_row + 1, icm.rows):
             row_right(icm, row, 0)
     # Odd row: moving left
     else:
         # to avoid getting negative columns, shift previous rows right
         # shift previous rows right
-        for row in xrange(0, skip_row):
+        for row in range(0, skip_row):
             row_right(icm, row, 0)
         # Shift remaining images this row
         row_right(icm, skip_row, skip_col + 1)
@@ -121,7 +121,7 @@ def insert_image(icm, m):
 
 def process_actions(icm, actions):
     for action in actions:
-        print('Action: %s' % action)
+        print(('Action: %s' % action))
 
         m = re.match('r([0-9]+)-', action)
         if m:
@@ -162,7 +162,7 @@ def stage_images(icm, working_set, tmp_dir, dry=False):
             os.unlink(del_fn)
 
     for fn in sorted(dry_actions):
-        print('DRY: %s %s' % (fn, dry_actions[fn]))
+        print(('DRY: %s %s' % (fn, dry_actions[fn])))
 
 
 def merge_images(icm, im_dir, tmp_dir, dry=False):

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 '''
 pr0pto
 .pto utilities
@@ -13,7 +13,7 @@ from xystitch import statistics
 
 
 def run(pto_fn, pto_fn_out=None, stdev=3.0):
-    print('In: %s' % pto_fn)
+    print(('In: %s' % pto_fn))
     bench = Benchmark()
 
     # TODO: l/r compensation
@@ -29,13 +29,13 @@ def run(pto_fn, pto_fn_out=None, stdev=3.0):
         pairs.append((n_fn, N_fn))
         cpls.append(cpl)
         if tmpdbg and (n_fn == 'c005_r003.jpg' and N_fn == 'c005_r004.jpg'):
-            print('debug', (n_fn, N_fn), (nx, ny), (Nx, Ny))
-            print('debug', delta)
+            print(('debug', (n_fn, N_fn), (nx, ny), (Nx, Ny)))
+            print(('debug', delta))
 
     deltas_u = statistics.mean(deltas)
     deltas_sd = statistics.stdev(deltas)
-    print("Delta mean: %0.1f" % deltas_u)
-    print("Delta stdev: %0.1f" % deltas_sd)
+    print(("Delta mean: %0.1f" % deltas_u))
+    print(("Delta stdev: %0.1f" % deltas_sd))
     _deltas_min = deltas_u - deltas_sd * stdev
     deltas_max = deltas_u + deltas_sd * stdev
 
@@ -54,31 +54,31 @@ def run(pto_fn, pto_fn_out=None, stdev=3.0):
         if delta > deltas_max:
             # canonical file names
             fna, fnb = sorted((n_fn, N_fn))
-            print("%s %s %u: outlier delta %0.1f" % (fna, fnb, pairi, delta))
+            print(("%s %s %u: outlier delta %0.1f" % (fna, fnb, pairi, delta)))
             outlier_pairs.add((fna, fnb))
             outlier_cps += 1
             pto.remove_control_point_line(cpl)
     print("")
-    print("Flagged cps: %u" % outlier_cps)
-    print("Flagged pairs: %u" % len(outlier_pairs))
+    print(("Flagged cps: %u" % outlier_cps))
+    print(("Flagged pairs: %u" % len(outlier_pairs)))
     for fna, fnb in sorted(list(outlier_pairs)):
-        print("  %s %s" % (fna, fnb))
+        print(("  %s %s" % (fna, fnb)))
 
     if pto_fn_out:
         pto.save_as(pto_fn_out)
 
     bench.stop()
-    print('Completed in %s' % bench)
+    print(('Completed in %s' % bench))
 
 
 def run_print(pto_fn, stdev=3):
-    print('In: %s' % pto_fn)
+    print(('In: %s' % pto_fn))
 
     pto = PTOProject.from_file_name(pto_fn)
     icm = pto2icm(pto)
     for ((n_fn, N_fn), (nx, ny), (Nx, Ny)) in gen_cps(pto, icm=icm):
-        print("%s:(%s, %s) %s:(%s, %s)" % (n_fn, nx, ny, N_fn, Nx, Ny))
-        print("  %s, %s" % (nx - Nx, ny - Ny))
+        print(("%s:(%s, %s) %s:(%s, %s)" % (n_fn, nx, ny, N_fn, Nx, Ny)))
+        print(("  %s, %s" % (nx - Nx, ny - Ny)))
 
 
 def main():

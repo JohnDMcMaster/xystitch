@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 '''
 pr0nstitch: IC die image feature generation for stitching
 Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
@@ -31,9 +31,9 @@ def t_or_f(arg):
 
 
 def excepthook(excType, excValue, tracebackobj):
-    print '%s: %s' % (excType, excValue)
+    print('%s: %s' % (excType, excValue))
     traceback.print_tb(tracebackobj)
-    print 'Exiting on exception'
+    print('Exiting on exception')
     os._exit(1)
 
 
@@ -98,14 +98,14 @@ if __name__ == "__main__":
         elif os.path.isfile(arg) or os.path.isdir(arg):
             input_image_file_names.append(arg)
         else:
-            print 'unrecognized arg: %s' % arg
-            print 'must be pto file, image file, or image dir'
+            print('unrecognized arg: %s' % arg)
+            print('must be pto file, image file, or image dir')
             sys.exit(1)
     if len(input_image_file_names) == 0:
         raise Exception('Requires image file names')
 
-    print 'post arg'
-    print 'output project: %s' % output_project_file_name
+    print('post arg')
+    print('output project: %s' % output_project_file_name)
 
     if args.threads < 1:
         raise Exception('Bad threads')
@@ -114,7 +114,7 @@ if __name__ == "__main__":
         engine = GridStitch.from_tagged_file_names(input_image_file_names)
         engine.ignore_errors = args.ignore_errors
 
-        print 'Using %d threads' % args.threads
+        print('Using %d threads' % args.threads)
         engine.threads = args.threads
         engine.skip_missing = args.skip_missing
     else:
@@ -128,7 +128,7 @@ if __name__ == "__main__":
     if not allow_overwrite:
         if output_project_file_name and os.path.exists(
                 output_project_file_name):
-            print 'ERROR: cannot overwrite existing project file: %s' % output_project_file_name
+            print('ERROR: cannot overwrite existing project file: %s' % output_project_file_name)
             sys.exit(1)
 
     sys.excepthook = excepthook
@@ -136,4 +136,4 @@ if __name__ == "__main__":
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
     engine.run()
-    print 'Done!'
+    print('Done!')

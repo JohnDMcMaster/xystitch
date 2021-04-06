@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 import os
 import argparse
@@ -28,7 +28,7 @@ def zs(in_xml, out_dir, args):
 
     args = ['zs'] + args
 
-    print 'Calling: %s' % (args, )
+    print('Calling: %s' % (args, ))
 
     subprocess.check_call(args, shell=False)
 
@@ -64,17 +64,17 @@ if __name__ == "__main__":
             fns = dfns_base
         else:
             if fns != dfns_base:
-                print fns
-                print dfns_base
+                print(fns)
+                print(dfns_base)
                 raise Exception('Dirs not equal')
-    print 'Found %d image sets to stack w/ %d images in each stack' % (
-        len(fns), len(args.img_dirs_in))
+    print('Found %d image sets to stack w/ %d images in each stack' % (
+        len(fns), len(args.img_dirs_in)))
 
     tmp_dir = '/tmp/pr0nstack.tmp'
-    print 'Temp dir: %s' % tmp_dir
+    print('Temp dir: %s' % tmp_dir)
     # can't be in an image input dir or it will be tried to process as an image
     in_xml_fn = tmp_dir + '_in.xml'
-    print 'in XML: %s' % in_xml_fn
+    print('in XML: %s' % in_xml_fn)
 
     if os.path.exists(args.img_dir_out):
         if not args.force:
@@ -83,14 +83,14 @@ if __name__ == "__main__":
     os.mkdir(args.img_dir_out)
 
     for fn in fns:
-        print
-        print
-        print
+        print()
+        print()
+        print()
 
         srcs = [os.path.join(d, fn) for d in args.img_dirs_in]
         dst = os.path.join(args.img_dir_out, fn)
-        print 'srcs: %s' % (srcs, )
-        print 'dst: %s' % (dst, )
+        print('srcs: %s' % (srcs, ))
+        print('dst: %s' % (dst, ))
 
         srcs = [os.path.realpath(src) for src in srcs]
 
@@ -112,7 +112,7 @@ if __name__ == "__main__":
         for i, src in enumerate(srcs):
             srcl = '%02d_%s.jpg' % (i, os.path.basename(os.path.dirname(src)))
             link = os.path.join(tmp_dir, srcl)
-            print 'Copying %s => %s' % (link, src)
+            print('Copying %s => %s' % (link, src))
             shutil.copy(src, link)
 
         #<OutputImagesDesignatedFolder value="%(out_dir)s" />
@@ -234,11 +234,11 @@ if __name__ == "__main__":
 
         outfns = glob.glob(os.path.join(tmp_dir, 'ZS-OutputImage*.jpg'))
         if len(outfns) != 1:
-            print outfns
+            print(outfns)
             raise Exception('Missing output image')
         stacked_src = outfns[0]
         stacked_dst = os.path.join(args.img_dir_out, fn)
-        print 'Moving stacked image %s => %s' % (stacked_src, stacked_dst)
+        print('Moving stacked image %s => %s' % (stacked_src, stacked_dst))
         shutil.move(stacked_src, stacked_dst)
         shutil.rmtree(tmp_dir)
-        print '%s complete' % (fn, )
+        print('%s complete' % (fn, ))

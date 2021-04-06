@@ -4,7 +4,7 @@ Copyright 2011 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under a 2 clause BSD license, see COPYING for details
 '''
 
-import line
+from . import line
 '''
 p f0 w921 h681 v89  E0 R0 S233,891,57,670 n"TIFF_m c:NONE"
 

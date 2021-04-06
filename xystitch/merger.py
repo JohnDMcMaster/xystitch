@@ -25,20 +25,20 @@ class Merger:
         for pto in self.ptos:
             args.append(pto.get_a_file_name())
 
-        print 'MERGING: %s' % (args, )
+        print('MERGING: %s' % (args, ))
 
         rc = execute.without_output(args)
         # go go go
         if not rc == 0:
-            print
-            print
-            print
+            print()
+            print()
+            print()
             #print 'Output:'
             #print output
-            print 'rc: %d' % rc
+            print('rc: %d' % rc)
             if rc == 35072:
                 # ex: empty projects seem to cause this
-                print 'Out of memory, expect malformed project file'
+                print('Out of memory, expect malformed project file')
             raise Exception('failed pto_merge')
 
         if not os.path.exists(str(pto_temp_file)):

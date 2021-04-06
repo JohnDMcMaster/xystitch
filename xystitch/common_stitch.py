@@ -120,14 +120,14 @@ class CommonStitch:
         pass
 
     def failure_json_w(self):
-        print 'Writing failure JSON'
+        print('Writing failure JSON')
         cc = self.failures.critical_count()
-        print '%d pairs failed to make %d images critical' % (
-            self.failures.pair_count(), cc)
+        print('%d pairs failed to make %d images critical' % (
+            self.failures.pair_count(), cc))
         if cc:
-            print '******WARNING WARNING WARING******'
-            print '%d images are not connected' % cc
-            print '******WARNING WARNING WARING******'
+            print('******WARNING WARNING WARING******')
+            print('%d images are not connected' % cc)
+            print('******WARNING WARNING WARING******')
         failure_json = {
             'critical_images': cc,
             'failures': self.failures.json,
@@ -141,7 +141,7 @@ class CommonStitch:
 
     def run(self):
         if self.dry:
-            print 'Dry run abort'
+            print('Dry run abort')
             return
 
         bench = Benchmark()
@@ -151,8 +151,8 @@ class CommonStitch:
         #if not self.output_project_file_name:
         #self.project_temp_file = ManagedTempFile.get()
         #self.output_project_file_name = self.project_temp_file.file_name
-        print 'Beginning stitch'
-        print 'output project file name: %s' % self.output_project_file_name
+        print('Beginning stitch')
+        print('output project file name: %s' % self.output_project_file_name)
 
         #sys.exit(1)
         self.init_failures()
@@ -166,7 +166,7 @@ class CommonStitch:
             self.project.set_file_name(self.output_project_file_name)
             if os.path.exists(self.output_project_file_name):
                 # Otherwise, we merge into it
-                print 'WARNING: removing old project file: %s' % self.output_project_file_name
+                print('WARNING: removing old project file: %s' % self.output_project_file_name)
                 os.remove(self.output_project_file_name)
         else:
             self.project.get_a_file_name(None, "_master.pto")
@@ -178,22 +178,22 @@ class CommonStitch:
             Generate control points
             '''
             self.generate_control_points()
-            print 'Soften try: %s' % (self.soften_try, )
-            print 'Soften ok: %s' % (self.soften_ok, )
+            print('Soften try: %s' % (self.soften_try, ))
+            print('Soften ok: %s' % (self.soften_ok, ))
 
-            print 'Post stitch fixup...'
+            print('Post stitch fixup...')
             optimize_xy_only(self.project)
             fixup_i_lines(self.project)
             fixup_p_lines(self.project)
 
-            print
-            print '***PTO project baseline final (%s / %s) data length %d***' % (
+            print()
+            print('***PTO project baseline final (%s / %s) data length %d***' % (
                 self.project.file_name, self.output_project_file_name,
-                len(self.project.get_text()))
-            print
+                len(self.project.get_text())))
+            print()
 
             self.failure_json_w()
-            print
+            print()
 
             # Make dead sure its saved up to date
             self.project.save()
@@ -208,19 +208,19 @@ class CommonStitch:
         except Exception as e:
             sys.stdout.flush()
             sys.stderr.flush()
-            print
-            print 'WARNING: stitch FAILED'
+            print()
+            print('WARNING: stitch FAILED')
             traceback.print_exc()
             try:
                 fn = self.project.file_name + ".failed"
-                print 'Attempting to save intermediate result to %s' % fn
+                print('Attempting to save intermediate result to %s' % fn)
                 self.project.save_as(fn)
             except:
-                print 'WARNING: failed intermediate save'
+                print('WARNING: failed intermediate save')
             raise e
         finally:
             bench.stop()
-            print 'Stitch done in %s' % bench
+            print('Stitch done in %s' % bench)
 
     def control_points_by_subimage(self, pair, image_fn_pair):
         '''Stitch two images together by cropping to restrict overlap'''
@@ -230,8 +230,8 @@ class CommonStitch:
         # (0, 0) at upper left
         # image_fn_pair: pair of image file names
 
-        print 'Preparing subimage stitch on %s:%s' % (image_fn_pair[0],
-                                                      image_fn_pair[1])
+        print('Preparing subimage stitch on %s:%s' % (image_fn_pair[0],
+                                                      image_fn_pair[1]))
         '''
         Just work on the overlap section, maybe even less
         '''
@@ -280,10 +280,10 @@ class CommonStitch:
                                          sub_image_1_y_end)
         sub_image_0_file = ManagedTempFile.get(None, '.jpg')
         sub_image_1_file = ManagedTempFile.get(None, '.jpg')
-        print 'sub image 0: width=%d, height=%d, name=%s' % (sub_image_0.width(
-        ), sub_image_0.height(), sub_image_0_file.file_name)
-        print 'sub image 1: width=%d, height=%d, name=%s' % (sub_image_1.width(
-        ), sub_image_1.height(), sub_image_1_file.file_name)
+        print('sub image 0: width=%d, height=%d, name=%s' % (sub_image_0.width(
+        ), sub_image_0.height(), sub_image_0_file.file_name))
+        print('sub image 1: width=%d, height=%d, name=%s' % (sub_image_1.width(
+        ), sub_image_1.height(), sub_image_1_file.file_name))
         #sys.exit(1)
         sub_image_0.image.save(sub_image_0_file.file_name)
         sub_image_1.image.save(sub_image_1_file.file_name)
@@ -301,7 +301,7 @@ class CommonStitch:
         # Returns a pto project object
         pair_project = self.control_point_gen.generate_core(sub_image_fn_pair)
         if pair_project is None:
-            print 'WARNING: failed to gen control points @ %s' % repr(pair)
+            print('WARNING: failed to gen control points @ %s' % repr(pair))
             return None
 
         # all we need to do is adjust xy positions
@@ -321,8 +321,8 @@ class CommonStitch:
             return self.control_points_by_subimage(pair, image_fn_pair)
         # Otherwise run stitches on the full image
         else:
-            print 'Full image stitch (not partial w/ regular %d and subimage control %d)' % (
-                self.regular, self.subimage_control_points)
+            print('Full image stitch (not partial w/ regular %d and subimage control %d)' % (
+                self.regular, self.subimage_control_points))
             return self.control_point_gen.generate_core(image_fn_pair)
 
     # Control point generator wrapper entry
@@ -353,30 +353,30 @@ class CommonStitch:
         '''
         soften_iterations = 3
 
-        print
-        print
+        print()
+        print()
         #print 'Generating project for image pair (%s / %s, %s / %s)' % (image_fn_pair[0], str(pair[0]), image_fn_pair[1], str(pair[1]))
-        print 'Generating project for image pair (%s, %s)' % (image_fn_pair[0],
-                                                              image_fn_pair[1])
+        print('Generating project for image pair (%s, %s)' % (image_fn_pair[0],
+                                                              image_fn_pair[1]))
 
         if True:
             # Try raw initially
-            print 'Attempting sharp match...'
+            print('Attempting sharp match...')
             ret_project = self.try_control_points_with_position(
                 pair, image_fn_pair)
             if ret_project:
                 return ret_project
 
-        print 'WARNING: bad project, attempting soften...'
+        print('WARNING: bad project, attempting soften...')
 
         soften_image_file_0_managed = ManagedTempFile.from_same_extension(
             image_fn_pair[0])
         soften_image_file_1_managed = ManagedTempFile.from_same_extension(
             image_fn_pair[1])
-        print 'Soften fn0: %s' % soften_image_file_0_managed.file_name
-        print 'Soften fn1: %s' % soften_image_file_1_managed.file_name
+        print('Soften fn0: %s' % soften_image_file_0_managed.file_name)
+        print('Soften fn1: %s' % soften_image_file_1_managed.file_name)
 
-        for i in xrange(soften_iterations):
+        for i in range(soften_iterations):
             self.soften_try[i] += 1
 
             # And then start screwing with it
@@ -384,7 +384,7 @@ class CommonStitch:
             # Or at least take the maximum
             # Do features get much less accurate as the soften gets up there?
 
-            print 'Attempting soften %d / %d' % (i + 1, soften_iterations)
+            print('Attempting soften %d / %d' % (i + 1, soften_iterations))
 
             if i == 0:
                 soften_composite(image_fn_pair[0],
@@ -405,37 +405,37 @@ class CommonStitch:
                 # Fixup the project to reflect the correct file names
                 text = str(ret_project)
                 if 0:
-                    print
-                    print 'Before sub'
-                    print
-                    print str(ret_project)
-                    print
-                    print
-                    print
-                print '%s => %s' % (soften_image_file_0_managed.file_name,
-                                    image_fn_pair[0])
+                    print()
+                    print('Before sub')
+                    print()
+                    print(str(ret_project))
+                    print()
+                    print()
+                    print()
+                print('%s => %s' % (soften_image_file_0_managed.file_name,
+                                    image_fn_pair[0]))
                 text = text.replace(soften_image_file_0_managed.file_name,
                                     image_fn_pair[0])
-                print '%s => %s' % (soften_image_file_1_managed.file_name,
-                                    image_fn_pair[1])
+                print('%s => %s' % (soften_image_file_1_managed.file_name,
+                                    image_fn_pair[1]))
                 text = text.replace(soften_image_file_1_managed.file_name,
                                     image_fn_pair[1])
 
                 ret_project.set_text(text)
                 if 0:
-                    print
-                    print 'After sub'
-                    print
-                    print str(ret_project)
-                    print
-                    print
-                    print
+                    print()
+                    print('After sub')
+                    print()
+                    print(str(ret_project))
+                    print()
+                    print()
+                    print()
                     #sys.exit(1)
                 self.soften_ok[i] += 1
-                print 'Soften try: %s' % (self.soften_try, )
-                print 'Soften ok: %s' % (self.soften_ok, )
+                print('Soften try: %s' % (self.soften_try, ))
+                print('Soften ok: %s' % (self.soften_ok, ))
                 return ret_project
 
-        print 'WARNING: gave up on generating control points!'
+        print('WARNING: gave up on generating control points!')
         return None
         #raise Exception('ERROR: still could not make a coherent project!')

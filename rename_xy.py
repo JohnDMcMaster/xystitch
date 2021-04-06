@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 """
 Originally created to fix up a specific image set
 Now a more generic tool
@@ -74,7 +74,7 @@ def run(dir_in, dir_out, layout="serp-lr", cols=None, endrows=None, dry=True):
     # Calculate number columns
     ncols = int(max([len(imrow) for imrow in imrows]))
     nrows = len(imrows)
-    print("%u cols x %u rows" % (ncols, nrows))
+    print(("%u cols x %u rows" % (ncols, nrows)))
 
     if not os.path.exists(dir_out):
         os.mkdir(dir_out)
@@ -84,7 +84,7 @@ def run(dir_in, dir_out, layout="serp-lr", cols=None, endrows=None, dry=True):
         this_cols = len(imrow)
         for raw_coli, fn in enumerate(imrow):
             col = int(round(1.0 * raw_coli / this_cols * ncols))
-            print("%s: %uc, %ur" % (fn, col, row))
+            print(("%s: %uc, %ur" % (fn, col, row)))
             if not dry:
                 shutil.copyfile("%s/%s" % (dir_in, fn),
                                 "%s/r%03u_c%03u.jpg" % (dir_out, row, col))

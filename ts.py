@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 '''
 pr0ntile: IC die image stitching and tile generation
 Copyright 2012 John McMaster <JohnDMcMaster@gmail.com>
@@ -29,7 +29,7 @@ import time
 def run(args):
     if args.threads < 1:
         raise Exception('Bad threads')
-    print 'Using %d threads' % args.threads
+    print('Using %d threads' % args.threads)
 
     log_dir = args.log
     out_dir = 'out'
@@ -39,15 +39,15 @@ def run(args):
 
     auto_size = not (args.stp or args.stm or args.stw or args.sth)
 
-    print 'Assuming input %s is pto project to be stitched' % args.pto
+    print('Assuming input %s is pto project to be stitched' % args.pto)
     project = PTOProject.from_file_name(args.pto)
-    print 'Creating tiler'
+    print('Creating tiler')
     stp = None
     if args.stp:
         stp = mksize(args.stp)
     elif args.stm:
         stp = mem2pix(mksize(args.stm))
-        print 'Memory %s => %s pix' % (args.stm, size2str(stp))
+        print('Memory %s => %s pix' % (args.stm, size2str(stp)))
     elif auto_size:
         stm = config.super_tile_memory()
         if stm:
@@ -55,7 +55,7 @@ def run(args):
             # having issues creating very large
             if stp > 2**32 / 4:
                 # 66 GB max useful as currently written
-                print 'WARNING: reducing to maximum tile size'
+                print('WARNING: reducing to maximum tile size')
                 stp = 2**32 / 4
 
     t = Tiler(project,
@@ -104,7 +104,7 @@ def run(args):
         t.run()
     except KeyboardInterrupt:
         if t.stale_worker:
-            print 'WARNING: forcing exit on stuck worker'
+            print('WARNING: forcing exit on stuck worker')
             time.sleep(0.5)
             os._exit(1)
         raise
@@ -119,10 +119,10 @@ def run(args):
     # sometimes I restitch with different supertile size
     # this results in excessive merge, although really I should just delete the old files
     if 1:
-        print 'Single: using glob strategy on merge'
+        print('Single: using glob strategy on merge')
         s_fns = glob.glob(os.path.join(args.st_dir, 'st_*x_*y.jpg'))
     else:
-        print 'Single: using output strategy'
+        print('Single: using output strategy')
         s_fns = t.st_fns
 
     single_fn_alt = None
@@ -132,7 +132,7 @@ def run(args):
     try:
         singlify(s_fns, single_fn, single_fn_alt)
     except HugeImage:
-        print 'WARNING: single: exceeds max image size, skipped'
+        print('WARNING: single: exceeds max image size, skipped')
 
 
 def main():

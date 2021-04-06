@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 '''
 pr0pto
 .pto utilities
@@ -136,9 +136,9 @@ if __name__ == "__main__":
         _outlog.out_fd.write('*' * 80 + '\n')
         _outlog.out_fd.write('*' * 80 + '\n')
         _outlog.out_fd.write('*' * 80 + '\n')
-    print 'pr0npto starting'
-    print 'In: %s' % pto_in
-    print 'Out: %s' % pto_out
+    print('pr0npto starting')
+    print('In: %s' % pto_in)
+    print('Out: %s' % pto_out)
     bench = Benchmark()
 
     pto = PTOProject.from_file_name(pto_in)
@@ -151,19 +151,19 @@ if __name__ == "__main__":
         center(pto)
 
     if args.anchor:
-        print 'Re-finding anchor'
+        print('Re-finding anchor')
         center_anchor(pto)
 
     if args.basename:
-        print 'Converting to basename'
+        print('Converting to basename')
         make_basename(pto)
 
     if args.hugin:
-        print 'Resaving with hugin'
+        print('Resaving with hugin')
         resave_hugin(pto)
 
     if args.lens_model:
-        print 'Applying lens model (FIXME)'
+        print('Applying lens model (FIXME)')
     '''
     if args.pto_ref:
         pto_ref = PTOProject.from_file_name(args.pto_ref)
@@ -196,13 +196,13 @@ if __name__ == "__main__":
 
     # Needs to be late to get the earlier additions if we used them
     if args.ptoptimizer:
-        print 'Optimizing'
+        print('Optimizing')
         opt = PTOptimizer(pto)
         opt.reoptimize = args.reoptimize
         opt.run()
         # Default
         if args.center != False:
-            print 'Centering...'
+            print('Centering...')
             center(pto)
 
     if args.xy_opt:
@@ -217,11 +217,11 @@ if __name__ == "__main__":
         opt.run(anchor_cr=anchor_cr, check_poor_opt=args.check_poor_opt)
         # Default
         if args.center != False:
-            print 'Centering...'
+            print('Centering...')
             center(pto)
 
-    print 'Saving to %s' % pto_out
+    print('Saving to %s' % pto_out)
     pto.save_as(pto_out)
 
     bench.stop()
-    print 'Completed in %s' % bench
+    print('Completed in %s' % bench)

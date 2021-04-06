@@ -84,7 +84,7 @@ def get_nona_files(output_prefix, max_images):
     ret = set()
     '''Get all the files that nona could have generated based on what exists'''
     # The images shouldn't change, use the old loaded project
-    for i in xrange(max_images):
+    for i in range(max_images):
         fn = '%s%04d.tif' % (output_prefix, i)
         if os.path.exists(fn):
             ret.add(fn)
@@ -120,7 +120,7 @@ class Nona:
         self.args = None
 
         def p(s=''):
-            print('%s: %s' % (datetime.datetime.utcnow().isoformat(), s))
+            print(('%s: %s' % (datetime.datetime.utcnow().isoformat(), s)))
 
         self.p = p
         self.pprefix = lambda: datetime.datetime.utcnow().isoformat() + ': '
@@ -188,7 +188,7 @@ class Nona:
         # cmd in: nona "-m" "TIFF_m" "-verbose" "-z" "LZW" "-o" "/tmp/xystitch_7E296EA2D31827B4/0DF5034FE1CEE831/" "out.pto"
         # p w2673 h2056 f0 v76 n"TIFF_m r:CROP c:LZW" E0.0 R0 S"276,2673,312,2056"
         # m line unchanged
-        print('Remapper: executing %s' % (' '.join(args), ))
+        print(('Remapper: executing %s' % (' '.join(args), )))
         rc = execute.prefix(args,
                             stdout=self.stdout,
                             stderr=self.stderr,

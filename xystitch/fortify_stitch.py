@@ -6,8 +6,8 @@ Licensed under a 2 clause BSD license, see COPYING for details
 This is a stitching strategy where we already have a project, but think we can add more pairs
 '''
 
-from common_stitch import CommonStitch
-import spatial_map
+from .common_stitch import CommonStitch
+from . import spatial_map
 
 
 class FortifyStitch(CommonStitch):
@@ -61,11 +61,11 @@ class FortifyStitch(CommonStitch):
                 yield overlap
 
     def generate_control_points(self):
-        print
-        print
-        print
+        print()
+        print()
+        print()
         # Start by figuring out which image pairs already have points
-        print 'Computing already tried image pairs'
+        print('Computing already tried image pairs')
         # HACK: done
         # Images themselves can be got from hugin project (in theory...)
 
@@ -74,24 +74,24 @@ class FortifyStitch(CommonStitch):
 
         # Find adjacent pairs and generate control points
         n_overlaps = len(list(self.gen_overlaps()))
-        print 'Checking %d images with %d overlaps' % (len(
-            self.image_file_names), n_overlaps)
+        print('Checking %d images with %d overlaps' % (len(
+            self.image_file_names), n_overlaps))
 
         cur_overlap = 0
         for (overlap) in self.gen_overlaps():
             cur_overlap += 1
             point0 = self.spatial_map.points[overlap[0]]
             point1 = self.spatial_map.points[overlap[1]]
-            print '%d / %d overlap: %s, %s' % (cur_overlap, n_overlaps, point0,
-                                               point1)
+            print('%d / %d overlap: %s, %s' % (cur_overlap, n_overlaps, point0,
+                                               point1))
             temp_s = set(self.tried_pairs)
             if overlap[0] > overlap[1]:
                 raise Exception('die')
             if overlap in temp_s:
-                print 'Skipping already tried pair %s' % repr(overlap)
+                print('Skipping already tried pair %s' % repr(overlap))
                 continue
 
-            print 'Trying pair %s' % repr(overlap)
+            print('Trying pair %s' % repr(overlap))
             project = self.control_point_gen.generate_core(overlap)
             # Was just a guess, might not actually generate a match
             if project is None:
@@ -101,15 +101,15 @@ class FortifyStitch(CommonStitch):
             self.tried_pairs.add(overlap)
 
         #raise Exception('debug')
-        print 'Fortify project file name: ', self.project.get_a_file_name()
+        print('Fortify project file name: ', self.project.get_a_file_name())
         self.project.get_a_file_name()
         #self.project.save()
         self.project.merge_into(self.sub_projects + [self.input_project])
         #self.project.merge_into(self.sub_projects)
         #self.project.merge_into([self.input_project])
 
-        print 'Final print:'
-        print self.project.get_text()
+        print('Final print:')
+        print(self.project.get_text())
         #raise Exception('debug')
-        print 'Saving'
+        print('Saving')
         self.project.save()

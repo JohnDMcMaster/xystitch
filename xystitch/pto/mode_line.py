@@ -31,7 +31,7 @@ http://search.cpan.org/dist/Panotools-Script/lib/Panotools/Script/Line/Mode.pm
    s1           Photometric Symmetric Error
 '''
 
-import line
+from . import line
 '''
 m g1 i0 f0 m2 p0.00784314
 '''

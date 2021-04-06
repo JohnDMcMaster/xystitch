@@ -109,7 +109,7 @@ import shutil
 from xystitch.pimage import PImage
 from xystitch.temp_file import ManagedTempFile
 from xystitch.execute import Execute
-import line
+from . import line
 
 
 # I'm really tempted to write this as a map...but I dunno

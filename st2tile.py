@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 from xystitch.tiler import Tiler
 from xystitch.pto.project import PTOProject
@@ -28,9 +28,9 @@ def run(args):
 
     if args.threads < 1:
         raise Exception('Bad threads')
-    print('Using %d threads' % args.threads)
+    print(('Using %d threads' % args.threads))
 
-    print('Loading %s' % args.pto)
+    print(('Loading %s' % args.pto))
     project = PTOProject.from_file_name(args.pto)
     print('Creating tiler')
 
@@ -75,7 +75,7 @@ def run(args):
     print('Forcing tiler on all images')
     for fn in glob.glob(args.st_dir + "/*.jpg"):
         print("")
-        print("%s" % fn)
+        print(("%s" % fn))
         im = Image.open(fn)
         width, height = im.size
         x0, y0 = coord(fn)

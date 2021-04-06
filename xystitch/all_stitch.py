@@ -7,7 +7,7 @@ This is the most basic stitching strategy: throw every image at once into the to
 '''
 import os
 from xystitch.pto.util import fixup_i_lines, fixup_p_lines, optimize_xy_only
-from common_stitch import CommonStitch
+from .common_stitch import CommonStitch
 from xystitch.control_point import ajpto2pto_text_simple
 
 
@@ -20,7 +20,7 @@ class AllStitch(CommonStitch):
     def from_file_names(image_file_names, depth=1):
         engine = AllStitch()
         engine.image_file_names = image_file_names
-        print 'Orig file names: %s' % str(image_file_names)
+        print('Orig file names: %s' % str(image_file_names))
         '''
 		Certain program take file names relative to the project file, others to working dir
 		Since I like making temp files in /tmp so as not to clutter up working dir, this doesn't work well
@@ -37,7 +37,7 @@ class AllStitch(CommonStitch):
     def from_tagged_file_names(image_file_names):
         engine = AllStitch()
         engine.image_file_names = image_file_names
-        print 'Orig file names: %s' % str(image_file_names)
+        print('Orig file names: %s' % str(image_file_names))
 
         file_names_canonical = list()
         for file_name in image_file_names:
@@ -56,7 +56,7 @@ class AllStitch(CommonStitch):
         if project is None:
             raise Exception('stitch failed')
         oto_text = str(project)
-        print oto_text
+        print(oto_text)
         # are we actually doing anything useful here?
         # The original intention was to make dead sure we had the right file order
         # but I'm pretty sure its consistent and we don't need to parse the comments
@@ -64,11 +64,11 @@ class AllStitch(CommonStitch):
         if not self.project:
             raise Exception('Failed AJ pto conversion')
 
-        print 'Images in project'
+        print('Images in project')
         for il in self.project.get_image_lines():
-            print '  ' + il.get_name()
+            print('  ' + il.get_name())
 
-        print 'Post stitch fixup...'
+        print('Post stitch fixup...')
         optimize_xy_only(self.project)
         fixup_i_lines(self.project)
         fixup_p_lines(self.project)

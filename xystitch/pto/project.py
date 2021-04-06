@@ -21,13 +21,13 @@ o f0 y+0.000000 r+0.000000 p+0.000000 u20 d0.000000 e0.000000 v70.000000 a0.0000
 
 from xystitch.merger import Merger
 #from xystitch.pto.util import *
-from control_point_line import ControlPointLine, AbsoluteControlPointLine
-from image_line import ImageLine
-from variable_line import VariableLine
-from mode_line import ModeLine
-from panorama_line import PanoramaLine
-from optimizer_line import OptimizerLine
-from util import dbg, calc_il_dim
+from .control_point_line import ControlPointLine, AbsoluteControlPointLine
+from .image_line import ImageLine
+from .variable_line import VariableLine
+from .mode_line import ModeLine
+from .panorama_line import PanoramaLine
+from .optimizer_line import OptimizerLine
+from .util import dbg, calc_il_dim
 from xystitch.temp_file import ManagedTempFile
 from xystitch.execute import Execute
 
@@ -307,7 +307,7 @@ class PTOProject:
         for i, il in enumerate(new_image_lines):
             img_fn2ii_new[il.get_name()] = i
         ii_old2new = {}
-        for fn, ii_new in img_fn2ii_new.iteritems():
+        for fn, ii_new in img_fn2ii_new.items():
             try:
                 ii_old2new[img_fn2ii_old[fn]] = ii_new
             except:
@@ -532,7 +532,7 @@ m g1.0 i0 f0 m2
         elif k == "o":
             self.optimizer_lines.append(OptimizerLine(line, self))
         else:
-            print('WARNING: unknown line type: %s' % line)
+            print(('WARNING: unknown line type: %s' % line))
             self.misc_lines.append(line)
 
     # These functions are fragile....should probably just stick to the get string versions
@@ -647,7 +647,7 @@ m g1.0 i0 f0 m2
 
     def merge_into(self, ptos):
         '''Merge project into this one.  Output file is updated'''
-        print('merge_into: others: %d' % len(ptos))
+        print(('merge_into: others: %d' % len(ptos)))
 
         this = []
         if self.file_name and os.path.exists(self.file_name):
@@ -785,13 +785,13 @@ m g1.0 i0 f0 m2
             (rc, output) = Execute.with_output("pto_merge", args)
 
         if not rc == 0:
-            print
-            print
-            print
+            print()
+            print()
+            print()
             if rc == 35072:
                 # ex: empty projects seem to cause this
                 print('Out of memory, expect malformed project file')
-            print('output:%s' % output)
+            print(('output:%s' % output))
             raise Exception('Bad rc: %d' % rc)
 
         self.reopen()

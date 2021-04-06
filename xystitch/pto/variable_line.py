@@ -77,7 +77,7 @@ class VariableLine(Line):
             # See if we can parse it then
             image_index = None
             # All index should be consistent
-            for k, v in self.variables.iteritems():
+            for k, v in self.variables.items():
                 if image_index is None:
                     image_index = v
                 else:

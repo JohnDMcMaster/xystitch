@@ -83,9 +83,9 @@ def regress_row(m, pto, rows, selector, allow_missing=False):
             continue
 
         if 0:
-            print 'Fitting polygonomial'
-            print cols
-            print deps
+            print('Fitting polygonomial')
+            print(cols)
+            print(deps)
 
         # Find x/y given a col
         (c0, c1) = polyfit(cols, deps, 1)
@@ -210,16 +210,16 @@ def calc_constants(order,
                     #print '%s: x%g y%g' % (fn, cur_x, cur_y)
 
                 except:
-                    print
-                    print il
-                    print c0s, c1s, c3s, c4s
-                    print col, row
-                    print
+                    print()
+                    print(il)
+                    print(c0s, c1s, c3s, c4s)
+                    print(col, row)
+                    print()
 
                     raise
 
-        print 'Order %u: %u even solutions' % (cur_order, len(this_c2s))
-        print 'Order %u: %u even solutions' % (cur_order, len(this_c5s))
+        print('Order %u: %u even solutions' % (cur_order, len(this_c2s)))
+        print('Order %u: %u even solutions' % (cur_order, len(this_c5s)))
         if 1:
             c2s.append(sum(this_c2s) / len(this_c2s))
             c5s.append(sum(this_c5s) / len(this_c5s))
@@ -279,13 +279,13 @@ def linear_reoptimize(pto,
     pto_ref.parse()
     ref_fns = pto_ref.get_file_names()
     real_fns = pto.get_file_names()
-    print 'Files (all: %d, ref: %d):' % (len(real_fns), len(ref_fns))
+    print('Files (all: %d, ref: %d):' % (len(real_fns), len(ref_fns)))
     for fn in real_fns:
         if fn in ref_fns:
             ref_str = '*'
         else:
             ref_str = ' '
-        print '  %s%s' % (ref_str, fn)
+        print('  %s%s' % (ref_str, fn))
     m_ref = ImageCoordinateMap.from_tagged_file_names(ref_fns)
     m_real = ImageCoordinateMap.from_tagged_file_names(real_fns)
     #m.debug_print()
@@ -305,17 +305,17 @@ def linear_reoptimize(pto,
     for cur_order in range(order):
         # Given a column find x (primary x)
         c0s.append(
-            regress_c0(m_ref, pto_ref, xrange(cur_order, m_ref.height(),
+            regress_c0(m_ref, pto_ref, range(cur_order, m_ref.height(),
                                               order), allow_missing))
         c1s.append(
-            regress_c1(m_ref, pto_ref, xrange(cur_order, m_ref.width(), order),
+            regress_c1(m_ref, pto_ref, range(cur_order, m_ref.width(), order),
                        allow_missing))
         # Given a row find y (primary y)
         c3s.append(
-            regress_c3(m_ref, pto_ref, xrange(cur_order, m_ref.height(),
+            regress_c3(m_ref, pto_ref, range(cur_order, m_ref.height(),
                                               order), allow_missing))
         c4s.append(
-            regress_c4(m_ref, pto_ref, xrange(cur_order, m_ref.width(), order),
+            regress_c4(m_ref, pto_ref, range(cur_order, m_ref.width(), order),
                        allow_missing))
 
     # Now chose a point in the center
@@ -329,13 +329,13 @@ def linear_reoptimize(pto,
     c5 = None
 
     if 0:
-        print 'Solution found'
-        print '  x = %g c + %g r + TBD' % (c0, c1)
-        print '  y = %g c + %g r + TBD' % (c3, c4)
+        print('Solution found')
+        print('  x = %g c + %g r + TBD' % (c0, c1))
+        print('  y = %g c + %g r + TBD' % (c3, c4))
 
     # Verify the solution matrix by checking it against the reference project
-    print
-    print 'Verifying reference solution matrix....'
+    print()
+    print('Verifying reference solution matrix....')
     # Entire reference is assumed to be good always, no border
     (c2s_ref, c5s_ref) = calc_constants(order, m_ref, pto_ref, c0s, c1s, c3s,
                                         c4s, m_ref, allow_missing)
@@ -344,16 +344,16 @@ def linear_reoptimize(pto,
     for cur_order in range(order):
         # XXX: if we really cared we could center these up
         # its easier to just run the centering algorithm after though if one cares
-        print 'Reference order %d solution:' % cur_order
-        print '  x = %g c + %g r + %g' % (c0s[cur_order], c1s[cur_order],
-                                          c2s_ref[cur_order])
-        print '  y = %g c + %g r + %g' % (c3s[cur_order], c4s[cur_order],
-                                          c5s_ref[cur_order])
+        print('Reference order %d solution:' % cur_order)
+        print('  x = %g c + %g r + %g' % (c0s[cur_order], c1s[cur_order],
+                                          c2s_ref[cur_order]))
+        print('  y = %g c + %g r + %g' % (c3s[cur_order], c4s[cur_order],
+                                          c5s_ref[cur_order]))
     calc_ref_xs = []
     calc_ref_ys = []
     ref_xs = []
     ref_ys = []
-    print 'Errors:'
+    print('Errors:')
     x_last = None
     y_last = None
     for col in range(m_ref.width()):
@@ -372,13 +372,13 @@ def linear_reoptimize(pto,
             y_orig = il.y()
             ref_xs.append(x_orig)
             ref_ys.append(y_orig)
-            print '  c%d r%d: x%g y%g (x%g, y%g)' % (
-                col, row, x_calc - x_orig, y_calc - y_orig, x_orig, y_orig)
+            print('  c%d r%d: x%g y%g (x%g, y%g)' % (
+                col, row, x_calc - x_orig, y_calc - y_orig, x_orig, y_orig))
             if col > 0:
                 fn_old = m_ref.get_image(col - 1, row)
                 if fn_old:
                     il_old = pto_ref.get_image_by_fn(fn_old)
-                    print '    dx: %g' % (il.x() - il_old.x())
+                    print('    dx: %g' % (il.x() - il_old.x()))
                     if col > 1:
                         '''
 						x1' = x1 - x0
@@ -388,30 +388,30 @@ def linear_reoptimize(pto,
                         fn_old2 = m_ref.get_image(col - 2, row)
                         if fn_old2:
                             il_old2 = pto_ref.get_image_by_fn(fn_old2)
-                            print '    dx2: %g' % (il.x() - 2 * il_old.x() +
-                                                   il_old2.x())
+                            print('    dx2: %g' % (il.x() - 2 * il_old.x() +
+                                                   il_old2.x()))
             if row != 0:
                 fn_old = m_ref.get_image(col, row - 1)
                 if fn_old:
                     il_old = pto_ref.get_image_by_fn(fn_old)
-                    print '    dy: %g' % (il.y() - il_old.y())
+                    print('    dy: %g' % (il.y() - il_old.y()))
                     if row > 1:
                         fn_old2 = m_ref.get_image(col, row - 2)
                         if fn_old2:
                             il_old2 = pto_ref.get_image_by_fn(fn_old2)
-                            print '    dy2: %g' % (il.y() - 2 * il_old.y() +
-                                                   il_old2.y())
+                            print('    dy2: %g' % (il.y() - 2 * il_old.y() +
+                                                   il_old2.y()))
     x_ref_rms_error = rms_error_diff(calc_ref_xs, ref_xs)
     y_ref_rms_error = rms_error_diff(calc_ref_ys, ref_ys)
-    print 'Reference RMS error x%g y%g' % (x_ref_rms_error, y_ref_rms_error)
-    print
+    print('Reference RMS error x%g y%g' % (x_ref_rms_error, y_ref_rms_error))
+    print()
     #exit(1)
     '''
 	The reference project might not start at 0,0
 	Therefore scan through to find some good starting positions so that we can calc each point
 	in the final project
 	'''
-    print 'Anchoring solution...'
+    print('Anchoring solution...')
     '''
 	Calculate the constant at each reference image
 	Compute reference positions from these values
@@ -438,22 +438,22 @@ def linear_reoptimize(pto,
     for cur_order in range(order):
         # XXX: if we really cared we could center these up
         # its easier to just run the centering algorithm after though if one cares
-        print 'Order %d solution:' % cur_order
-        print '  x = %g c + %g r + %g' % (c0s[cur_order], c1s[cur_order],
-                                          c2s[cur_order])
-        print '  y = %g c + %g r + %g' % (c3s[cur_order], c4s[cur_order],
-                                          c5s[cur_order])
+        print('Order %d solution:' % cur_order)
+        print('  x = %g c + %g r + %g' % (c0s[cur_order], c1s[cur_order],
+                                          c2s[cur_order]))
+        print('  y = %g c + %g r + %g' % (c3s[cur_order], c4s[cur_order],
+                                          c5s[cur_order]))
 
     c2_rms = rms_errorl(c2s)
     c5_rms = rms_errorl(c5s)
-    print 'RMS offset error x%g y%g' % (c2_rms, c5_rms)
+    print('RMS offset error x%g y%g' % (c2_rms, c5_rms))
     left_right_backlash = False
     top_bottom_backlash = False
     if c2_rms > c5_rms:
-        print 'x offset varies most, expect left-right scanning'
+        print('x offset varies most, expect left-right scanning')
         left_right_backlash = True
     else:
-        print 'y offset varies most, expect top-bottom scanning'
+        print('y offset varies most, expect top-bottom scanning')
         top_bottom_backlash = True
     #exit(1)
     '''

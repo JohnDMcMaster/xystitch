@@ -87,10 +87,10 @@ class AutopanoSiftC:
         #(rc, output) = Execute.with_output(command, args)
         (rc, output) = (exc_ret_istr(command, args), '')
         if not rc == 0:
-            print
-            print
-            print
-            print 'output:\n%s' % output
+            print()
+            print()
+            print()
+            print('output:\n%s' % output)
 
             raise Exception('Bad rc: %d' % rc)
 
@@ -117,7 +117,7 @@ def pto_unsub(src_prj, sub_image_files, deltas, sub_to_real):
 
     same_order = True
     # Copy/fix images
-    print 'Order check'
+    print('Order check')
     for i, src_il in enumerate(src_prj.get_image_lines()):
         # copy it
         dst_il = ImageLine(str(src_il), ret)
@@ -127,8 +127,8 @@ def pto_unsub(src_prj, sub_image_files, deltas, sub_to_real):
         ret.add_image_line(dst_il)
         same_order = same_order and sub_image_files[
             i].file_name == src_il.get_name()
-        print '  %d: %s vs %s' % (i, sub_image_files[i].file_name,
-                                  src_il.get_name())
+        print('  %d: %s vs %s' % (i, sub_image_files[i].file_name,
+                                  src_il.get_name()))
 
     # Copy/shift control points
     # Should have been filtered out earlier
@@ -188,13 +188,13 @@ class ControlPointGeneratorXX:
         # Under WINE, do fixup
         project_text = project_text.replace('Z:\\tmp\\', '/tmp/')
         if 0:
-            print
-            print
-            print
-            print project_text
-            print
-            print
-            print
+            print()
+            print()
+            print()
+            print(project_text)
+            print()
+            print()
+            print()
         f.close()
         f = open(project_file.file_name, 'w')
         f.write(project_text)
@@ -233,28 +233,28 @@ class PanoCP:
             project.add_image(real_fn, def_opt=True)
 
         project.save()
-        print
-        print
-        print
-        print project.get_text()
-        print
-        print
-        print
+        print()
+        print()
+        print()
+        print(project.get_text())
+        print()
+        print()
+        print()
 
         #(rc, output) = Execute.with_output('cpfind', args, print_output=self.print_output)
-        print 'cpfind' + ' '.join(args)
+        print('cpfind' + ' '.join(args))
         (rc, output) = exc_ret_istr('cpfind',
                                     args,
                                     print_out=self.print_output)
 
-        print 'PanoCP: cpfind done'
+        print('PanoCP: cpfind done')
         if not rc == 0:
-            print
-            print
-            print
-            print 'output:'
-            print output
-            print
+            print()
+            print()
+            print()
+            print('output:')
+            print(output)
+            print()
             # Happens very rarely
             # 2018-01-24T04:00:18.720954: Exception: Bad rc: -11
             # Log it but consider it a known failure
@@ -273,22 +273,22 @@ class PanoCP:
         (rc, output) = exc_ret_istr('cpclean',
                                     args,
                                     print_out=self.print_output)
-        print 'PanoCP: cpclean done'
+        print('PanoCP: cpclean done')
         if not rc == 0:
-            print
-            print
-            print
-            print 'output:'
-            print output
-            print
+            print()
+            print()
+            print()
+            print('output:')
+            print(output)
+            print()
             raise Exception('Bad rc: %d' % rc)
 
         project.reopen()
-        print 'Fixing image lines...'
+        print('Fixing image lines...')
         for il in project.image_lines:
             src = il.get_name()
             dst = real_fn_base2full[src]
-            print '  %s => %s' % (src, dst)
+            print('  %s => %s' % (src, dst))
             il.set_name(dst)
 
         project.set_file_name(None)
@@ -297,7 +297,7 @@ class PanoCP:
         # Will happen if failed to match
         # be optimistic: cpclean work will be wasted but avoids parsing project twice
         if len(project.get_control_point_lines()) == 0:
-            print 'WARNING: failed'
+            print('WARNING: failed')
             return None
         return project
 

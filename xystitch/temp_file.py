@@ -29,7 +29,7 @@ class TempFile:
             g_default_prefix_dir = ManagedTempDir.get(
                 TempFile.get(PREFIX_BASE))
             g_default_prefix = os.path.join(g_default_prefix_dir.file_name, '')
-            print 'TEMP DIR: %s' % g_default_prefix
+            print('TEMP DIR: %s' % g_default_prefix)
         return g_default_prefix
 
     @staticmethod
@@ -91,7 +91,7 @@ class ManagedTempFile:
                         self.file_name)
         # Ignore if it was never created
         except:
-            print 'WARNING: failed to delete temp file: %s' % self.file_name
+            print('WARNING: failed to delete temp file: %s' % self.file_name)
 
 
 class ManagedTempDir(ManagedTempFile):
@@ -124,12 +124,12 @@ class ManagedTempDir(ManagedTempFile):
         try:
             if os.path.exists(self.file_name):
                 if config.keep_temp_files():
-                    print 'KEEP: Deleted temp dir %s' % self.file_name
+                    print('KEEP: Deleted temp dir %s' % self.file_name)
                 else:
                     shutil.rmtree(self.file_name)
-                    print 'Deleted temp dir %s' % self.file_name
+                    print('Deleted temp dir %s' % self.file_name)
             else:
-                print "Didn't delete inexistant temp dir %s" % self.file_name
+                print("Didn't delete inexistant temp dir %s" % self.file_name)
         # Ignore if it was never created
         except:
-            print 'WARNING: failed to delete temp dir: %s' % self.file_name
+            print('WARNING: failed to delete temp dir: %s' % self.file_name)

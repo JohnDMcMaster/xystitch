@@ -10,10 +10,10 @@ The positions aren't really
 
 import os
 import sys
-from common_stitch import CommonStitch
-from fortify_stitch import FortifyStitch
-from image_coordinate_map import ImageCoordinatePair
-import spatial_map
+from .common_stitch import CommonStitch
+from .fortify_stitch import FortifyStitch
+from .image_coordinate_map import ImageCoordinatePair
+from . import spatial_map
 from xystitch.pto.project import PTOProject
 
 
@@ -61,7 +61,7 @@ class WanderStitch(CommonStitch):
         project = self.generate_control_points_by_pair(
             ImageCoordinatePair.from_spatial_points(sp0, sp1), file_names_pair)
         if project is None:
-            print 'Could not connect supposedly adjacent images, recovery is currently not supported'
+            print('Could not connect supposedly adjacent images, recovery is currently not supported')
             return None
         self.sub_projects.append(project)
         self.mark_tried_pair(file_names_pair[0], file_names_pair[1])
@@ -76,7 +76,7 @@ class WanderStitch(CommonStitch):
 
         project = self.stitch_images(file_names_pair)
         if project is None:
-            print 'WARNING: failed to create image pair project'
+            print('WARNING: failed to create image pair project')
             return None
         project.parse()
 
@@ -90,8 +90,8 @@ class WanderStitch(CommonStitch):
             image_1_points.add((control_point_line.get_variable('X'),
                                 control_point_line.get_variable('Y')))
 
-        print 'Output:'
-        print [i[0] for i in image_0_points]
+        print('Output:')
+        print([i[0] for i in image_0_points])
         image_0_x_average = sum([i[0] for i in image_0_points
                                  ]) / len(image_0_points)
         image_0_y_average = sum([i[1] for i in image_0_points
@@ -113,18 +113,18 @@ class WanderStitch(CommonStitch):
         x_delta = image_0_x_average - image_1_x_average
         y_delta = image_0_y_average - image_1_y_average
 
-        print 'image 0, x: %f / %d (%f), y: %f / %d (%f)' % (
+        print('image 0, x: %f / %d (%f), y: %f / %d (%f)' % (
             image_0_x_average, project.image_lines[0].get_variable('w'),
             image_0_x_proportion, image_0_y_average,
-            project.image_lines[0].get_variable('h'), image_0_y_proportion)
-        print 'image 1, x: %f / %d (%f), y: %f / %d (%f)' % (
+            project.image_lines[0].get_variable('h'), image_0_y_proportion))
+        print('image 1, x: %f / %d (%f), y: %f / %d (%f)' % (
             image_1_x_average, project.image_lines[1].get_variable('w'),
             image_1_x_average / project.image_lines[1].get_variable('w'),
             image_1_y_average, project.image_lines[1].get_variable('h'),
-            image_1_y_average / project.image_lines[1].get_variable('h'))
-        print 'x delta: %f' % x_delta
-        print 'y delta: %f' % y_delta
-        print 'delta ratio'
+            image_1_y_average / project.image_lines[1].get_variable('h')))
+        print('x delta: %f' % x_delta)
+        print('y delta: %f' % y_delta)
+        print('delta ratio')
         if y_delta == 0:
             xy = x_delta
         else:
@@ -133,23 +133,23 @@ class WanderStitch(CommonStitch):
             yx = y_delta
         else:
             yx = y_delta / x_delta
-        print '\tx/y: %f' % xy
-        print '\ty/x: %f' % yx
+        print('\tx/y: %f' % xy)
+        print('\ty/x: %f' % yx)
 
         if abs(xy) > abs(yx):
-            print 'x shift'
+            print('x shift')
             if x_delta > 0:
-                print 'right shift'
+                print('right shift')
             elif x_delta < 0:
-                print 'left shift'
+                print('left shift')
             else:
                 raise Exception("unlikely...somethings fishy")
         elif abs(xy) < abs(yx):
-            print 'y shift'
+            print('y shift')
             if y_delta > 0:
-                print 'shift down'
+                print('shift down')
             elif y_delta < 0:
-                print 'shift up'
+                print('shift up')
             else:
                 raise Exception("unlikely...somethings fishy")
         else:
@@ -170,7 +170,7 @@ class WanderStitch(CommonStitch):
 		Generate to all neighbors to start with
 		'''
 
-        print 'PHASE 1: adjacent images'
+        print('PHASE 1: adjacent images')
         cur_x = 0.0
         cur_y = 0.0
         x_delta = None
@@ -183,8 +183,8 @@ class WanderStitch(CommonStitch):
         cur_pair_index = 0
         for pair in self.linear_pairs_gen():
             cur_pair_index += 1
-            print 'Working on %s (%d / %d)' % (repr(pair), cur_pair_index,
-                                               n_pairs)
+            print('Working on %s (%d / %d)' % (repr(pair), cur_pair_index,
+                                               n_pairs))
             result = self.analyze_image_pair(pair)
             if result is None:
                 '''
@@ -197,13 +197,13 @@ class WanderStitch(CommonStitch):
 				Better: calculate average length and see how far we are along in the row
 					Make a guess as to whether we should turn or not
 				'''
-                print 'Attempting error recovery'
+                print('Attempting error recovery')
                 # Leave values untouched to save from last loop value
                 # If we failed on the first pass give up
                 if x_delta is None or y_delta is None:
                     raise Exception('Die')
-                print 'Using last delta values: y=%f, x=%f' % (y_delta,
-                                                               x_delta)
+                print('Using last delta values: y=%f, x=%f' % (y_delta,
+                                                               x_delta))
             else:
                 # Common / expected case
                 (x_delta, y_delta) = result
@@ -212,28 +212,28 @@ class WanderStitch(CommonStitch):
             # Note we must add the estimate even if its not known
             self.spatial_map.add_point(cur_y, cur_x, pair[1])
 
-        print 'Created %d sub projects' % len(self.sub_projects)
+        print('Created %d sub projects' % len(self.sub_projects))
 
         phase_1_project = PTOProject.from_blank()
-        print 'Sub projects (full image):'
+        print('Sub projects (full image):')
         for project in self.sub_projects:
             # prefix so I can grep it for debugging
-            print '\tSUB: ' + project.file_name
+            print('\tSUB: ' + project.file_name)
         phase_1_project.merge_into(self.sub_projects)
         # Save is more of debug thing now...helps analyze crashes
         phase_1_project.get_a_file_name()
         phase_1_project.save()
-        print
-        print
-        print
-        print phase_1_project.text
-        print
-        print
-        print
-        print 'Master project file: %s' % phase_1_project.file_name
-        print 'PHASE 1: done'
+        print()
+        print()
+        print()
+        print(phase_1_project.text)
+        print()
+        print()
+        print()
+        print('Master project file: %s' % phase_1_project.file_name)
+        print('PHASE 1: done')
 
-        print 'PHASE 2: fortify'
+        print('PHASE 2: fortify')
         fortify_stitch = FortifyStitch.from_wander(phase_1_project,
                                                    self.image_file_names,
                                                    self.tried_pairs,
@@ -241,4 +241,4 @@ class WanderStitch(CommonStitch):
         fortify_stitch.set_output_project_file_name(self.project.file_name)
         fortify_stitch.run()
         self.project = fortify_stitch.project
-        print 'PHASE 2: done'
+        print('PHASE 2: done')
