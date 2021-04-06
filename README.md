@@ -124,3 +124,19 @@ $ cat ~/.pr0nrc
 This file is output by pyuscope. It is used to automatically load scan parameters and shouldn't be required
 
 TODO: add a link to config and/or describe options digested here
+
+# Version history
+
+
+v0.0.0 (2020-01-28)
+  * Import old project from pr0ntools repository
+
+v1.0.0 (2020-11-27)
+  * First official release
+  * Adopt xy- prefix
+
+v1.1.0 (2021-03-06)
+  * Python3
+  * Fix optimizer RMS crash bug
+  * Print worker status in master
+  * Remove pr0ntools reference
