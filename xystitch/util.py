@@ -35,6 +35,8 @@ def msg(s=''):
 
 def logwt(d, fn, shift_d=True, shift_f=False, stampout=True):
     '''Log with timestamping'''
+    print("FIXME log")
+    return
 
     if shift_d:
         try_shift_dir(d)
