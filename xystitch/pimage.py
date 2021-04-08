@@ -8,6 +8,9 @@ Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under a 2 clause BSD license, see COPYING for details
 '''
 
+# TODO: eliminate this file as much as possible
+# At least get rid of the class/ unnecessary utility functions
+
 from PIL import Image
 import os
 
@@ -116,7 +119,7 @@ def is_image_filename(filename):
     return filename.find('.tif') > 0 or filename.find(
         '.jpg') > 0 or filename.find('.png') > 0 or filename.find('.bmp') > 0
 
-
+# TODO: eliminate this class
 class PImage:
     # We do not copy array, so be careful with modifications
     def __init__(self, image):

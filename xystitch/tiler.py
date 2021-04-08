@@ -225,8 +225,8 @@ class Worker(object):
         _outlog = None
         try:
             if self.log_fn:
-                # _outlog = open(self.log_fn, 'w')
-                _outlog = open(self.log_fn, 'w', 0)
+                _outlog = open(self.log_fn, 'w')
+                # _outlog = open(self.log_fn, 'w', 0)
                 sys.stdout = _outlog
                 sys.stderr = _outlog
 

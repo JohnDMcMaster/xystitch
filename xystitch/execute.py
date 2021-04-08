@@ -222,7 +222,7 @@ class Prefixer:
     def write(self, s):
         pos = 0
         while True:
-            posn = s.find('\n', pos)
+            posn = s.find(b'\n', pos)
             if posn >= 0:
                 if not self.inline:
                     self.f.write(self.prefix())
@@ -297,10 +297,11 @@ def exc_ret_istr(cmd, args, print_out=True):
         rlist, _wlist, _xlist = select.select([p.stdout, p.stderr], [], [],
                                               0.05)
         for f in rlist:
+            # bytes
             d = f.read()
             output.extend(d)
             if print_out:
-                sys.stdout.write(d)
+                sys.stdout.write(''.join([chr(b) for b in d]))
                 sys.stdout.flush()
 
     while p.returncode is None:

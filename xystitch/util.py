@@ -11,6 +11,31 @@ import shutil
 import sys
 import re
 
+# In Python2 bytes_data is a string, in Python3 it's bytes.
+# The element type is different (string vs int) and we have to deal
+# with that when printing this number as hex.
+if sys.version_info[0] == 2:
+    myord = ord
+else:
+    myord = lambda x: x
+
+def tobytes(buff):
+    if type(buff) is str:
+        #return bytearray(buff, 'ascii')
+        return bytearray([myord(c) for c in buff])
+    elif type(buff) is bytearray or type(buff) is bytes:
+        return buff
+    else:
+        assert 0, type(buff)
+
+
+def tostr(buff):
+    if type(buff) is str:
+        return buff
+    elif type(buff) is bytearray or type(buff) is bytes:
+        return ''.join([chr(b) for b in buff])
+    else:
+        assert 0, type(buff)
 
 def rjust_str(s, nchars):
     '''right justify string, space padded to nchars spaces'''
@@ -87,15 +112,15 @@ class IOTimestamp(object):
         self.fd.flush()
 
     def write(self, data):
-        parts = data.split('\n')
+        parts = data.split(b'\n')
         for i, part in enumerate(parts):
             if i != 0:
-                self.fd.write('\n')
+                self.fd.write(b'\n')
             # If last bit of text is just an empty line don't append date until text is actually written
             if i == len(parts) - 1 and len(part) == 0:
                 break
             if self.nl:
-                self.fd.write('%s: ' % datetime.datetime.utcnow().isoformat())
+                self.fd.write(b'%s: ' % datetime.datetime.utcnow().isoformat())
             self.fd.write(part)
             # Newline results in n + 1 list elements
             # The last element has no newline
