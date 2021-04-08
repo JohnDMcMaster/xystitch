@@ -60,12 +60,12 @@ def msg(s=''):
 
 def logwt(d, fn, shift_d=True, shift_f=False, stampout=True):
     '''Log with timestamping'''
-    print("FIXME log")
-    return
 
     if shift_d:
         try_shift_dir(d)
+        print("mkdir", d)
         os.mkdir(d)
+
 
     fn_can = os.path.join(d, fn)
     outlog = IOLog(obj=sys, name='stdout', out_fn=fn_can, shift=shift_f)
@@ -112,15 +112,15 @@ class IOTimestamp(object):
         self.fd.flush()
 
     def write(self, data):
-        parts = data.split(b'\n')
+        parts = data.split('\n')
         for i, part in enumerate(parts):
             if i != 0:
-                self.fd.write(b'\n')
+                self.fd.write('\n')
             # If last bit of text is just an empty line don't append date until text is actually written
             if i == len(parts) - 1 and len(part) == 0:
                 break
             if self.nl:
-                self.fd.write(b'%s: ' % datetime.datetime.utcnow().isoformat())
+                self.fd.write('%s: ' % datetime.datetime.utcnow().isoformat())
             self.fd.write(part)
             # Newline results in n + 1 list elements
             # The last element has no newline

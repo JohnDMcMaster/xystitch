@@ -5,6 +5,7 @@ Licensed under a 2 clause BSD license, see COPYING for details
 '''
 
 from .temp_file import ManagedTempFile
+from .util import tostr
 import datetime
 import os
 import select
@@ -52,15 +53,14 @@ def with_output(args, print_output=False):
     print(('going to execute: %s' % (args, )))
     if print_output:
         # Specifying pipe will cause communicate to read to it
-        print('tst')
         tee = IOTee()
-        subp = subprocess.Popen(args, stdout=tee, stderr=tee, shell=False)
+        subp = subprocess.Popen(args, stdout=tee, stderr=tee, shell=False, encoding="ascii")
     else:
         # Specifying nothing completely throws away the output
         subp = subprocess.Popen(args,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE,
-                                shell=False)
+                                shell=False, encoding="ascii")
     (stdout, stderr) = subp.communicate()
 
     return (subp.returncode, stdout, stderr)
@@ -73,10 +73,10 @@ def without_output(args, print_output=True):
     '''
     print(('going to execute: %s' % (args, )))
     if print_output:
-        subp = subprocess.Popen(args, shell=False)
+        subp = subprocess.Popen(args, shell=False, encoding="ascii")
     else:
         # Specifying nothing completely throws away the output
-        subp = subprocess.Popen(args, stdout=None, stderr=None, shell=False)
+        subp = subprocess.Popen(args, stdout=None, stderr=None, shell=False, encoding="ascii")
 
     subp.communicate()
     return subp.returncode
@@ -91,7 +91,7 @@ class Execute:
 
         # Probably reliable but does not stream output to screen
         if 0:
-            process = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
+            process = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True, encoding="ascii")
             _output, _unused_err = process.communicate()
             return process.poll()
 
@@ -109,7 +109,7 @@ class Execute:
             output = ''
             to_exec = cmd.split(' ')
             print(('going to execute: %s' % to_exec))
-            subp = subprocess.Popen(to_exec)
+            subp = subprocess.Popen(to_exec, encoding="ascii")
             while subp.returncode is None:
                 # Hmm how to treat stdout  vs stderror?
                 com = subp.communicate()[0]
@@ -222,7 +222,7 @@ class Prefixer:
     def write(self, s):
         pos = 0
         while True:
-            posn = s.find(b'\n', pos)
+            posn = s.find('\n', pos)
             if posn >= 0:
                 if not self.inline:
                     self.f.write(self.prefix())
@@ -249,29 +249,34 @@ def prefix(args, stdout=sys.stdout, stderr=sys.stderr, prefix=lambda: ''):
     subp = subprocess.Popen(args,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE,
-                            shell=False)
+                            shell=False, encoding="ascii")
     try:
-        p_stdout = Prefixer(stdout, prefix)
-        p_stderr = Prefixer(stderr, prefix)
+        # FIXME
+        if 1:
+            p_stdout = Prefixer(stdout, prefix)
+            p_stderr = Prefixer(stderr, prefix)
+        else:
+            p_stdout = stdout
+            p_stderr = stderr
         while subp.poll() is None:
             r_rdy, _w_rdy, _x_rdy = select.select([subp.stdout, subp.stderr],
                                                   [], [], 0.1)
             if subp.stdout in r_rdy:
-                p_stdout.write(os.read(subp.stdout.fileno(), 1024))
+                p_stdout.write(tostr(os.read(subp.stdout.fileno(), 1024)))
             if subp.stderr in r_rdy:
-                p_stderr.write(os.read(subp.stderr.fileno(), 1024))
+                p_stderr.write(tostr(os.read(subp.stderr.fileno(), 1024)))
         # Flush lingering output
         # could move these above but afraid of race conditions losing output
         while True:
             s = os.read(subp.stdout.fileno(), 1024)
             if len(s) == 0:
                 break
-            p_stdout.write(s)
+            p_stdout.write(tostr(s))
         while True:
             s = os.read(subp.stderr.fileno(), 1024)
             if len(s) == 0:
                 break
-            p_stderr.write(s)
+            p_stderr.write(tostr(s))
 
         return subp.returncode
     finally:
@@ -290,18 +295,21 @@ def exc_ret_istr(cmd, args, print_out=True):
                          stdout=subprocess.PIPE,
                          stderr=subprocess.PIPE,
                          stdin=subprocess.PIPE,
-                         close_fds=True)
-    output = bytearray()
+                         close_fds=True,
+                         encoding="ascii")
+    ret = ""
 
     def check():
+        nonlocal ret
+
         rlist, _wlist, _xlist = select.select([p.stdout, p.stderr], [], [],
                                               0.05)
         for f in rlist:
             # bytes
             d = f.read()
-            output.extend(d)
+            ret += d
             if print_out:
-                sys.stdout.write(''.join([chr(b) for b in d]))
+                sys.stdout.write(d)
                 sys.stdout.flush()
 
     while p.returncode is None:
@@ -311,4 +319,4 @@ def exc_ret_istr(cmd, args, print_out=True):
         p.poll()
 
     check()
-    return p.returncode, str(output)
+    return p.returncode, ret

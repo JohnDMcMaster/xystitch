@@ -224,14 +224,18 @@ class Worker(object):
     def run(self):
         _outlog = None
         try:
-            if self.log_fn:
-                _outlog = open(self.log_fn, 'w')
-                # _outlog = open(self.log_fn, 'w', 0)
+            if 1 and self.log_fn:
+                print("Worker creating log")
+                # _outlog = open(self.log_fn, 'w')
+                # Buffer only on lines
+                _outlog = open(self.log_fn, 'w', buffering=1)
                 sys.stdout = _outlog
                 sys.stderr = _outlog
 
                 _outdate = IOTimestamp(sys, 'stdout')
                 _errdate = IOTimestamp(sys, 'stderr')
+            else:
+                print("Working using stdout")
 
             self.running.set()
             self.exit = False
@@ -255,7 +259,7 @@ class Worker(object):
                     print('*' * 80)
                     messages_rx += 1
                     print('task %u rx' % messages_rx)
-                    _outlog.flush()
+                    _outlog and _outlog.flush()
 
                     try:
                         img_fn = self.try_supertile(st_bounds)
