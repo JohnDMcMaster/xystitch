@@ -6,11 +6,12 @@ Core utilities in typical usage order:
 * xy-stitch: high level .pto creation workflow (xy-feature + xy-pto)
   * xy-feature: create features
   * xy-pto: tweak pto and optimize it
-* xy-hugin: work on a reduced .pto for faster cropping and rotation
+* xy-hugin: open reduced .pto for faster cropping and rotation
   * Or just use hugin if your project is small enough
 * xy-ts: stitch image into output .jpgs such as tiles and/or one large .jpg
 
 Misc utilities:
+* xy-cphugin: open reduced .pto to tweak control points around poorly optimized areas
 * xy-outlier: print and remove control point outliers
 * xy-cp: similar to outlier, but operates on image RMS
 * xy-stack: stack image sets using Zerene Stacker. Used for distorted chips
@@ -21,15 +22,23 @@ Misc utilities:
 
 Tested on:
   * Ubuntu 20.04
-  * python 2.7.18
+  * python 3.8.5
 
-`sudo apt install hugin-tools enblend imagemagick`
 
 ```
+# Misc requirements
+sudo apt install hugin-tools enblend imagemagick
+
+# Do one of these:
+# Option 1: install from pip
+sudo pip3 install xystitch
+# Option 2: install from git
 cd ~
 git clone https://github.com/JohnDMcMaster/xystitch.git
 cd xystitch
-sudo python setup.py install
+sudo python3 setup.py install
+```
+
 wget https://siliconpr0n.org/media/xystitch/2020-11-27_stitch_test.tar
 tar -xf 2020-11-27_stitch_test.tar
 cd 2020-11-27_stitch_test
