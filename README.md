@@ -25,6 +25,8 @@ Tested on:
   * python 3.8.5
 
 
+Install:
+
 ```
 # Misc requirements
 sudo apt install hugin-tools enblend imagemagick
@@ -39,6 +41,9 @@ cd xystitch
 sudo python3 setup.py install
 ```
 
+Now try a small stitch:
+
+```
 wget https://siliconpr0n.org/media/xystitch/2020-11-27_stitch_test.tar
 tar -xf 2020-11-27_stitch_test.tar
 cd 2020-11-27_stitch_test
