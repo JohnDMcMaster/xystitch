@@ -18,8 +18,6 @@ class Config:
             js = "{}"
         self.json = json.loads(js)
 
-        # self.imgw = int(os.getenv('XY_IMW', "1632"))
-        # self.imgh = int(os.getenv('XY_IMH', "1224"))
         self.imgw = None
         self.imgh = None
         # Defaults if nothing is specified
