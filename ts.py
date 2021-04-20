@@ -70,7 +70,7 @@ def run(args):
               clip_height=args.clip_height,
               log_dir=log_dir,
               is_full=args.full)
-    t.threads = args
+    t.threads = threads
     t.verbose = args.verbose
     t.st_dir = args.st_dir
     t.out_extension = args.out_ext
