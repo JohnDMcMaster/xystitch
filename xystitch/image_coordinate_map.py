@@ -159,11 +159,12 @@ class ImageCoordinateMap:
                     raise Exception('Row %d, col %d unexpected' % (row, col))
 
     def debug_print(self):
-        print(('height %d rows, width %d cols' % (self.height(), self.width())))
+        print(
+            ('height %d rows, width %d cols' % (self.height(), self.width())))
         for row in range(self.height()):
             for col in range(self.width()):
                 print(('  [r%d][c%d] = %s' %
-                      (row, col, self.get_image(col, row))))
+                       (row, col, self.get_image(col, row))))
 
     def get_image_safe(self, col, row):
         '''Returns none if out of bounds'''
@@ -256,7 +257,7 @@ class ImageCoordinateMap:
                 print(('Constructing rows from set %s' % str(row_parts)))
                 rows = max(row_parts) + 1
         print(('initial cols / X dim / width: %d, rows / Y dim / height: %d' %
-              (cols, rows)))
+               (cols, rows)))
 
         ret = ImageCoordinateMap(cols, rows)
         file_names = sorted(file_names)

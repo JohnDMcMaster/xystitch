@@ -39,8 +39,8 @@ if __name__ == "__main__":
             if im is None:
                 continue
             ils_del.append(pto_orig.img_fn2il[im])
-    print(('Deleting %d / %d images' % (len(ils_del),
-                                       icm.width() * icm.height())))
+    print(('Deleting %d / %d images' %
+           (len(ils_del), icm.width() * icm.height())))
     pto_red.del_images(ils_del)
     pto_red.save_as(pto_orig.file_name.replace('.pto', '_sm.pto'),
                     is_new_filename=True)
@@ -73,8 +73,8 @@ if __name__ == "__main__":
         else:
             return '%0.2f' % f
 
-    print(('Rotation %s => %s' % (floats(
-        pto_orig.image_lines[0].getv('r')), floats(r))))
+    print(('Rotation %s => %s' %
+           (floats(pto_orig.image_lines[0].getv('r')), floats(r))))
     for il in pto_orig.image_lines:
         il.setv('r', r)
 

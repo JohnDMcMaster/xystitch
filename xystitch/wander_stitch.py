@@ -61,7 +61,9 @@ class WanderStitch(CommonStitch):
         project = self.generate_control_points_by_pair(
             ImageCoordinatePair.from_spatial_points(sp0, sp1), file_names_pair)
         if project is None:
-            print('Could not connect supposedly adjacent images, recovery is currently not supported')
+            print(
+                'Could not connect supposedly adjacent images, recovery is currently not supported'
+            )
             return None
         self.sub_projects.append(project)
         self.mark_tried_pair(file_names_pair[0], file_names_pair[1])
@@ -113,15 +115,15 @@ class WanderStitch(CommonStitch):
         x_delta = image_0_x_average - image_1_x_average
         y_delta = image_0_y_average - image_1_y_average
 
-        print('image 0, x: %f / %d (%f), y: %f / %d (%f)' % (
-            image_0_x_average, project.image_lines[0].get_variable('w'),
-            image_0_x_proportion, image_0_y_average,
-            project.image_lines[0].get_variable('h'), image_0_y_proportion))
-        print('image 1, x: %f / %d (%f), y: %f / %d (%f)' % (
-            image_1_x_average, project.image_lines[1].get_variable('w'),
-            image_1_x_average / project.image_lines[1].get_variable('w'),
-            image_1_y_average, project.image_lines[1].get_variable('h'),
-            image_1_y_average / project.image_lines[1].get_variable('h')))
+        print('image 0, x: %f / %d (%f), y: %f / %d (%f)' %
+              (image_0_x_average, project.image_lines[0].get_variable('w'),
+               image_0_x_proportion, image_0_y_average,
+               project.image_lines[0].get_variable('h'), image_0_y_proportion))
+        print('image 1, x: %f / %d (%f), y: %f / %d (%f)' %
+              (image_1_x_average, project.image_lines[1].get_variable('w'),
+               image_1_x_average / project.image_lines[1].get_variable('w'),
+               image_1_y_average, project.image_lines[1].get_variable('h'),
+               image_1_y_average / project.image_lines[1].get_variable('h')))
         print('x delta: %f' % x_delta)
         print('y delta: %f' % y_delta)
         print('delta ratio')
@@ -183,8 +185,8 @@ class WanderStitch(CommonStitch):
         cur_pair_index = 0
         for pair in self.linear_pairs_gen():
             cur_pair_index += 1
-            print('Working on %s (%d / %d)' % (repr(pair), cur_pair_index,
-                                               n_pairs))
+            print('Working on %s (%d / %d)' %
+                  (repr(pair), cur_pair_index, n_pairs))
             result = self.analyze_image_pair(pair)
             if result is None:
                 '''
@@ -202,8 +204,8 @@ class WanderStitch(CommonStitch):
                 # If we failed on the first pass give up
                 if x_delta is None or y_delta is None:
                     raise Exception('Die')
-                print('Using last delta values: y=%f, x=%f' % (y_delta,
-                                                               x_delta))
+                print('Using last delta values: y=%f, x=%f' %
+                      (y_delta, x_delta))
             else:
                 # Common / expected case
                 (x_delta, y_delta) = result

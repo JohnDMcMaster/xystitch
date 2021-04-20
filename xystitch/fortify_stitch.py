@@ -74,16 +74,16 @@ class FortifyStitch(CommonStitch):
 
         # Find adjacent pairs and generate control points
         n_overlaps = len(list(self.gen_overlaps()))
-        print('Checking %d images with %d overlaps' % (len(
-            self.image_file_names), n_overlaps))
+        print('Checking %d images with %d overlaps' %
+              (len(self.image_file_names), n_overlaps))
 
         cur_overlap = 0
         for (overlap) in self.gen_overlaps():
             cur_overlap += 1
             point0 = self.spatial_map.points[overlap[0]]
             point1 = self.spatial_map.points[overlap[1]]
-            print('%d / %d overlap: %s, %s' % (cur_overlap, n_overlaps, point0,
-                                               point1))
+            print('%d / %d overlap: %s, %s' %
+                  (cur_overlap, n_overlaps, point0, point1))
             temp_s = set(self.tried_pairs)
             if overlap[0] > overlap[1]:
                 raise Exception('die')

@@ -6,6 +6,7 @@ Licensed under a 2 clause BSD license, see COPYING for details
 
 import json
 import os
+import multiprocessing
 
 
 class Config:
@@ -92,6 +93,14 @@ class Config:
         Throw out images that differ by more than given fraction vs expected overlap
         """
         return float(os.getenv('XY_OVERLAP_OUTLIER_THRESH', "0.10"))
+
+    def ts_threads(self):
+        """tile stitcher threads"""
+        ret = self.get('ts_threads', 0)
+        if ret:
+            return ret
+        else:
+            return multiprocessing.cpu_count()
 
 
 config = Config()

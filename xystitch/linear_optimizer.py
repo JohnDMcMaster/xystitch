@@ -305,15 +305,15 @@ def linear_reoptimize(pto,
     for cur_order in range(order):
         # Given a column find x (primary x)
         c0s.append(
-            regress_c0(m_ref, pto_ref, range(cur_order, m_ref.height(),
-                                              order), allow_missing))
+            regress_c0(m_ref, pto_ref, range(cur_order, m_ref.height(), order),
+                       allow_missing))
         c1s.append(
             regress_c1(m_ref, pto_ref, range(cur_order, m_ref.width(), order),
                        allow_missing))
         # Given a row find y (primary y)
         c3s.append(
-            regress_c3(m_ref, pto_ref, range(cur_order, m_ref.height(),
-                                              order), allow_missing))
+            regress_c3(m_ref, pto_ref, range(cur_order, m_ref.height(), order),
+                       allow_missing))
         c4s.append(
             regress_c4(m_ref, pto_ref, range(cur_order, m_ref.width(), order),
                        allow_missing))
@@ -345,10 +345,10 @@ def linear_reoptimize(pto,
         # XXX: if we really cared we could center these up
         # its easier to just run the centering algorithm after though if one cares
         print('Reference order %d solution:' % cur_order)
-        print('  x = %g c + %g r + %g' % (c0s[cur_order], c1s[cur_order],
-                                          c2s_ref[cur_order]))
-        print('  y = %g c + %g r + %g' % (c3s[cur_order], c4s[cur_order],
-                                          c5s_ref[cur_order]))
+        print('  x = %g c + %g r + %g' %
+              (c0s[cur_order], c1s[cur_order], c2s_ref[cur_order]))
+        print('  y = %g c + %g r + %g' %
+              (c3s[cur_order], c4s[cur_order], c5s_ref[cur_order]))
     calc_ref_xs = []
     calc_ref_ys = []
     ref_xs = []
@@ -372,8 +372,8 @@ def linear_reoptimize(pto,
             y_orig = il.y()
             ref_xs.append(x_orig)
             ref_ys.append(y_orig)
-            print('  c%d r%d: x%g y%g (x%g, y%g)' % (
-                col, row, x_calc - x_orig, y_calc - y_orig, x_orig, y_orig))
+            print('  c%d r%d: x%g y%g (x%g, y%g)' %
+                  (col, row, x_calc - x_orig, y_calc - y_orig, x_orig, y_orig))
             if col > 0:
                 fn_old = m_ref.get_image(col - 1, row)
                 if fn_old:
@@ -388,8 +388,8 @@ def linear_reoptimize(pto,
                         fn_old2 = m_ref.get_image(col - 2, row)
                         if fn_old2:
                             il_old2 = pto_ref.get_image_by_fn(fn_old2)
-                            print('    dx2: %g' % (il.x() - 2 * il_old.x() +
-                                                   il_old2.x()))
+                            print('    dx2: %g' %
+                                  (il.x() - 2 * il_old.x() + il_old2.x()))
             if row != 0:
                 fn_old = m_ref.get_image(col, row - 1)
                 if fn_old:
@@ -399,8 +399,8 @@ def linear_reoptimize(pto,
                         fn_old2 = m_ref.get_image(col, row - 2)
                         if fn_old2:
                             il_old2 = pto_ref.get_image_by_fn(fn_old2)
-                            print('    dy2: %g' % (il.y() - 2 * il_old.y() +
-                                                   il_old2.y()))
+                            print('    dy2: %g' %
+                                  (il.y() - 2 * il_old.y() + il_old2.y()))
     x_ref_rms_error = rms_error_diff(calc_ref_xs, ref_xs)
     y_ref_rms_error = rms_error_diff(calc_ref_ys, ref_ys)
     print('Reference RMS error x%g y%g' % (x_ref_rms_error, y_ref_rms_error))
@@ -439,10 +439,10 @@ def linear_reoptimize(pto,
         # XXX: if we really cared we could center these up
         # its easier to just run the centering algorithm after though if one cares
         print('Order %d solution:' % cur_order)
-        print('  x = %g c + %g r + %g' % (c0s[cur_order], c1s[cur_order],
-                                          c2s[cur_order]))
-        print('  y = %g c + %g r + %g' % (c3s[cur_order], c4s[cur_order],
-                                          c5s[cur_order]))
+        print('  x = %g c + %g r + %g' %
+              (c0s[cur_order], c1s[cur_order], c2s[cur_order]))
+        print('  y = %g c + %g r + %g' %
+              (c3s[cur_order], c4s[cur_order], c5s[cur_order]))
 
     c2_rms = rms_errorl(c2s)
     c5_rms = rms_errorl(c5s)

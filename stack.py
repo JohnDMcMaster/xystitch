@@ -67,8 +67,8 @@ if __name__ == "__main__":
                 print(fns)
                 print(dfns_base)
                 raise Exception('Dirs not equal')
-    print('Found %d image sets to stack w/ %d images in each stack' % (
-        len(fns), len(args.img_dirs_in)))
+    print('Found %d image sets to stack w/ %d images in each stack' %
+          (len(fns), len(args.img_dirs_in)))
 
     tmp_dir = '/tmp/pr0nstack.tmp'
     print('Temp dir: %s' % tmp_dir)

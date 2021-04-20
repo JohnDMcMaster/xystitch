@@ -41,7 +41,7 @@ def main():
                         nargs='?',
                         help='pto project')
     args = parser.parse_args()
-    
+
     pto_orig = PTOProject.from_file_name(args.pto)
 
     print("Finding worst image optimization")
@@ -51,7 +51,6 @@ def main():
     fn = il.get_name()
     refrow, refcol = get_row_col(fn)
     print((fn, refcol, refrow))
-
 
     img_fns = []
     for il in pto_orig.get_image_lines():
@@ -67,13 +66,14 @@ def main():
             continue
         ils_keep.add(pto_orig.img_fn2il[im])
     ils_del = set(pto_orig.image_lines) - ils_keep
-    print(("%s - %s image lines, keeping %s" % (len(pto_orig.image_lines), len(ils_del), len(ils_keep))))
+    print(("%s - %s image lines, keeping %s" %
+           (len(pto_orig.image_lines), len(ils_del), len(ils_keep))))
 
     # Reduced .pto
     pto_red = pto_orig.copy()
 
-    print(('Deleting %d / %d images' % (len(ils_del),
-                                       icm.width() * icm.height())))
+    print(('Deleting %d / %d images' %
+           (len(ils_del), icm.width() * icm.height())))
     pto_red.del_images(ils_del)
     print((len(pto_orig.image_lines), len(pto_red.image_lines)))
 
@@ -87,10 +87,11 @@ def main():
 
     print("Saving preliminary project...")
     pto_red_fn = pto_orig.file_name.replace('.pto', '_sm.pto')
-    pto_red.save_as(pto_red_fn,
-                    is_new_filename=True)
+    pto_red.save_as(pto_red_fn, is_new_filename=True)
     print("Fitting FOV")
-    subprocess.check_call("pano_modify --fov=AUTO --canvas=AUTO -o %s %s" % (pto_red_fn, pto_red_fn), shell=True)
+    subprocess.check_call("pano_modify --fov=AUTO --canvas=AUTO -o %s %s" %
+                          (pto_red_fn, pto_red_fn),
+                          shell=True)
 
     print(('Opening temp file %s' % pto_red.file_name))
     subp = subprocess.Popen(['hugin', pto_red.file_name], shell=False)
@@ -121,7 +122,8 @@ def main():
         if not (n in iln_keep and N in iln_keep):
             cpls_new.append(cpl)
     # Shift into main object, discarding munged cpls
-    print(("cpl filtering %u => %u" % (len(pto_orig.control_point_lines), len(cpls_new))))
+    print(("cpl filtering %u => %u" %
+           (len(pto_orig.control_point_lines), len(cpls_new))))
     pto_orig.control_point_lines = cpls_new
 
     red_fn2il = pto_red.build_image_fn_map()

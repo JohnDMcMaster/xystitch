@@ -19,6 +19,7 @@ if sys.version_info[0] == 2:
 else:
     myord = lambda x: x
 
+
 def tobytes(buff):
     if type(buff) is str:
         #return bytearray(buff, 'ascii')
@@ -36,6 +37,7 @@ def tostr(buff):
         return ''.join([chr(b) for b in buff])
     else:
         assert 0, type(buff)
+
 
 def rjust_str(s, nchars):
     '''right justify string, space padded to nchars spaces'''
@@ -65,7 +67,6 @@ def logwt(d, fn, shift_d=True, shift_f=False, stampout=True):
         try_shift_dir(d)
         print("mkdir", d)
         os.mkdir(d)
-
 
     fn_can = os.path.join(d, fn)
     outlog = IOLog(obj=sys, name='stdout', out_fn=fn_can, shift=shift_f)

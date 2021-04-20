@@ -119,6 +119,7 @@ def is_image_filename(filename):
     return filename.find('.tif') > 0 or filename.find(
         '.jpg') > 0 or filename.find('.png') > 0 or filename.find('.bmp') > 0
 
+
 # TODO: eliminate this class
 class PImage:
     # We do not copy array, so be careful with modifications
@@ -137,7 +138,7 @@ class PImage:
             if row_label:
                 row_label_str = '%02d: ' % y
             print((row_label_str +
-                  self.debug_row_string(y, char_limit, row_label_str)))
+                   self.debug_row_string(y, char_limit, row_label_str)))
 
     def debug_row_string(self, y, char_limit=None, row_label=None):
         if row_label is None:

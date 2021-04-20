@@ -27,9 +27,12 @@ import time
 
 
 def run(args):
-    if args.threads < 1:
+    threads = args.threads
+    if not threads:
+        threads = config.ts_threads()
+    if threads < 1:
         raise Exception('Bad threads')
-    print('Using %d threads' % args.threads)
+    print('Using %d threads' % threads)
 
     log_dir = args.log
     out_dir = 'out'
@@ -67,7 +70,7 @@ def run(args):
               clip_height=args.clip_height,
               log_dir=log_dir,
               is_full=args.full)
-    t.threads = args.threads
+    t.threads = args
     t.verbose = args.verbose
     t.st_dir = args.st_dir
     t.out_extension = args.out_ext
@@ -206,9 +209,7 @@ def main():
         default=False,
         help=
         'use lock file to only enblend (memory intensive part) one at a time')
-    parser.add_argument('--threads',
-                        type=int,
-                        default=multiprocessing.cpu_count())
+    parser.add_argument('--threads', type=int, default=None)
     parser.add_argument('--log', default='pr0nts', help='Output log file name')
     args = parser.parse_args()
 

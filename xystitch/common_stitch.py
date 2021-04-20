@@ -122,8 +122,8 @@ class CommonStitch:
     def failure_json_w(self):
         print('Writing failure JSON')
         cc = self.failures.critical_count()
-        print('%d pairs failed to make %d images critical' % (
-            self.failures.pair_count(), cc))
+        print('%d pairs failed to make %d images critical' %
+              (self.failures.pair_count(), cc))
         if cc:
             print('******WARNING WARNING WARING******')
             print('%d images are not connected' % cc)
@@ -166,7 +166,8 @@ class CommonStitch:
             self.project.set_file_name(self.output_project_file_name)
             if os.path.exists(self.output_project_file_name):
                 # Otherwise, we merge into it
-                print('WARNING: removing old project file: %s' % self.output_project_file_name)
+                print('WARNING: removing old project file: %s' %
+                      self.output_project_file_name)
                 os.remove(self.output_project_file_name)
         else:
             self.project.get_a_file_name(None, "_master.pto")
@@ -187,9 +188,9 @@ class CommonStitch:
             fixup_p_lines(self.project)
 
             print()
-            print('***PTO project baseline final (%s / %s) data length %d***' % (
-                self.project.file_name, self.output_project_file_name,
-                len(self.project.get_text())))
+            print('***PTO project baseline final (%s / %s) data length %d***' %
+                  (self.project.file_name, self.output_project_file_name,
+                   len(self.project.get_text())))
             print()
 
             self.failure_json_w()
@@ -230,8 +231,8 @@ class CommonStitch:
         # (0, 0) at upper left
         # image_fn_pair: pair of image file names
 
-        print('Preparing subimage stitch on %s:%s' % (image_fn_pair[0],
-                                                      image_fn_pair[1]))
+        print('Preparing subimage stitch on %s:%s' %
+              (image_fn_pair[0], image_fn_pair[1]))
         '''
         Just work on the overlap section, maybe even less
         '''
@@ -280,10 +281,12 @@ class CommonStitch:
                                          sub_image_1_y_end)
         sub_image_0_file = ManagedTempFile.get(None, '.jpg')
         sub_image_1_file = ManagedTempFile.get(None, '.jpg')
-        print('sub image 0: width=%d, height=%d, name=%s' % (sub_image_0.width(
-        ), sub_image_0.height(), sub_image_0_file.file_name))
-        print('sub image 1: width=%d, height=%d, name=%s' % (sub_image_1.width(
-        ), sub_image_1.height(), sub_image_1_file.file_name))
+        print('sub image 0: width=%d, height=%d, name=%s' %
+              (sub_image_0.width(), sub_image_0.height(),
+               sub_image_0_file.file_name))
+        print('sub image 1: width=%d, height=%d, name=%s' %
+              (sub_image_1.width(), sub_image_1.height(),
+               sub_image_1_file.file_name))
         #sys.exit(1)
         sub_image_0.image.save(sub_image_0_file.file_name)
         sub_image_1.image.save(sub_image_1_file.file_name)
@@ -321,8 +324,9 @@ class CommonStitch:
             return self.control_points_by_subimage(pair, image_fn_pair)
         # Otherwise run stitches on the full image
         else:
-            print('Full image stitch (not partial w/ regular %d and subimage control %d)' % (
-                self.regular, self.subimage_control_points))
+            print(
+                'Full image stitch (not partial w/ regular %d and subimage control %d)'
+                % (self.regular, self.subimage_control_points))
             return self.control_point_gen.generate_core(image_fn_pair)
 
     # Control point generator wrapper entry
@@ -356,8 +360,8 @@ class CommonStitch:
         print()
         print()
         #print 'Generating project for image pair (%s / %s, %s / %s)' % (image_fn_pair[0], str(pair[0]), image_fn_pair[1], str(pair[1]))
-        print('Generating project for image pair (%s, %s)' % (image_fn_pair[0],
-                                                              image_fn_pair[1]))
+        print('Generating project for image pair (%s, %s)' %
+              (image_fn_pair[0], image_fn_pair[1]))
 
         if True:
             # Try raw initially
@@ -412,12 +416,14 @@ class CommonStitch:
                     print()
                     print()
                     print()
-                print('%s => %s' % (soften_image_file_0_managed.file_name,
-                                    image_fn_pair[0]))
+                print(
+                    '%s => %s' %
+                    (soften_image_file_0_managed.file_name, image_fn_pair[0]))
                 text = text.replace(soften_image_file_0_managed.file_name,
                                     image_fn_pair[0])
-                print('%s => %s' % (soften_image_file_1_managed.file_name,
-                                    image_fn_pair[1]))
+                print(
+                    '%s => %s' %
+                    (soften_image_file_1_managed.file_name, image_fn_pair[1]))
                 text = text.replace(soften_image_file_1_managed.file_name,
                                     image_fn_pair[1])
 

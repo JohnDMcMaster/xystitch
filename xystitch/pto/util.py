@@ -466,8 +466,9 @@ def rm_red_img(pto):
     c_top = canvas_h / 2 - c_top_
     c_bottom = canvas_h / 2 - c_bottom_
     print(('Canvas: %dw X %dh' % (canvas_w, canvas_h)))
-    print(('Crop [%s, %s, %s, %s] => [%s, %s, %s, %s]' % (
-        c_left_, c_right_, c_top_, c_bottom_, c_left, c_right, c_top, c_bottom)))
+    print(('Crop [%s, %s, %s, %s] => [%s, %s, %s, %s]' %
+           (c_left_, c_right_, c_top_, c_bottom_, c_left, c_right, c_top,
+            c_bottom)))
 
     to_rm = []
     for il in pto.image_lines:
@@ -502,8 +503,8 @@ def rm_red_img(pto):
         il_w = il.width()
         il_h = il.height()
         if 0:
-            print('check %s [%s, %s, %s, %s]' % (il.get_name(), im_left,
-                                                 im_right, im_top, im_bottom))
+            print('check %s [%s, %s, %s, %s]' %
+                  (il.get_name(), im_left, im_right, im_top, im_bottom))
             print('  x %0.1f => %0.1f' % (x, xp))
             print('  y %0.1f => %0.1f' % (y, yp))
             print('  %s < %s' % (c_left - im_right, il_w * overlap_thresh))
@@ -516,8 +517,8 @@ def rm_red_img(pto):
                 or im_top - c_bottom < il_h * overlap_thresh):
             #print 'Removing %s' % il
             if 0:
-                print('rm %s [%s, %s, %s, %s]' % (il.get_name(), im_left,
-                                                  im_right, im_top, im_bottom))
+                print('rm %s [%s, %s, %s, %s]' %
+                      (il.get_name(), im_left, im_right, im_top, im_bottom))
             to_rm.append(il)
 
     print('Removing %d / %d images' % (len(to_rm), len(pto.image_lines)))
@@ -526,5 +527,5 @@ def rm_red_img(pto):
     pto.del_images(to_rm)
     print('Remaining')
     for il in pto.image_lines:
-        print('  %s w/ [%s, %s, %s, %s]' % (il.get_name(), il.left(),
-                                            il.right(), il.top(), il.bottom()))
+        print('  %s w/ [%s, %s, %s, %s]' %
+              (il.get_name(), il.left(), il.right(), il.top(), il.bottom()))

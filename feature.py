@@ -128,7 +128,8 @@ if __name__ == "__main__":
     if not allow_overwrite:
         if output_project_file_name and os.path.exists(
                 output_project_file_name):
-            print('ERROR: cannot overwrite existing project file: %s' % output_project_file_name)
+            print('ERROR: cannot overwrite existing project file: %s' %
+                  output_project_file_name)
             sys.exit(1)
 
     sys.excepthook = excepthook

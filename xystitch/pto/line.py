@@ -253,8 +253,8 @@ class Line:
                 prefix = k
                 if not v is None and len(v) > 0:
                     print('Line: %s' % self.text)
-                    print('ERROR: line type should not have value: %s' % repr(
-                        v))
+                    print('ERROR: line type should not have value: %s' %
+                          repr(v))
                     raise Exception('confused')
                 first = False
                 continue
@@ -271,8 +271,8 @@ class Line:
                     # Already in string form
                     pass
                 else:
-                    print('WARNING: unknown data type on %s (full: %s)' % (
-                        k, self.text))
+                    print('WARNING: unknown data type on %s (full: %s)' %
+                          (k, self.text))
                     raise Exception('Unknown key %s' % k)
             except:
                 print('line: %s' % self.text)

@@ -104,6 +104,8 @@ Stitch failures
     * xystitch tries hard to work around this but doesn't always succeed
     * I take images w/ about 30% overlap
 
+Sample performance data: https://docs.google.com/spreadsheets/d/1zUHiHdVTUtuGzdpsjj1qhKfYHIgDBVzwJIBZmqQP_4c/edit?usp=sharing
+
 
 # Main config
 
@@ -136,6 +138,7 @@ $ cat ~/.pr0nrc
 This file is output by pyuscope. It is used to automatically load scan parameters and shouldn't be required
 
 TODO: add a link to config and/or describe options digested here
+
 
 # Version history
 

@@ -72,8 +72,8 @@ class Worker(object):
                 pto = self.generate_control_points_by_pair(pair, pair_fns)
 
                 if not pto:
-                    print('WARNING: bad project @ %s, %s' % (repr(pair),
-                                                             pair_fns))
+                    print('WARNING: bad project @ %s, %s' %
+                          (repr(pair), pair_fns))
                 else:
                     if len(pto.get_text().strip()) == 0:
                         raise Exception('Generated empty pair project')
@@ -185,8 +185,8 @@ class GridStitch(common_stitch.CommonStitch):
                     if what == 'done':
                         (task, pto) = out[1]
                         prog = 'complete %d/%d' % (pair_complete, n_pairs)
-                        print('W%d: done w/ submit %d, %s' % (wi, pair_submit,
-                                                              prog))
+                        print('W%d: done w/ submit %d, %s' %
+                              (wi, pair_submit, prog))
                         print(task)
                         #print pto
 
@@ -203,7 +203,8 @@ class GridStitch(common_stitch.CommonStitch):
                         if pto:
                             final_pair_projects.append(pto)
                             if pair_complete % 10 == 0:
-                                print('Saving intermediate result to %s' % self.project.file_name)
+                                print('Saving intermediate result to %s' %
+                                      self.project.file_name)
                                 self.project.save()
                                 print('Saved')
 
@@ -248,8 +249,8 @@ class GridStitch(common_stitch.CommonStitch):
                             progress = True
 
                             print('*' * 80)
-                            print('W%d: submit %s (%d / %d)' % (
-                                wi, repr(pair), pair_submit, n_pairs))
+                            print('W%d: submit %s (%d / %d)' %
+                                  (wi, repr(pair), pair_submit, n_pairs))
 
                             # Image file names as list
                             pair_images = self.coordinate_map.get_images_from_pair(

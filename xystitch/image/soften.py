@@ -52,8 +52,9 @@ def soften_gauss(src_fn, dst_fn=None):
         if os.path.exists(dst_fn):
             break
         if i == 0:
-            print('WARNING: soften missing strong blur dest file name %s, waiting a bit...' % (
-                dst_fn, ))
+            print(
+                'WARNING: soften missing strong blur dest file name %s, waiting a bit...'
+                % (dst_fn, ))
         time.sleep(0.1)
     else:
         raise Exception('Missing soften strong blur output file name %s' %
@@ -91,8 +92,9 @@ def soften_composite(src_fn, dst_fn=None):
         if os.path.exists(dst_fn):
             break
         if i == 0:
-            print('WARNING: soften missing strong blur dest file name %s, waiting a bit...' % (
-                dst_fn, ))
+            print(
+                'WARNING: soften missing strong blur dest file name %s, waiting a bit...'
+                % (dst_fn, ))
         time.sleep(0.1)
     else:
         raise Exception('Missing soften strong blur output file name %s' %

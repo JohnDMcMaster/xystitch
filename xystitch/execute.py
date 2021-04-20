@@ -54,13 +54,18 @@ def with_output(args, print_output=False):
     if print_output:
         # Specifying pipe will cause communicate to read to it
         tee = IOTee()
-        subp = subprocess.Popen(args, stdout=tee, stderr=tee, shell=False, encoding="ascii")
+        subp = subprocess.Popen(args,
+                                stdout=tee,
+                                stderr=tee,
+                                shell=False,
+                                encoding="ascii")
     else:
         # Specifying nothing completely throws away the output
         subp = subprocess.Popen(args,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE,
-                                shell=False, encoding="ascii")
+                                shell=False,
+                                encoding="ascii")
     (stdout, stderr) = subp.communicate()
 
     return (subp.returncode, stdout, stderr)
@@ -76,7 +81,11 @@ def without_output(args, print_output=True):
         subp = subprocess.Popen(args, shell=False, encoding="ascii")
     else:
         # Specifying nothing completely throws away the output
-        subp = subprocess.Popen(args, stdout=None, stderr=None, shell=False, encoding="ascii")
+        subp = subprocess.Popen(args,
+                                stdout=None,
+                                stderr=None,
+                                shell=False,
+                                encoding="ascii")
 
     subp.communicate()
     return subp.returncode
@@ -91,7 +100,10 @@ class Execute:
 
         # Probably reliable but does not stream output to screen
         if 0:
-            process = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True, encoding="ascii")
+            process = subprocess.Popen(cmd,
+                                       stdout=subprocess.PIPE,
+                                       shell=True,
+                                       encoding="ascii")
             _output, _unused_err = process.communicate()
             return process.poll()
 
@@ -249,7 +261,8 @@ def prefix(args, stdout=sys.stdout, stderr=sys.stderr, prefix=lambda: ''):
     subp = subprocess.Popen(args,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE,
-                            shell=False, encoding="ascii")
+                            shell=False,
+                            encoding="ascii")
     try:
         # FIXME
         if 1:

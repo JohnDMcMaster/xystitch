@@ -1,4 +1,3 @@
-
 '''
 xystitch
 Copyright 2012 John McMaster <JohnDMcMaster@gmail.com>

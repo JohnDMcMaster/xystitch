@@ -35,8 +35,10 @@ from xystitch.config import config
 
 import math
 
+
 class NoRMS(Exception):
     pass
+
 
 def debug(s=''):
     pass
@@ -223,10 +225,10 @@ class PTOptimizer:
                 if self.w != i.width() or self.h != i.height(
                 ) or self.v != i.fov():
                     print(i.text)
-                    print('Old width %d, height %d, view %d' % (self.w, self.h,
-                                                                self.v))
-                    print('Image width %d, height %d, view %d' % (
-                        i.width(), i.height(), i.fov()))
+                    print('Old width %d, height %d, view %d' %
+                          (self.w, self.h, self.v))
+                    print('Image width %d, height %d, view %d' %
+                          (i.width(), i.height(), i.fov()))
                     raise Exception('Image does not match')
 
     def run(self):
@@ -523,7 +525,7 @@ def attach_image_adjacent(project,
             break
     print(('%d iters' % iters))
     print(("Closed set: %u / %u" %
-          (len(closed_set), icm.width() * icm.height())))
+           (len(closed_set), icm.width() * icm.height())))
 
 
 def closest_solved_cr(icm, closed_set, cin, rin, xbase, xorder, ybase, yorder):
@@ -566,7 +568,7 @@ def attach_image_linear(project, icm, closed_set, pairsx, pairsy, xbase,
     '''
 
     print(('Linear approximation x=range(%u, w+1, %u), y=range(%u, h+1, %u)' %
-          (xbase, xorder, ybase, yorder)))
+           (xbase, xorder, ybase, yorder)))
     """
     Filter out any pairs that aren't in our linear set
     Closest image may be further away but it will be using the same linear model
@@ -581,11 +583,11 @@ def attach_image_linear(project, icm, closed_set, pairsx, pairsy, xbase,
             return None
         return sum(vals) / len(vals)
 
-    pairsx_avg = (avg(list(pairsx.values()),
-                      lambda x: x[0]), avg(list(pairsx.values()), lambda x: x[1]))
+    pairsx_avg = (avg(list(pairsx.values()), lambda x: x[0]),
+                  avg(list(pairsx.values()), lambda x: x[1]))
     print(('pairsx: %s' % (pairsx_avg, )))
-    pairsy_avg = (avg(list(pairsy.values()),
-                      lambda x: x[0]), avg(list(pairsy.values()), lambda x: x[1]))
+    pairsy_avg = (avg(list(pairsy.values()), lambda x: x[0]),
+                  avg(list(pairsy.values()), lambda x: x[1]))
     print(('pairsy: %s' % (pairsy_avg, )))
 
     # Only anchor to cleanly solved images
@@ -619,7 +621,7 @@ def attach_image_linear(project, icm, closed_set, pairsx, pairsy, xbase,
             closed_set[(c, r)] = (xpos, ypos)
             fixes.add((c, r))
     print(("Closed set %u => %u (%u fixes)" %
-          (len(closed_set_orig), len(closed_set), len(fixes))))
+           (len(closed_set_orig), len(closed_set), len(fixes))))
 
 
 def compute_u_sd(icm, pairs, xbase, xorder, ybase, yorder):
@@ -687,8 +689,9 @@ def remove_u_sd(icm, pairs, stdev, xbase, xorder, ybase, yorder, x_u, x_sd,
             npairs += 1
             dx, dy = d
             if (dx < x_min or dx > x_max) or (dy < y_min or dy > y_max):
-                print('Ignoring x%d y%d: fail %0.1f < %0.1f dx < %0.1f and %0.1f < %0.1f dy < %0.1f' % (
-                    x, y, x_min, dx, x_max, y_min, dy, y_max))
+                print(
+                    'Ignoring x%d y%d: fail %0.1f < %0.1f dx < %0.1f and %0.1f < %0.1f dy < %0.1f'
+                    % (x, y, x_min, dx, x_max, y_min, dy, y_max))
                 pairs[(x, y)] = None
                 removed += 1
     print(('Removed %d / %d pairs' % (removed, npairs)))
@@ -747,11 +750,13 @@ def iter_center_cr(icm, col, row):
     deltas = max(icm.width(), icm.height())
     return iter_center(icm, cent_col=col, cent_row=row, deltas=deltas)
 
+
 def iter_center_cr_max(icm, col, row, xydelta):
     for acol, arow in iter_center_cr(icm, col, row):
         if abs(col - acol) > xydelta or abs(row - arow) > xydelta:
             return
         yield acol, arow
+
 
 def anchor(project, icm, use_cr=None):
     '''
@@ -1039,7 +1044,7 @@ def xy_opt(project,
                     print(('  % 3dX, % 3dY: none' % (x, y)))
                 else:
                     print(('  % 3dX, % 3dY: %6.1fx, %6.1fy' %
-                          (x, y, p[0], p[1])))
+                           (x, y, p[0], p[1])))
 
     rms_this = get_rms(project)
     print(('Pre-opt: final RMS error: %f' % rms_this))
@@ -1066,23 +1071,25 @@ def iter_rms(project):
                    (imgN.getv('e') - cpl.getv('Y')))**2
         # Abort RMS if not all variables defined
         except TypeError:
-            raise NoRMS("Missing variable (%s, %s, %s)" % (imgn.text, imgN.text, cpl.text))
+            raise NoRMS("Missing variable (%s, %s, %s)" %
+                        (imgn.text, imgN.text, cpl.text))
 
         if 0:
             print('iter')
             print(('  ', imgn.text))
             print(('  ', imgN.text))
             print(('  ', imgn.getv('d'), cpl.getv('x'), imgN.getv('d'),
-                  cpl.getv('X')))
+                   cpl.getv('X')))
             print(('  %f vs %f' % ((imgn.getv('d') + cpl.getv('x')),
-                                  (imgN.getv('d') + cpl.getv('X')))))
+                                   (imgN.getv('d') + cpl.getv('X')))))
             print(('  ', imgn.getv('e'), cpl.getv('y'), imgN.getv('e'),
-                  cpl.getv('Y')))
+                   cpl.getv('Y')))
             print(('  %f vs %f' % ((imgn.getv('e') + cpl.getv('y')),
-                                  (imgN.getv('e') + cpl.getv('Y')))))
+                                   (imgN.getv('e') + cpl.getv('Y')))))
 
         rms_this = math.sqrt(dx2 + dy2)
-        yield cpl, n, imgn, N, imgN, rms_this 
+        yield cpl, n, imgn, N, imgN, rms_this
+
 
 def get_rms(project):
     '''Calculate the root mean square error between control points'''
@@ -1135,12 +1142,12 @@ def check_poor_opt(project, icm=None):
                 got = abs(dx - ox)
                 if got > tol_1:
                     print(('%s-%s: x-x tolerance 1 %d > expect %d' %
-                          (img, imgl, got, tol_1)))
+                           (img, imgl, got, tol_1)))
                     ret = False
                 got = abs(dy)
                 if got > tol_2:
                     print(('%s-%s: y-y tolerance 2 %d > expect %d' %
-                          (img, imgl, got, tol_2)))
+                           (img, imgl, got, tol_2)))
                     ret = False
         if refr > 0:
             imgl = icm.get_image(refc, refr - 1)
@@ -1150,12 +1157,12 @@ def check_poor_opt(project, icm=None):
                 got = abs(dx)
                 if got > tol_2:
                     print(('%s-%s: x-x tolerance 2 %d > expect %d' %
-                          (img, imgl, got, tol_2)))
+                           (img, imgl, got, tol_2)))
                     ret = False
                 got = abs(dy - oy)
                 if got > tol_1:
                     print(('%s-%s: y-y tolerance 1 %d > expect %d' %
-                          (img, imgl, got, tol_1)))
+                           (img, imgl, got, tol_1)))
                     ret = False
         return ret
 
@@ -1218,15 +1225,15 @@ def check_pair_outlier_overlap(icm, pairsx, pairsy):
             imgl = icm.get_image(refc - 1, refr)
             got = abs(dx - ox_pix)
             if got > tolx_1:
-                print('%s-%s: x-x tolerance 1 %d > expect %d' % (img, imgl,
-                                                                 got, tolx_1))
+                print('%s-%s: x-x tolerance 1 %d > expect %d' %
+                      (img, imgl, got, tolx_1))
                 ret = False
                 pairsx[(refc, refr)] = None
                 pairsy[(refc, refr)] = None
             got = abs(dy)
             if got > tol_2:
-                print('%s-%s: y-y tolerance 2 %d > expect %d' % (img, imgl,
-                                                                 got, tol_2))
+                print('%s-%s: y-y tolerance 2 %d > expect %d' %
+                      (img, imgl, got, tol_2))
                 ret = False
                 pairsx[(refc, refr)] = None
                 pairsy[(refc, refr)] = None
@@ -1238,15 +1245,15 @@ def check_pair_outlier_overlap(icm, pairsx, pairsy):
             imgl = icm.get_image(refc, refr - 1)
             got = abs(dx)
             if got > tol_2:
-                print('%s-%s: x-x tolerance 2 %d > expect %d' % (img, imgl,
-                                                                 got, tol_2))
+                print('%s-%s: x-x tolerance 2 %d > expect %d' %
+                      (img, imgl, got, tol_2))
                 ret = False
                 pairsx[(refc, refr)] = None
                 pairsy[(refc, refr)] = None
             got = abs(dy - oy_pix)
             if got > toly_1:
-                print('%s-%s: y-y tolerance 1 %d > expect %d' % (img, imgl,
-                                                                 got, toly_1))
+                print('%s-%s: y-y tolerance 1 %d > expect %d' %
+                      (img, imgl, got, toly_1))
                 ret = False
                 pairsx[(refc, refr)] = None
                 pairsy[(refc, refr)] = None
@@ -1285,9 +1292,9 @@ class XYOptimizer:
                 ) or self.v != i.fov():
                     print(i.text)
                     print(('Old width %d, height %d, view %d' %
-                          (self.w, self.h, self.v)))
+                           (self.w, self.h, self.v)))
                     print(('Image width %d, height %d, view %d' %
-                          (i.width(), i.height(), i.fov())))
+                           (i.width(), i.height(), i.fov())))
                     raise Exception('Image does not match')
 
     def run(self, anchor_cr=None, check_poor_opt=True):

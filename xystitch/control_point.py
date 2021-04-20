@@ -127,8 +127,8 @@ def pto_unsub(src_prj, sub_image_files, deltas, sub_to_real):
         ret.add_image_line(dst_il)
         same_order = same_order and sub_image_files[
             i].file_name == src_il.get_name()
-        print('  %d: %s vs %s' % (i, sub_image_files[i].file_name,
-                                  src_il.get_name()))
+        print('  %d: %s vs %s' %
+              (i, sub_image_files[i].file_name, src_il.get_name()))
 
     # Copy/shift control points
     # Should have been filtered out earlier
