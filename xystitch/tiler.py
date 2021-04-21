@@ -1330,9 +1330,9 @@ class Tiler:
                 print("  %u / %u submitted tasks complete" % (pair_complete, pair_submit))
                 # Net size => uncropped
                 # ST size => a portion of the cropped image
-                print('  Net size: %u MP, ST size: %u MP' %
+                print('  Net size: %u MP, ST max size: %u MP' %
                       (self.width() * self.height() / 1e6,
-                      self.super_t_xstep * self.super_t_ystep / 1e6))
+                      self.stw * self.sth / 1e6))
                 print("  mem_net_last %0.3f GB" %
                       (self.mem_net_last / 1e9, ))
                 print("  mem_net_max %0.3f GB" %
