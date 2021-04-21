@@ -140,6 +140,24 @@ This file is output by pyuscope. It is used to automatically load scan parameter
 TODO: add a link to config and/or describe options digested here
 
 
+# Ubuntu 20.04 notes
+
+Enblend no longer accepts -m. Removed from .pr0nrc
+
+Had to adjust magick limits. Not carefully thought out but I'm using the values below
+
+```
+/etc/ImageMagick-6/policy.xml
+
+<policy domain="resource" name="memory" value="16GiB"/>
+<policy domain="resource" name="map" value="32GiB"/>
+<policy domain="resource" name="width" value="128KP"/>
+<policy domain="resource" name="height" value="128KP"/>
+<!-- <policy domain="resource" name="list-length" value="128"/> -->
+<policy domain="resource" name="area" value="16GB"/>
+<policy domain="resource" name="disk" value="32GiB"/>
+```
+
 # Version history
 
 
