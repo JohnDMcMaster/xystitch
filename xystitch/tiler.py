@@ -412,7 +412,8 @@ class Tiler:
                  clip_width=None,
                  clip_height=None,
                  log_dir='pr0nts',
-                 is_full=False):
+                 is_full=False,
+                 verbose=False):
         '''
         stw: super tile width
         sth: super tile height
@@ -426,7 +427,7 @@ class Tiler:
         self.st_scalar_heuristic = st_scalar_heuristic
         self.ignore_errors = False
         self.ignore_crop = False
-        self.verbose = False
+        self.verbose = verbose
         self.verbosity = 2
         self.stw = stw
         self.sth = sth
@@ -458,7 +459,7 @@ class Tiler:
         # make absolutely sure that threads will only be doing read only operations
         # pre-parse the project
         self.pto.parse()
-        print('Making absolute')
+        self.verbose and print('Making absolute')
         pto.make_absolute()
 
         self.out_dir = out_dir
@@ -507,10 +508,11 @@ class Tiler:
             self.recalc_step()
         # We build this in run
         self.map = None
-        print('Clip width: %d' % self.clip_width)
-        print('Clip height: %d' % self.clip_width)
-        print('ST width: %d' % self.stw)
-        print('ST height: %d' % self.sth)
+        if self.verbose:
+            print('Clip width: %d' % self.clip_width)
+            print('Clip height: %d' % self.clip_width)
+            print('ST width: %d' % self.stw)
+            print('ST height: %d' % self.sth)
         if self.stw <= 2 * self.clip_width and self.stw >= self.img_width:
             print('Failed')
             print('  STW: %d' % self.stw)
@@ -528,7 +530,7 @@ class Tiler:
         stp = self.stw * self.sth
         cstp = (self.stw - 2 * self.clip_width) * (self.sth -
                                                    2 * self.clip_height)
-        print("Center ST efficiency: %0.1f%%" % (100.0 * cstp / stp))
+        self.verbose and print("Center ST efficiency: %0.1f%%" % (100.0 * cstp / stp))
 
     def calc_stp(self, stp):
         if self.stw or self.sth:
@@ -591,7 +593,7 @@ class Tiler:
         # for small sets we don't care
         for check_w in range(min_stwh, max_stwh, 100):
             check_h = stp / check_w
-            print('Checking supertile size %dw X %dh (area %d)' %
+            self.verbose and print('Checking supertile size %dw X %dh (area %d)' %
                   (check_w, check_h, check_w * check_h))
             try:
                 tiler = Tiler(pto=self.pto,
@@ -620,7 +622,7 @@ class Tiler:
                 continue
 
             p = (check_w + check_h) * 2
-            print('Would generate %d supertiles each with perimeter %d' %
+            self.verbose and print('Would generate %d supertiles each with perimeter %d' %
                   (n_expected, p))
             # TODO: there might be some optimizations within this for trimming...
             # Add a check for minimum total mapped area
@@ -633,7 +635,7 @@ class Tiler:
                 if n_expected == 1:
                     print('Only 1 ST: early break')
                     break
-            print("")
+            self.verbose and print("")
 
         if self.best_n is None:
             raise Exception("Failed to find stitch solution")
@@ -1312,6 +1314,34 @@ class Tiler:
             pair_submit = 0
             pair_complete = 0
             idle = False
+
+            def print_status():
+                """
+                2021-04-21T22:43:08.625793: Status w/ 0 / 1 supertiles complete, 0 / 8010 tiles complete
+                2021-04-21T22:43:08.625817:   0 / 1 submitted tasks complete
+                2021-04-21T22:43:08.625856:   Net size: 493 MP, ST size: 430 MP
+                2021-04-21T22:43:08.625889:   mem_net_last 0.240 GB
+                2021-04-21T22:43:08.625917:   mem_net_max 0.240 GB
+                2021-04-21T22:43:08.625943:   mem_worker_max 0.031 GB
+                """
+                print("Status w/ %u / %u supertiles complete, %u / %u tiles complete" % (
+                        len(self.closed_sts), self.n_expected_sts,
+                        len(self.closed_list_rc), n_tiles))
+                print("  %u / %u submitted tasks complete" % (pair_complete, pair_submit))
+                # Net size => uncropped
+                # ST size => a portion of the cropped image
+                print('  Net size: %u MP, ST size: %u MP' %
+                      (self.width() * self.height() / 1e6,
+                      self.super_t_xstep * self.super_t_ystep / 1e6))
+                print("  mem_net_last %0.3f GB" %
+                      (self.mem_net_last / 1e9, ))
+                print("  mem_net_max %0.3f GB" %
+                      (self.mem_net_max / 1e9, ))
+                print("  mem_worker_max %0.3f GB" %
+                      (self.mem_worker_max / 1e9, ))
+
+            print_status()
+
             while not (all_allocated and pair_complete == pair_submit):
                 progress = False
                 self.profile()
@@ -1421,16 +1451,8 @@ class Tiler:
                             pair_submit += 1
                             break
 
-                def print_mem():
-                    print("mem_net_last %0.3f GB" %
-                          (self.mem_net_last / 1e9, ))
-                    print("  mem_net_max %0.3f GB" %
-                          (self.mem_net_max / 1e9, ))
-                    print("  mem_worker_max %0.3f GB" %
-                          (self.mem_worker_max / 1e9, ))
-
                 if time.time() - last_print > 5 * 60:
-                    print_mem()
+                    print_status()
                     last_print = time.time()
 
                 if progress:
@@ -1445,7 +1467,7 @@ class Tiler:
                             'M Server thread idle. dry %s, all %u, complete %u / %u'
                             % (self.dry, all_allocated, pair_complete,
                                pair_submit))
-                        print_mem()
+                        print_status()
                         last_print = time.time()
                         #print(len(self.workers))
                         #print(self.workers[0].qo.qsize())
@@ -1497,6 +1519,7 @@ class Tiler:
             print("    mem_worker_max %0.3f GB" %
                   (self.mem_worker_max / 1e9, ))
             print("    mem_net_max %0.3f GB" % (self.mem_net_max / 1e9, ))
+            print_status()
             self.wkill()
             self.core_dump("final")
             self.workers = None
