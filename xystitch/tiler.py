@@ -742,11 +742,11 @@ class Tiler:
         Will get worse the more tiles you create
         '''
         try:
-            self.super_t_xstep = self.stw - 2 * self.clip_width - 2 * self.tw
+            self.super_t_xstep = int(self.stw - 2 * self.clip_width - 2 * self.tw)
             if self.super_t_xstep <= 0:
                 print('parameters', self.sth, self.clip_height, self.th)
                 raise InvalidClip("Bad xstep: %s" % self.super_t_xstep)
-            self.super_t_ystep = self.sth - 2 * self.clip_height - 2 * self.th
+            self.super_t_ystep = int(self.sth - 2 * self.clip_height - 2 * self.th)
             if self.super_t_ystep <= 0:
                 print('parameters', self.sth, self.clip_height, self.th)
                 raise InvalidClip("Bad ystep: %s" % self.super_t_ystep)
