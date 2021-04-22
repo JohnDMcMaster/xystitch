@@ -44,6 +44,36 @@ def seed_layout(fns, cols, endrows):
         raise Exception("Need either cols or endrows")
     return imrows
 
+def rm_rowcols(imrows, rm_even_row=False, rm_odd_row=False, rm_even_col=False, rm_odd_col=False):
+    if rm_even_row:
+        ret = []
+        for rowi, imrow in enumerate(imrows):
+            if rowi % 2 == 1:
+                ret.append(imrow)
+        imrows = ret
+    elif rm_odd_row:
+        ret = []
+        for rowi, imrow in enumerate(imrows):
+            if rowi % 2 == 0:
+                ret.append(imrow)
+        imrows = ret
+
+    if rm_even_col:
+        for rowi, imrow in enumerate(imrows):
+            tmp = []
+            for coli, im in enumerate(imrow):
+                if coli % 2 == 1:
+                    tmp.append(im)
+            imrows[rowi] = tmp
+    elif rm_odd_col:
+        for rowi, imrow in enumerate(imrows):
+            tmp = []
+            for coli, im in enumerate(imrow):
+                if coli % 2 == 0:
+                    tmp.append(im)
+            imrows[rowi] = tmp
+    return imrows
+
 def apply_serpentine(imrows, layout):
     if layout.find("serp-") != 0:
         return imrows
@@ -104,10 +134,12 @@ def move_images(imrows, dir_in, dir_out, dry):
                 shutil.copyfile("%s/%s" % (dir_in, fn),
                                 "%s/r%03u_c%03u.jpg" % (dir_out, row, col))
 
-def run(dir_in, dir_out, layout="serp-lr-ud", cols=None, endrows=None, dry=True):
+def run(dir_in, dir_out, layout="serp-lr-ud", cols=None, endrows=None, dry=True,
+        rm_even_row=False, rm_odd_row=False, rm_even_col=False, rm_odd_col=False):
     fns = sorted(glob.glob("%s/*.jpg" % dir_in))
     # Get images into a grid, although not necessarily with the right orientation
     imrows = seed_layout(fns, cols, endrows)
+    imrows = rm_rowcols(imrows, rm_even_row=rm_even_row, rm_odd_row=rm_odd_row, rm_even_col=rm_even_col, rm_odd_col=rm_odd_col)
     # Its more intuitive to get left/right right if we do this before serp
     imrows = apply_du(imrows, layout)
     imrows = apply_serpentine(imrows, layout)
@@ -119,6 +151,10 @@ def main():
     parser = argparse.ArgumentParser(
         description='Rename manually captured images into a grid')
     add_bool_arg(parser, '--dry', default=True, help='')
+    add_bool_arg(parser, '--rm-even-row', default=False, help='')
+    add_bool_arg(parser, '--rm-odd-row', default=False, help='')
+    add_bool_arg(parser, '--rm-even-col', default=False, help='')
+    add_bool_arg(parser, '--rm-odd-col', default=False, help='')
     parser.add_argument('--layout', default="serp-lr-ud", help='')
     parser.add_argument('--cols',
                         type=int,
@@ -138,7 +174,11 @@ def main():
         layout=args.layout,
         cols=args.cols,
         endrows=args.endrows,
-        dry=args.dry)
+        dry=args.dry,
+        rm_even_row=args.rm_even_row,
+        rm_odd_row=args.rm_odd_row,
+        rm_even_col=args.rm_even_col,
+        rm_odd_col=args.rm_odd_col)
 
 
 if __name__ == "__main__":
