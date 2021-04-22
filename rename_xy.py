@@ -12,10 +12,8 @@ import os
 import shutil
 import math
 
-
-def run(dir_in, dir_out, layout="serp-lr", cols=None, endrows=None, dry=True):
+def seed_layout(fns, cols, endrows):
     imrows = []
-    fns = sorted(glob.glob("%s/*.jpg" % dir_in))
     if cols is not None:
         assert len(fns) % cols == 0
         currow = None
@@ -44,33 +42,50 @@ def run(dir_in, dir_out, layout="serp-lr", cols=None, endrows=None, dry=True):
                 endrowi += 1
     else:
         raise Exception("Need either cols or endrows")
+    return imrows
 
-    if layout == "serp-lr":
+def apply_serpentine(imrows, layout):
+    if layout.find("serp-") != 0:
+        return imrows
+    # Apply serpentine pattern
+    if layout == "serp-lr-ud" or layout == "serp-lr-du":
         # Apply sepertine pattern starting from upper left
         for rowi, imrow in enumerate(imrows):
             if rowi % 2 == 1:
                 imrow.reverse()
-    elif layout == "serp-rl":
+    elif layout == "serp-rl-ud" or layout == "serp-rl-du":
         # Apply sepertine pattern starting from upper right
         for rowi, imrow in enumerate(imrows):
             if rowi % 2 == 0:
                 imrow.reverse()
     else:
         raise Exception("Invalid layout %s" % layout)
-    """
+    return imrows
+
+def apply_du(imrows, layout):
+    # Reverse to be top to bottom
+    if layout not in ("serp-lr-du", "serp-rl-du", "lr-du", "rl-du"):
+        return
+    # Mirror along x axis
+    for row in range(len(imrows) // 2):
+        imrows[row], imrows[len(imrows) - row - 1] = imrows[len(imrows) - row - 1], imrows[row]
+    return imrows
+
+def trim_overlap(imrows):
     # Images have excessive overlap
     # Delete every other row and every other column
     # XXX: row1 might have better features than row0
     del imrows[1]
     for rowi, imrow in enumerate(imrows):
-        this_cols = len(imrow)
+        # this_cols = len(imrow)
         new_imrow = []
         for raw_coli, fn in enumerate(imrow):
             if raw_coli % 2 == 0:
                 new_imrow.append(fn)
         imrows[rowi] = new_imrow
-    """
+    return imrows
 
+def move_images(imrows, dir_in, dir_out, dry):
     # Calculate number columns
     ncols = int(max([len(imrow) for imrow in imrows]))
     nrows = len(imrows)
@@ -89,12 +104,22 @@ def run(dir_in, dir_out, layout="serp-lr", cols=None, endrows=None, dry=True):
                 shutil.copyfile("%s/%s" % (dir_in, fn),
                                 "%s/r%03u_c%03u.jpg" % (dir_out, row, col))
 
+def run(dir_in, dir_out, layout="serp-lr-ud", cols=None, endrows=None, dry=True):
+    fns = sorted(glob.glob("%s/*.jpg" % dir_in))
+    # Get images into a grid, although not necessarily with the right orientation
+    imrows = seed_layout(fns, cols, endrows)
+    # Its more intuitive to get left/right right if we do this before serp
+    imrows = apply_du(imrows, layout)
+    imrows = apply_serpentine(imrows, layout)
+    # imrows = trim_overlap(imrows)
+    move_images(imrows, dir_in, dir_out, dry)
+
 
 def main():
     parser = argparse.ArgumentParser(
         description='Rename manually captured images into a grid')
     add_bool_arg(parser, '--dry', default=True, help='')
-    parser.add_argument('--layout', default="serp-lr", help='')
+    parser.add_argument('--layout', default="serp-lr-ud", help='')
     parser.add_argument('--cols',
                         type=int,
                         default=None,
