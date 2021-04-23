@@ -72,6 +72,7 @@ def rm_rowcols(imrows, rm_even_row=False, rm_odd_row=False, rm_even_col=False, r
                 if coli % 2 == 0:
                     tmp.append(im)
             imrows[rowi] = tmp
+
     return imrows
 
 def apply_serpentine(imrows, layout):
@@ -155,7 +156,7 @@ def main():
     add_bool_arg(parser, '--rm-odd-row', default=False, help='')
     add_bool_arg(parser, '--rm-even-col', default=False, help='')
     add_bool_arg(parser, '--rm-odd-col', default=False, help='')
-    parser.add_argument('--layout', default="serp-lr-ud", help='')
+    parser.add_argument('--layout', required=True, help='')
     parser.add_argument('--cols',
                         type=int,
                         default=None,

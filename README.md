@@ -133,6 +133,25 @@ $ cat ~/.pr0nrc
 }
 ```
 
+# Importing sequentially named files
+
+Files must be named to have upper left origin and 0 indexed rows/columns.
+rename_xy.py can be used to import files named sequentially, such as a DSLR might take
+
+Munge order:
+  * Apply column markers (--cols or --endrows)
+  * Remove rows/columns (--rm-even-row etc)
+  * Apply layout
+
+Supported layouts:
+  * lr-ud: images start at left and go right
+  * rl-ud: iamges start at right and go left
+  * serp-lr-ud: images start at top, go left and go right, then right and go left. Rinse and repeat
+  * serp-rl-ud: images start at top, go right and go left, then left and go right. Rinse and repeat
+  * serp-lr-du: like serp-lr-ud, but start from bottom instead of top
+  * serp-rl-du: like serp-rl-ud, but start from bottom instead of top
+
+
 # Scan config
 
 This file is output by pyuscope. It is used to automatically load scan parameters and shouldn't be required
@@ -142,7 +161,12 @@ TODO: add a link to config and/or describe options digested here
 
 # Ubuntu 20.04 notes
 
-Enblend no longer accepts -m. Removed from .pr0nrc
+enblend
+  * Enblend no longer accepts -m. Removed from .pr0nrc
+
+nona
+  * Memory usage different vs ubuntu 16.04: memory no longer increases linearly but goes up and down
+  * Slower? Or am I just doing larger images now
 
 Had to adjust magick limits. Not carefully thought out but I'm using the values below
 
