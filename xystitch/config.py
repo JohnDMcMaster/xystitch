@@ -47,6 +47,16 @@ class Config:
     def keep_temp_files(self):
         return self.get('keep_temp', 0)
 
+    def overlap_threshold(self):
+        """
+        Minimum overlap in a ST an image needs to be to be kept
+
+        Works around enblend issue where it fails hard if it can't use an image
+        Threshold was set to 0.25 for a long time given target overlap was 0.30
+        Maybe this is no longer required?
+        """
+        return float(self.get('overlap_threshold', 0.25))
+
     def temp_base(self):
         return self.get('temp_base', "/tmp/pr0ntools_")
 

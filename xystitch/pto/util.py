@@ -21,6 +21,7 @@ import math
 from xystitch.image_coordinate_map import ImageCoordinateMap
 import os
 from xystitch.pimage import PImage
+from xystitch.config import config
 
 debugging = 0
 
@@ -499,7 +500,7 @@ def rm_red_img(pto):
         # should have at least 30% overlap, maybe as low as 20% if severe errors
         # filter out anything that doesn't have at least 15% overlap into this supertile
         # this means that an image n
-        overlap_thresh = 0.25
+        overlap_thresh = config.overlap_threshold()
         il_w = il.width()
         il_h = il.height()
         if 0:
