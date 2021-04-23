@@ -106,6 +106,9 @@ if __name__ == "__main__":
                         default=None,
                         help='xy-opt: use col,row instead of guessing anchor')
     parser_add_bool_arg('--check-poor-opt', default=True, help='')
+    parser.add_argument('--crop',
+                        default=None,
+                        help='Set new crop and remove unused images')
     parser.add_argument('pto',
                         metavar='.pto in',
                         nargs=1,
@@ -164,6 +167,14 @@ if __name__ == "__main__":
 
     if args.lens_model:
         print('Applying lens model (FIXME)')
+
+    if args.crop:
+        bounds = [int(x) for x in args.crop.split(',')]
+        assert len(bounds) == 4
+        pl = pto.panorama_line
+        pl.set_crop(bounds)
+        rm_red_img(pto)
+
     '''
     if args.pto_ref:
         pto_ref = PTOProject.from_file_name(args.pto_ref)
