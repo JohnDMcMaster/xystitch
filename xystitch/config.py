@@ -55,7 +55,7 @@ class Config:
         Threshold was set to 0.25 for a long time given target overlap was 0.30
         Maybe this is no longer required?
         """
-        return float(self.get('overlap_threshold', 0.25))
+        return float(self.get('overlap_threshold', 0.00))
 
     def temp_base(self):
         return self.get('temp_base', "/tmp/pr0ntools_")
