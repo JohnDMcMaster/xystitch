@@ -120,16 +120,15 @@ Environment variables (see xystitch/config.py):
 
 Main config file used for advanced operations like setting enblend max memory. Sample config file:
 ```
-$ cat ~/.pr0nrc
+$ cat ~/.xyrc
 {
-	"keep_temp":1,
-	"pr0nts": {
-		"mem":"6144m"
-	},
-	"enblend": {
-		"opts":"-m 6144"
-	},
-	"temp_base": "/tmp"
+    "max_mem": "110g",
+    "temp_base": "/mnt/m10_4/tmp/",
+    "keep_temp": 1,
+    "ts": {
+        "workers": 16,
+        "st_max_pix": "600m"
+    }
 }
 ```
 
@@ -162,7 +161,7 @@ TODO: add a link to config and/or describe options digested here
 # Ubuntu 20.04 notes
 
 enblend
-  * Enblend no longer accepts -m. Removed from .pr0nrc
+  * Enblend no longer accepts -m. Removed from .xyrc
 
 nona
   * Memory usage different vs ubuntu 16.04: memory no longer increases linearly but goes up and down
@@ -197,3 +196,8 @@ v1.1.0 (2021-03-06)
   * Fix optimizer RMS crash bug
   * Print worker status in master
   * Remove pr0ntools reference
+
+v1.2.0 (future)
+  * .pr0nrc => .xyrc
+  * Change ts memory configuration
+  * Clean up worker printing
