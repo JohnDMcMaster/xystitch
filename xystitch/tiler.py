@@ -411,7 +411,6 @@ class Tiler:
                  out_dir,
                  tile_width=250,
                  tile_height=250,
-                 st_scalar_heuristic=4,
                  dry=False,
                  stw=None,
                  sth=None,
@@ -433,7 +432,6 @@ class Tiler:
         self.img_height = None
         self.dry = dry
         self.stale_worker = False
-        self.st_scalar_heuristic = st_scalar_heuristic
         self.ignore_errors = False
         self.ignore_crop = False
         self.verbose = verbose
@@ -499,14 +497,7 @@ class Tiler:
             self.sth = self.height()
         elif stp:
             self.calc_stp(stp)
-
-        # These are less related
-        # They actually should be set as high as you think you can get away with
-        # Although setting a smaller number may have higher performance depending on input size
-        if self.stw is None:
-            self.stw = self.img_width * self.st_scalar_heuristic
-        if self.sth is None:
-            self.sth = self.img_height * self.st_scalar_heuristic
+        assert self.stw is not None and self.sth is not None
 
         if self.stw <= self.img_width:
             self.clip_width = 0
@@ -651,7 +642,6 @@ class Tiler:
                               out_dir=self.out_dir,
                               tile_width=self.tw,
                               tile_height=self.th,
-                              st_scalar_heuristic=self.st_scalar_heuristic,
                               dry=True,
                               stw=check_w,
                               sth=check_h,
@@ -1277,8 +1267,8 @@ class Tiler:
         print('Input images width %d, height %d' %
               (self.img_width, self.img_height))
         print('Output to %s' % self.out_dir)
-        print('Super tile width %d, height %d from scalar %d' %
-              (self.stw, self.sth, self.st_scalar_heuristic))
+        print('Super tile width %d, height %d' %
+              (self.stw, self.sth))
         print('Super tile x step %d, y step %d' %
               (self.super_t_xstep, self.super_t_ystep))
         print('Supertile clip width %d, height %d' %
