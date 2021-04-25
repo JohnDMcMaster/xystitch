@@ -1,13 +1,8 @@
-'''
-pr0ntools
-Copyright 2012 John McMaster <JohnDMcMaster@gmail.com>
-Licensed under a 2 clause BSD license, see COPYING for details
-'''
-
 import json
 import os
 import multiprocessing
-
+from psutil import virtual_memory
+from .util import mksize
 
 class Config:
     def __init__(self, fn=None):
@@ -27,7 +22,7 @@ class Config:
 
     @staticmethod
     def get_default_fn():
-        return os.getenv('HOME') + '/' + '.pr0nrc'
+        return os.getenv('HOME') + '/' + '.xyrc'
 
     def getx(self, ks, default=None):
         root = self.json
@@ -58,13 +53,26 @@ class Config:
         return float(self.get('overlap_threshold', 0.00))
 
     def temp_base(self):
-        return self.get('temp_base', "/tmp/pr0ntools_")
+        return self.get('temp_base', "/tmp/ts_")
 
     def enblend_opts(self):
         return self.get('enblend', {'opts': ''})['opts']
 
-    def super_tile_memory(self):
-        return self.getx('pr0nts.mem', None)
+    def max_mem(self):
+        ret = self.get('mem', None)
+        if ret is None:
+            # Evidently this is physical memory
+            ret =int(virtual_memory().total * 0.75)
+        return ret
+
+    def st_max_pix(self):
+        """
+        Supertiles are slower as they get larger
+        Set this to as large of a value you can tolerate to get the best possible quality
+        600MP seems to be a good compromise on my images at least
+        But set to something high by default
+        """
+        return mksize(self.getx('ts.st_max_pix', "1g"))
 
     def poor_opt_thresh(self):
         # FIXME:
@@ -106,10 +114,11 @@ class Config:
 
     def ts_threads(self):
         """tile stitcher threads"""
-        ret = self.get('ts_threads', 0)
+        ret = self.getx('ts.threads', 0)
         if ret:
             return ret
         else:
+            # Assume hyperthreading?
             return multiprocessing.cpu_count()
 
 

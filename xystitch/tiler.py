@@ -532,6 +532,48 @@ class Tiler:
                                                    2 * self.clip_height)
         self.verbose and print("Center ST efficiency: %0.1f%%" % (100.0 * cstp / stp))
 
+    def set_threads(self, threads):
+        self.threads = threads
+
+    def set_verbose(self, verbose):
+        self.verbose = verbose
+
+    def set_st_dir(self, st_dir):
+        self.st_dir = st_dir
+
+    def set_out_extension(self, out_extension):
+        self.out_extension = out_extension
+
+    def set_ignore_errors(self, ignore_errors):
+        self.ignore_errors = ignore_errors
+
+    def set_ignore_crop(self, ignore_crop):
+        self.ignore_crop = ignore_crop
+
+    def set_st_limit(self, st_limit):
+        self.st_limit = st_limit
+
+    def set_nona_args(self, nona_args):
+        self.nona_args = nona_args
+
+    def set_enblend_args(self, enblend_args):
+        self.enblend_args = enblend_args
+
+    def set_super_t_xstep(self, super_t_xstep):
+        self.super_t_xstep = super_t_xstep
+
+    def set_super_t_ystep(self, super_t_ystep):
+        self.super_t_ystep = super_t_ystep
+
+    def set_clip_width(self, clip_width):
+        self.clip_width = clip_width
+
+    def set_clip_height(self, clip_height):
+        self.clip_height = clip_height
+
+    def set_enblend_lock(self, enblend_lock):
+        self.enblend_lock = enblend_lock
+
     def calc_stp(self, stp):
         if self.stw or self.sth:
             raise ValueError("Can't manually specify width/height and do auto")
