@@ -146,11 +146,11 @@ class PartialStitcher(object):
         pl.set_crop(self.bounds)
         # try to fix remapper errors due to excessive overlap
         rm_red_img(pto)
+        # print("Clean pto images: %u" % len(pto.get_image_lines()))
         #print('debug break') ; sys.exit(1)
 
         print('Preparing remapper...')
-        remapper = Nona(pto, out_name_prefix)
-        remapper.pprefix = self.pprefix
+        remapper = Nona(pto, out_name_prefix, pprefix=self.pprefix)
         remapper.args = self.nona_args
         print('Starting remapper...')
         remapper.remap()
@@ -162,8 +162,7 @@ class PartialStitcher(object):
               len(remapper.get_output_files()))
         blender = Enblend(remapper.get_output_files(),
                           self.out,
-                          lock=self.enblend_lock)
-        blender.pprefix = self.pprefix
+                          lock=self.enblend_lock, pprefix=self.pprefix)
         blender.args = self.enblend_args
         blender.run()
         # We are done with these files, they should be nuked
@@ -175,7 +174,7 @@ class PartialStitcher(object):
 
 
 class Worker(object):
-    def __init__(self, i, tiler, log_fn):
+    def __init__(self, i, tiler, log_fn, worker_stdout=None):
         self.process = multiprocessing.Process(target=self.run)
 
         self.i = i
@@ -195,6 +194,9 @@ class Worker(object):
         self.nona_args = tiler.nona_args
         self.enblend_args = tiler.enblend_args
         self.st_fns = multiprocessing.Queue()
+        self.outdate = None
+        self.errdate = None
+        self.worker_stdout = worker_stdout
 
     def master_log_file_init(self):
         self.master_log_file = open(self.log_fn, 'r')
@@ -205,15 +207,17 @@ class Worker(object):
                 s = self.master_log_file.readline()
                 if not s:
                     break
-                print(s.strip())
+                if self.worker_stdout:
+                    self.worker_stdout.write(s.strip() + "\n")
+                else:
+                    print(s.strip())
 
     def pprefix(self):
         # hack: ocassionally get io
         # use that to interrupt if need be
         if not self.running:
             raise Exception('not running')
-        # TODO: put this into queue so we don't drop
-        return '%s w%d: ' % (datetime.datetime.utcnow().isoformat(), self.i)
+        return ''
 
     def start(self):
         self.process.start()
@@ -227,12 +231,15 @@ class Worker(object):
                 print("Worker creating log")
                 # _outlog = open(self.log_fn, 'w')
                 # Buffer only on lines
-                _outlog = open(self.log_fn, 'w', buffering=1)
-                sys.stdout = _outlog
-                sys.stderr = _outlog
+                outlog = open(self.log_fn, 'w', buffering=1)
+                sys.stdout = outlog
+                sys.stderr = outlog
 
-                _outdate = IOTimestamp(sys, 'stdout')
-                _errdate = IOTimestamp(sys, 'stderr')
+                def worker_pprefix():
+                    return "%s W%u: " % (datetime.datetime.utcnow().isoformat(), self.i)
+
+                self.outdate = IOTimestamp(sys, 'stdout', pprefix=worker_pprefix)
+                self.errdate = IOTimestamp(sys, 'stderr', pprefix=worker_pprefix)
             else:
                 print("Working using stdout")
 
@@ -413,12 +420,14 @@ class Tiler:
                  clip_height=None,
                  log_dir='pr0nts',
                  is_full=False,
-                 verbose=False):
+                 verbose=False,
+                 worker_stdout=None):
         '''
         stw: super tile width
         sth: super tile height
         stp: super tile pixels (auto stw, sth)
         '''
+        self.worker_stdout = worker_stdout
         self.is_full = False
         self.img_width = None
         self.img_height = None
@@ -463,8 +472,8 @@ class Tiler:
         pto.make_absolute()
 
         self.out_dir = out_dir
-        self.tw = tile_width
-        self.th = tile_height
+        self.tw = int(tile_width)
+        self.th = int(tile_height)
 
         #out_extension = '.png'
         self.out_extension = '.jpg'
@@ -533,46 +542,46 @@ class Tiler:
         self.verbose and print("Center ST efficiency: %0.1f%%" % (100.0 * cstp / stp))
 
     def set_threads(self, threads):
-        self.threads = threads
+        self.threads = int(threads)
 
     def set_verbose(self, verbose):
-        self.verbose = verbose
+        self.verbose = bool(verbose)
 
     def set_st_dir(self, st_dir):
-        self.st_dir = st_dir
+        self.st_dir = str(st_dir)
 
     def set_out_extension(self, out_extension):
-        self.out_extension = out_extension
+        self.out_extension = str(out_extension)
 
     def set_ignore_errors(self, ignore_errors):
-        self.ignore_errors = ignore_errors
+        self.ignore_errors = bool(ignore_errors)
 
     def set_ignore_crop(self, ignore_crop):
-        self.ignore_crop = ignore_crop
+        self.ignore_crop = bool(ignore_crop)
 
     def set_st_limit(self, st_limit):
         self.st_limit = st_limit
 
     def set_nona_args(self, nona_args):
-        self.nona_args = nona_args
+        self.nona_args = list(nona_args)
 
     def set_enblend_args(self, enblend_args):
-        self.enblend_args = enblend_args
+        self.enblend_args = list(enblend_args)
 
     def set_super_t_xstep(self, super_t_xstep):
-        self.super_t_xstep = super_t_xstep
+        self.super_t_xstep = int(super_t_xstep)
 
     def set_super_t_ystep(self, super_t_ystep):
-        self.super_t_ystep = super_t_ystep
+        self.super_t_ystep = int(super_t_ystep)
 
     def set_clip_width(self, clip_width):
-        self.clip_width = clip_width
+        self.clip_width = int(clip_width)
 
     def set_clip_height(self, clip_height):
-        self.clip_height = clip_height
+        self.clip_height = int(clip_height)
 
     def set_enblend_lock(self, enblend_lock):
-        self.enblend_lock = enblend_lock
+        self.enblend_lock = bool(enblend_lock)
 
     def calc_stp(self, stp):
         if self.stw or self.sth:
@@ -1061,7 +1070,7 @@ class Tiler:
         # therefore, we don't want the upper bound included
 
         if verbose:
-            print('M: Generating supertiles from y(%d:%d) x(%d:%d)' %
+            print('Generating supertiles from y(%d:%d) x(%d:%d)' %
                   (self.top(), self.bottom(), self.left(), self.right()))
             print("Dry: %u" % self.dry)
         #row = 0
@@ -1075,7 +1084,7 @@ class Tiler:
                 y1 = self.bottom()
                 if self.verbose:
                     print(
-                        'M: Y %d:%d would have overstretched, shifting to maximum height position %d:%d'
+                        'Y %d:%d would have overstretched, shifting to maximum height position %d:%d'
                         % (y, y + self.sth, y0, y1))
 
             #col = 0
@@ -1091,7 +1100,7 @@ class Tiler:
                     x1 = self.right()
                     if self.verbose:
                         print(
-                            'M: X %d:%d would have overstretched, shifting to maximum width position %d:%d'
+                            'X %d:%d would have overstretched, shifting to maximum width position %d:%d'
                             % (x, x + self.stw, x0, x1))
 
                 yield (x0, x1, y0, y1)
@@ -1103,13 +1112,13 @@ class Tiler:
             if y_done:
                 break
         if verbose:
-            print('M: All supertiles generated')
+            print('All supertiles generated')
 
     def n_supertile_tiles(self, st_bounds):
         return len(list(self.gen_supertile_tiles(st_bounds)))
 
     def should_try_supertile(self, st_bounds):
-        #print('M: checking supertile for existing tiles with %d candidates' % (
+        #print('checking supertile for existing tiles with %d candidates' % (
         #    self.n_supertile_tiles(st_bounds)))
 
         solves = 0
@@ -1159,9 +1168,9 @@ class Tiler:
         y_tiles = math.ceil(y_tiles_ideal)
         self.net_expected_tiles = x_tiles * y_tiles
         ideal_tiles = x_tiles_ideal * y_tiles_ideal
-        print('M: Ideal tiles: %0.3f x, %0.3f y tiles => %0.3f net' %
+        print('Ideal tiles: %0.3f x, %0.3f y tiles => %0.3f net' %
               (x_tiles_ideal, y_tiles_ideal, ideal_tiles))
-        print('M: Expecting to generate x%d, y%d => %d basic tiles' %
+        print('Expecting to generate x%d, y%d => %d basic tiles' %
               (x_tiles, y_tiles, self.net_expected_tiles))
 
     def core_dump(self, prefix=""):
@@ -1307,25 +1316,24 @@ class Tiler:
                 os.mkdir(self.st_dir)
 
         self.n_expected_sts = len(list(self.gen_supertiles(verbose=True)))
-        print('M: Generating %d supertiles' % self.n_expected_sts)
+        print("Generating %d supertiles" % self.n_expected_sts)
 
         self.calc_expected_tiles()
 
         if self.is_full:
-            print('M: full => forcing 1 thread ')
+            print('Full => forcing 1 thread ')
             self.threads = 1
-        print('M: Initializing %d workers' % self.threads)
+        if self.n_expected_sts < self.threads:
+            print("Reducing max worker threads %u to match ST count %u" % (self.threads, self.n_expected_sts))
+            self.threads = self.n_expected_sts
+        print("Initializing %d workers" % self.threads)
         self.workers = []
         for ti in range(self.threads):
             print('Bringing up W%02d' % ti)
             # print(to individual log files if many threaded to avoid garbling stream
             # can still conflict with master, but mostly safe...
-            if self.threads == 1:
-                print("Logging workers to foreground")
-                log_fn = None
-            else:
-                log_fn = os.path.join(self.log_dir, 'w%02d.log' % ti)
-            w = Worker(ti, self, log_fn)
+            log_fn = os.path.join(self.log_dir, 'w%02d.log' % ti)
+            w = Worker(ti, self, log_fn, worker_stdout=self.worker_stdout)
             self.workers.append(w)
             w.start()
 
@@ -1333,7 +1341,7 @@ class Tiler:
         print("")
         print("")
         print('S' * 80)
-        print('M: Serial end')
+        print('Serial end')
         print('P' * 80)
         n_closed = len(self.closed_list_rc)
         n_open = len(self.open_list_rc)
@@ -1347,7 +1355,7 @@ class Tiler:
 
         try:
             #temp_file = 'partial.tif'
-            self.n_supertiles = 0
+            self.n_supertiles_complete = 0
             st_gen = self.gen_supertiles()
 
             all_allocated = False
@@ -1432,19 +1440,19 @@ class Tiler:
 
                         #(_task, e) = out[1]
                         print('!' * 80)
-                        print('M: ERROR: MW%d failed w/ exception' % wi)
+                        print('ERROR: MW%d failed w/ exception' % wi)
                         (_task, _e, estr) = out[1]
-                        print('M: Stack trace:')
+                        print('Stack trace:')
                         for l in estr.split('\n'):
                             print(l)
                         print('!' * 80)
                         if not self.ignore_errors:
                             raise Exception('M: shutdown on worker failure')
-                        print('M WARNING: continuing despite worker failure')
+                        print('WARNING: continuing despite worker failure')
                         self.worker_failures += 1
                     else:
-                        print('M: %s' % (out, ))
-                        raise Exception('M: internal error: bad task type %s' %
+                        print('%s' % (out, ))
+                        raise Exception('internal error: bad task type %s' %
                                         what)
 
                     self.st_limit -= 1
@@ -1461,31 +1469,31 @@ class Tiler:
                             try:
                                 st_bounds = next(st_gen)
                             except StopIteration:
-                                print('M: all tasks allocated')
+                                print('All tasks allocated')
                                 all_allocated = True
                                 break
 
                             progress = True
 
                             [x0, x1, y0, y1] = st_bounds
-                            self.n_supertiles += 1
+                            self.n_supertiles_complete += 1
                             (st_solves,
                              st_net) = self.should_try_supertile(st_bounds)
                             print(
                                 'M: check st %u (x(%d:%d) y(%d:%d)) want %u / %u tiles'
-                                % (self.n_supertiles, x0, x1, y0, y1,
+                                % (self.n_supertiles_complete, x0, x1, y0, y1,
                                    st_solves, st_net))
                             if not st_solves:
                                 print(
-                                    'M WARNING: skipping supertile %d as it would not generate any new tiles'
-                                    % self.n_supertiles)
+                                    'WARNING: skipping supertile %d as it would not generate any new tiles'
+                                    % self.n_supertiles_complete)
                                 continue
 
                             print('*' * 80)
                             #print('W%d: submit %s (%d / %d)' % (wi, repr(pair), pair_submit, n_pairs)
                             print(
                                 "Creating supertile %d / %d with x%d:%d, y%d:%d"
-                                % (self.n_supertiles, self.n_expected_sts, x0,
+                                % (self.n_supertiles_complete, self.n_expected_sts, x0,
                                    x1, y0, y1))
                             print('W%d: submit' % (wi, ))
 
@@ -1506,7 +1514,7 @@ class Tiler:
                     self.print_worker_logs()
                     if not idle:
                         print(
-                            'M Server thread idle. dry %s, all %u, complete %u / %u'
+                            'Server thread idle. dry %s, all %u, complete %u / %u'
                             % (self.dry, all_allocated, pair_complete,
                                pair_submit))
                         print_status()
@@ -1517,7 +1525,7 @@ class Tiler:
                     idle = True
                     # can take some time, but should be using smaller tiles now
                     if time.time() - last_progress > 4 * 60 * 60:
-                        print('M WARNING: server thread stalled')
+                        print('WARNING: server thread stalled')
                         last_progress = time.time()
                         time.sleep(0.1)
 
@@ -1525,15 +1533,15 @@ class Tiler:
                   self.worker_failures)
             bench.stop()
             print(
-                'M Processed %d supertiles to generate %d new (%d total) tiles in %s'
+                'Processed %d supertiles to generate %d new (%d total) tiles in %s'
                 % (self.n_expected_sts, self.this_tiles_done,
                    len(self.closed_list_rc), str(bench)))
             tiles_s = self.this_tiles_done / bench.delta_s()
-            print('M %f tiles / sec, %f pix / sec' %
+            print('%f tiles / sec, %f pix / sec' %
                   (tiles_s, tiles_s * self.tw * self.th))
 
             if len(self.closed_list_rc) != self.net_expected_tiles:
-                print('M ERROR: expected to do %d basic tiles but did %d' %
+                print('ERROR: expected to do %d basic tiles but did %d' %
                       (self.net_expected_tiles, len(self.closed_list_rc)))
                 self.dump_open_list()
                 raise Exception(

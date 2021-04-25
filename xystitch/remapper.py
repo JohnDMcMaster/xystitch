@@ -95,7 +95,7 @@ class Nona:
     TIFF_SINGLE = "TIFF_m"
     TIFF_MULTILAYER = "TIFF_multilayer"
 
-    def __init__(self, pto_project, output_prefix="nonaout", start_hook=None):
+    def __init__(self, pto_project, output_prefix="nonaout", start_hook=None, pprefix=None):
         if output_prefix is None or len(
                 output_prefix
         ) == 0 or output_prefix == '.' or output_prefix == '..':
@@ -123,7 +123,7 @@ class Nona:
             print(('%s: %s' % (datetime.datetime.utcnow().isoformat(), s)))
 
         self.p = p
-        self.pprefix = lambda: datetime.datetime.utcnow().isoformat() + ': '
+        self.pprefix = pprefix
         self.stdout = sys.stdout
         self.stderr = sys.stderr
         self.start_hook = start_hook

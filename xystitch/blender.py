@@ -98,7 +98,7 @@ class BlenderFailed(CommandFailed):
 
 
 class Enblend:
-    def __init__(self, input_files, output_file, lock=False):
+    def __init__(self, input_files, output_file, lock=False, pprefix=None):
         self.input_files = input_files
         self.output_file = output_file
         self.compression = None
@@ -111,7 +111,7 @@ class Enblend:
             print('%s: %s' % (datetime.datetime.utcnow().isoformat(), s))
 
         self.p = p
-        self.pprefix = lambda: datetime.datetime.utcnow().isoformat() + ': '
+        self.pprefix = pprefix
         self.stdout = sys.stdout
         self.stderr = sys.stderr
 

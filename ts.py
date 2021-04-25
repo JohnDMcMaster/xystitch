@@ -84,7 +84,8 @@ def make_threads_stp(args):
 def run(args):
     log_dir = args.log
     out_dir = 'out'
-    _dt = logwt(log_dir, 'main.log', shift_d=True)
+    _outlog, _errlog, outdate, _errdate = logwt(log_dir, 'main.log', shift_d=True)
+    worker_stdout = outdate.fd
 
     print('Assuming input %s is pto project to be stitched' % args.pto)
     project = PTOProject.from_file_name(args.pto)
@@ -100,7 +101,8 @@ def run(args):
               clip_height=args.clip_height,
               log_dir=log_dir,
               is_full=args.full,
-              dry=args.dry)
+              dry=args.dry,
+              worker_stdout=worker_stdout)
     t.set_threads(threads)
     t.set_verbose(args.verbose)
     t.set_st_dir(args.st_dir)
