@@ -15,36 +15,38 @@ from xystitch.tiler import Tiler
 from xystitch.pto.project import PTOProject
 from xystitch.config import config
 from xystitch.single import singlify, HugeImage
-from xystitch.util import logwt, add_bool_arg, size2str, mksize, mem2pix
+from xystitch.util import logwt, add_bool_arg, size2str, mksize, mem2pix, pix2mem
 
 import argparse
 import glob
-import multiprocessing
 import os
-import re
-import sys
 import time
+import math
 
+def make_threads_stp(args):
+    """
+    Ultimately require:
+    -Number of worker threads
+    -Supertile limit in piexels
 
-def run(args):
+    STP constraints:
+    -Stitching a very large supertile can take a long time
+        Time to add images goes up exponentially per image
+        Maximum tile constraint
+    -Supertiles in old enblend took a lot of memory
+        Maximum total memory constraint
+    """
+
+    # Maximum threads to use
+    # If insufficient memory might reduce
     threads = args.threads
     if not threads:
         threads = config.ts_threads()
     if threads < 1:
         raise Exception('Bad threads')
-    print('Using %d threads' % threads)
-
-    log_dir = args.log
-    out_dir = 'out'
-    _dt = logwt(log_dir, 'main.log', shift_d=True)
-
-    fn = args.pto[0]
+    print('Max threads: %u' % threads)
 
     auto_size = not (args.stp or args.stm or args.stw or args.sth)
-
-    print('Assuming input %s is pto project to be stitched' % args.pto)
-    project = PTOProject.from_file_name(args.pto)
-    print('Creating tiler')
     stp = None
     if args.stp:
         stp = mksize(args.stp)
@@ -52,31 +54,62 @@ def run(args):
         stp = mem2pix(mksize(args.stm))
         print('Memory %s => %s pix' % (args.stm, size2str(stp)))
     elif auto_size:
-        stm = config.super_tile_memory()
-        if stm:
-            stp = mem2pix(mksize(stm))
-            # having issues creating very large
-            if stp > 2**32 / 4:
-                # 66 GB max useful as currently written
-                print('WARNING: reducing to maximum tile size')
-                stp = 2**32 / 4
+        stp = config.st_max_pix()
 
-    t = Tiler(project,
-              out_dir,
+    # having issues creating very large
+    if not args.stp and stp > 2**32 / 4:
+        # 66 GB max useful as currently written
+        print('WARNING: reducing to maximum tile size')
+        stp = 2**32 / 4
+
+    # Keep explicit if given
+    if not args.threads:
+        # Estimate how many supertiles we can fit given memory
+        # Try to make the largest supertiles possible
+        # TODO: consider different strategies
+        # This is "best" making large STs but we could also have "fast"
+        max_mem = config.max_mem()
+        stm = pix2mem(stp)
+        max_st_threads = int(max(math.floor(max_mem / stm), 1))
+        print("Strategy best: memory fits %u STs, %u threads available" % (max_st_threads, threads))
+        print("  Max total memory: %sB" % size2str(max_mem))
+        print("  Max ST pixels: %s" % size2str(stp))
+        print("  Estimated max ST memory: %sB" % size2str(stm))
+        if threads > max_st_threads:
+            print("Reducing threads to safely fit in memory")
+        threads = min(max_st_threads, threads)
+
+    return threads, stp
+
+def run(args):
+    log_dir = args.log
+    out_dir = 'out'
+    _outlog, _errlog, outdate, _errdate = logwt(log_dir, 'main.log', shift_d=True)
+    worker_stdout = outdate.fd
+
+    print('Assuming input %s is pto project to be stitched' % args.pto)
+    project = PTOProject.from_file_name(args.pto)
+    print('Creating tiler')
+    threads, stp = make_threads_stp(args)
+
+    t = Tiler(pto=project,
+              out_dir=out_dir,
               stw=mksize(args.stw),
               sth=mksize(args.sth),
               stp=stp,
               clip_width=args.clip_width,
               clip_height=args.clip_height,
               log_dir=log_dir,
-              is_full=args.full)
-    t.threads = threads
-    t.verbose = args.verbose
-    t.st_dir = args.st_dir
-    t.out_extension = args.out_ext
-    t.ignore_errors = args.ignore_errors
-    t.ignore_crop = args.ignore_crop
-    t.st_limit = float(args.st_limit)
+              is_full=args.full,
+              dry=args.dry,
+              worker_stdout=worker_stdout)
+    t.set_threads(threads)
+    t.set_verbose(args.verbose)
+    t.set_st_dir(args.st_dir)
+    t.set_out_extension(args.out_ext)
+    t.set_ignore_errors(args.ignore_errors)
+    t.set_ignore_crop(args.ignore_crop)
+    t.set_st_limit(float(args.st_limit))
 
     # TODO: make this more proper?
     if args.nona_args:
@@ -85,19 +118,19 @@ def run(args):
         t.enblend_args = args.enblend_args.replace('"', '').split(' ')
 
     if args.super_t_xstep:
-        t.super_t_xstep = args.super_t_xstep
+        t.set_super_t_xstep(args.super_t_xstep)
     if args.super_t_ystep:
-        t.super_t_ystep = args.super_t_ystep
+        t.set_super_t_ystep(args.super_t_ystep)
     if args.clip_width:
-        t.clip_width = args.clip_width
+        t.set_clip_width(args.clip_width)
     if args.clip_height:
-        t.clip_height = args.clip_height
+        t.set_clip_height(args.clip_height)
     # if they specified clip but not supertile step recalculate the step so they don't have to do it
     if args.clip_width or args.clip_height and not (args.super_t_xstep
                                                     or args.super_t_ystep):
         t.recalc_step()
 
-    t.enblend_lock = args.enblend_lock
+    t.set_enblend_lock(args.enblend_lock)
 
     if args.single_dir and not os.path.exists(args.single_dir):
         os.mkdir(args.single_dir)
@@ -209,6 +242,12 @@ def main():
         default=False,
         help=
         'use lock file to only enblend (memory intensive part) one at a time')
+    add_bool_arg(
+        parser,
+        '--dry',
+        default=False,
+        help=
+        'Calculate stitch parameters and exit')
     parser.add_argument('--threads', type=int, default=None)
     parser.add_argument('--log', default='pr0nts', help='Output log file name')
     args = parser.parse_args()

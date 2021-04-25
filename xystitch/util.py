@@ -97,13 +97,16 @@ def try_shift_dir(d):
 
 # Print timestamps in front of all output messages
 class IOTimestamp(object):
-    def __init__(self, obj=sys, name='stdout'):
+    def __init__(self, obj=sys, name='stdout', pprefix=None):
         self.obj = obj
         self.name = name
 
         self.fd = obj.__dict__[name]
         obj.__dict__[name] = self
         self.nl = True
+        if pprefix is None:
+            pprefix = lambda: "%s: " % datetime.datetime.utcnow().isoformat()
+        self.pprefix = pprefix
 
     def __del__(self):
         if self.obj:
@@ -121,7 +124,7 @@ class IOTimestamp(object):
             if i == len(parts) - 1 and len(part) == 0:
                 break
             if self.nl:
-                self.fd.write('%s: ' % datetime.datetime.utcnow().isoformat())
+                self.fd.write(self.pprefix())
             self.fd.write(part)
             # Newline results in n + 1 list elements
             # The last element has no newline
@@ -248,3 +251,6 @@ def mem2pix(mem):
     # ahah: I think it was disk space and I had misinterpreted it as memory
     # since the files got deleted after the run it wasn't obvious
     #return mem * 35 / 1000
+
+def pix2mem(pix):
+    return pix / (51 / 1000)

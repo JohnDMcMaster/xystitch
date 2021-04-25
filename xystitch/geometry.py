@@ -21,9 +21,9 @@ def ceil_mult(n, mult, align=0):
     '''Return the first number >= n that is a multiple of mult shifted by align'''
     rem = (n - align) % mult
     if rem == 0:
-        return n
+        return int(n)
     else:
-        return n + mult - rem
+        return int(n + mult - rem)
 
 
 class PolygonQuadTreeItem:

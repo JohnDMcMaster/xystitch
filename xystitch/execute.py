@@ -251,9 +251,12 @@ class Prefixer:
         self.f.flush()
 
 
+def pprefix_now():
+    return datetime.datetime.utcnow().isoformat() + ': '
+
+
 def timestamp(args, stdout=sys.stdout, stderr=sys.stderr):
-    return prefix(args, stdout, stderr,
-                  lambda: datetime.datetime.utcnow().isoformat() + ': ')
+    return prefix(args, stdout, stderr, pprefix_now)
 
 
 def prefix(args, stdout=sys.stdout, stderr=sys.stderr, prefix=lambda: ''):
@@ -264,13 +267,13 @@ def prefix(args, stdout=sys.stdout, stderr=sys.stderr, prefix=lambda: ''):
                             shell=False,
                             encoding="ascii")
     try:
-        # FIXME
-        if 1:
+        if prefix:
             p_stdout = Prefixer(stdout, prefix)
             p_stderr = Prefixer(stderr, prefix)
         else:
             p_stdout = stdout
             p_stderr = stderr
+
         while subp.poll() is None:
             r_rdy, _w_rdy, _x_rdy = select.select([subp.stdout, subp.stderr],
                                                   [], [], 0.1)

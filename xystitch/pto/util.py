@@ -526,7 +526,7 @@ def rm_red_img(pto):
     if len(to_rm) == len(pto.image_lines):
         raise Exception("Removed all images.  remapper will fail")
     pto.del_images(to_rm)
-    print('Remaining')
+    print('Remaining: %u' % len(pto.image_lines))
     for il in pto.image_lines:
         print('  %s w/ [%s, %s, %s, %s]' %
               (il.get_name(), il.left(), il.right(), il.top(), il.bottom()))
