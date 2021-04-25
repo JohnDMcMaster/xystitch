@@ -41,8 +41,8 @@ At the end check that all times have been generated and throw an error if we are
 Greedy algorithm to generate a tile if its legal (and safe)
 '''
 
-from xystitch.remapper import Nona
-from xystitch.blender import Enblend
+from xystitch.nona import Nona
+from xystitch.enblend import Enblend
 from .image_coordinate_map import ImageCoordinateMap
 from xystitch.config import config
 from xystitch.temp_file import ManagedTempFile
