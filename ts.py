@@ -41,7 +41,7 @@ def make_threads_stp(args):
     # If insufficient memory might reduce
     threads = args.threads
     if not threads:
-        threads = config.ts_threads()
+        threads = config.ts_workers()
     if threads < 1:
         raise Exception('Bad threads')
     print('Max threads: %u' % threads)
@@ -90,7 +90,7 @@ def run(args):
     print('Assuming input %s is pto project to be stitched' % args.pto)
     project = PTOProject.from_file_name(args.pto)
     print('Creating tiler')
-    threads, stp = make_threads_stp(args)
+    worker_threads, stp = make_threads_stp(args)
 
     t = Tiler(pto=project,
               out_dir=out_dir,
@@ -103,7 +103,7 @@ def run(args):
               is_full=args.full,
               dry=args.dry,
               worker_stdout=worker_stdout)
-    t.set_threads(threads)
+    t.set_threads(worker_threads)
     t.set_verbose(args.verbose)
     t.set_st_dir(args.st_dir)
     t.set_out_extension(args.out_ext)
@@ -248,7 +248,7 @@ def main():
         default=False,
         help=
         'Calculate stitch parameters and exit')
-    parser.add_argument('--threads', type=int, default=None)
+    parser.add_argument('--threads', type=int, default=None, help="Maximum worker threads")
     parser.add_argument('--log', default='pr0nts', help='Output log file name')
     args = parser.parse_args()
 

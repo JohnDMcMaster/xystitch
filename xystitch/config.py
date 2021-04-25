@@ -112,9 +112,9 @@ class Config:
         """
         return float(os.getenv('XY_OVERLAP_OUTLIER_THRESH', "0.10"))
 
-    def ts_threads(self):
-        """tile stitcher threads"""
-        ret = self.getx('ts.threads', 0)
+    def ts_workers(self):
+        """tile stitcher worker threads"""
+        ret = self.getx('ts.workers', 0)
         if ret:
             return ret
         else:
