@@ -20,10 +20,11 @@ Misc utilities:
 
 # Quick start
 
+Requires Python 3.6 or later
+
 Tested on:
   * Ubuntu 20.04
   * python 3.8.5
-
 
 Install:
 
