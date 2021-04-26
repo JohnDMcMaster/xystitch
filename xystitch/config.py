@@ -56,7 +56,7 @@ class Config:
         return self.get('temp_base', "/tmp/ts_")
 
     def enblend_opts(self):
-        return self.get('enblend', {'opts': ''})['opts']
+        return self.getx('enblend.opts', "")
 
     def max_mem(self):
         ret = self.get('mem', None)
