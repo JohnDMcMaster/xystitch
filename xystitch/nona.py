@@ -77,7 +77,7 @@ import sys
 import subprocess
 
 
-class RemapperFailed(execute.CommandFailed):
+class NonaFailed(execute.CommandFailed):
     pass
 
 
@@ -113,7 +113,7 @@ class Nona:
         if output_prefix is None or len(
                 output_prefix
         ) == 0 or output_prefix == '.' or output_prefix == '..':
-            raise RemapperFailed('Bad output file base "%s"' %
+            raise NonaFailed('Bad output file base "%s"' %
                                  str(output_prefix))
 
         self.pto_project = pto_project
@@ -151,7 +151,7 @@ class Nona:
         project_name = project_name.split('.')[0]
         if len(project_name) == 0:
             project_name = 'out'
-            raise RemapperFailed('Require project name')
+            raise NonaFailed('Require project name')
         print 'Chose output prefix "%s"' % project_name
         self.remap(project_name)
     '''
@@ -162,7 +162,7 @@ class Nona:
         # For my purposes right now I think this will always be 0
         if len(old_files) != 0:
             print(old_files)
-            raise RemapperFailed('Found some old files')
+            raise NonaFailed('Found some old files')
 
         if self.pto_fn:
             project = self.pto_project
@@ -221,7 +221,7 @@ class Nona:
             self.p(
                 'Clear up temp storage (ie in /tmp) or move it using .pr0nrc')
             #print output
-            raise RemapperFailed('failed to remap')
+            raise NonaFailed('failed to remap')
         #project.reopen()
         if self.image_type == Nona.TIFF_MULTILAYER:
             self.output_files = [self.output_prefix + '.tif']
@@ -236,7 +236,7 @@ class Nona:
             self.p('Think nona just generated %d files' %
                    (len(self.output_files), ))
         else:
-            raise RemapperFailed('bad image type')
+            raise NonaFailed('bad image type')
 
     def get_output_files(self):
         return self.output_files

@@ -85,15 +85,14 @@ Report bugs at <http://sourceforge.net/projects/enblend/>.
 '''
 
 from xystitch import execute
-from xystitch.execute import Execute, CommandFailed
+from xystitch.execute import CommandFailed
 from xystitch.config import config
 import fcntl
 import time
 import sys
-import datetime
 
 
-class BlenderFailed(CommandFailed):
+class EnblendFailed(CommandFailed):
     pass
 
 
@@ -101,28 +100,22 @@ class Enblend:
     def __init__(self, input_files, output_file, lock=False, pprefix=None):
         self.input_files = input_files
         self.output_file = output_file
-        self.compression = None
-        self.gpu = False
         self.additional_args = []
         self._lock = lock
         self._lock_fp = None
 
-        def p(s=''):
-            print('%s: %s' % (datetime.datetime.utcnow().isoformat(), s))
-
-        self.p = p
-        self.pprefix = pprefix
+        self.pprintprefix = pprefix
         self.stdout = sys.stdout
         self.stderr = sys.stderr
 
     def lock(self):
         if not self._lock:
-            self.p('note: Skipping enblend lock')
+            print('enblend: skipping lock')
             return
         pid_file = '/tmp/xystitch-enblend.pid'
         self._lock_fp = open(pid_file, 'w')
         i = 0
-        self.p('note: Acquiring enblend lock')
+        print('enblend: acquiring lock')
         while True:
             try:
                 fcntl.lockf(self._lock_fp, fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -130,34 +123,28 @@ class Enblend:
             except IOError:
                 # Can take a while, print every 10 min or so and once at failure
                 if i % (10 * 60 * 10) == 0:
-                    self.p(
-                        'Failed to acquire enblend lock, retrying (print every 10 min)'
+                    print('enblend: Failed to acquire enblend lock, retrying (print every 10 min)'
                     )
                 time.sleep(0.1)
             i += 1
-        self.p('Acquired enblend lock')
+        print('enblend: lock acquired')
 
     def unlock(self):
         if self._lock_fp is None:
-            self.p('Skipping enblend unlock')
+            print('Skipping enblend unlock')
             return
-        self.p('Releasing enblend lock')
+        print('Releasing enblend lock')
         self._lock_fp.close()
         self._lock_fp = None
 
     def run(self):
         args = ["enblend", "-o", self.output_file]
-        if self.compression:
-            args.append('--compression=%s' % str(self.compression))
-        if self.gpu:
-            args.append('--gpu')
         for arg in self.additional_args:
             args.append(arg)
-        for f in self.input_files:
-            args.append(f)
-
         for opt in config.enblend_opts().split():
             args.append(opt)
+        for f in self.input_files:
+            args.append(f)
 
         self.lock()
 
@@ -165,18 +152,18 @@ class Enblend:
         execute.prefix(["enblend", "--version"],
                             stdout=self.stdout,
                             stderr=self.stderr,
-                            prefix=self.pprefix)
+                            prefix=self.pprintprefix)
 
         print('Blender: executing %s' % (' '.join(args), ))
         rc = execute.prefix(args,
                             stdout=self.stdout,
                             stderr=self.stderr,
-                            prefix=self.pprefix)
+                            prefix=self.pprintprefix)
         if not rc == 0:
-            self.p('')
-            self.p('')
-            self.p('')
-            self.p('Failed to blend')
-            self.p('rc: %d' % rc)
-            self.p(args)
-            raise BlenderFailed('failed to remap')
+            print('')
+            print('')
+            print('')
+            print('Failed to blend')
+            print('rc: %d' % rc)
+            print(args)
+            raise EnblendFailed('failed to remap')
