@@ -119,7 +119,33 @@ Environment variables (see xystitch/config.py):
   * XY_OVERLAP_OUTLIER_THRESH: throw out images that differ by more than given fraction vs expected overlap
     * Default: 0.10 (ie 10%) means that with default 0.70 overlap, a step size of 60% to 80% is acceptable
 
-Main config file used for advanced operations like setting enblend max memory. Sample config file:
+Main config file used for advanced operations like setting enblend max memory.
+
+Suggestions for st_max_pix:
+  * This is intended to stop jobs from taking too long more than prevent out of memory errors
+  * Run a long job / without limit until you are getting tired of it completing
+  * Ex: I aim that supertiles can stitch overnight, say complete within 8 hours
+  * Consider using profile_enblend.py on a log file to plot how long images take to process
+  * Convert to pixels...
+  * Ex: 70% step size, 1632x1224 image: 0.7 * 1632 * 0.7 * 1224 = 0.98 MP / image. If 8 hours can process around 600 images, set limit to 0.98 * 600 = 588m
+  * TODO: collect more data to conclusively show performance actually depends more on pixels than number images
+
+Sample config file with commonly tweaked options:
+
+```
+$ cat ~/.xyrc
+{
+    "max_mem": "110g",
+    "ts": {
+        "st_max_pix": "600m"
+    },
+    "enblend": {
+        "opts": "-m 6144"
+    }
+}
+```
+
+Sample config file with advanced configuration:
 ```
 $ cat ~/.xyrc
 {
@@ -129,6 +155,9 @@ $ cat ~/.xyrc
     "ts": {
         "workers": 16,
         "st_max_pix": "600m"
+    },
+    "enblend": {
+        "opts": "-m 6144"
     }
 }
 ```
@@ -161,13 +190,6 @@ TODO: add a link to config and/or describe options digested here
 
 # Ubuntu 20.04 notes
 
-enblend
-  * Enblend no longer accepts -m. Removed from .xyrc
-
-nona
-  * Memory usage different vs ubuntu 16.04: memory no longer increases linearly but goes up and down
-  * Slower? Or am I just doing larger images now
-
 Had to adjust magick limits. Not carefully thought out but I'm using the values below
 
 ```
@@ -180,6 +202,37 @@ Had to adjust magick limits. Not carefully thought out but I'm using the values 
 <!-- <policy domain="resource" name="list-length" value="128"/> -->
 <policy domain="resource" name="area" value="16GB"/>
 <policy domain="resource" name="disk" value="32GiB"/>
+```
+
+enblend eliminated -m option, which causes multiple issues with my stitches.
+TLDR: follow instructions below to setup enblend 4.1 and have something like below in your config
+
+```
+cat ~/.xyrc
+{
+    "enblend": {
+        "opts": "-m 6144"
+    }
+}
+```
+
+Setup:
+
+```
+tar -xf enblend-enfuse-4.1.5.tar.gz
+cd enblend-enfuse-4.1.5
+sudo apt-get install -y libopenexr-dev libboost-system-dev \
+  libboost-filesystem-dev libboost-graph-dev libboost-thread-dev \
+  freeglut3-dev libglew-dev libxi-dev libxmu-dev libplot-dev libgsl0-dev \
+  liblcms2-dev \
+  \
+  help2man texinfo gnuplot tidy \
+  libvigraimpex-dev libgsl-dev libtiff5 libtiff5-dev
+./configure  --prefix=/opt/enblend-4.1.5 --enable-gpu-support --enable-image-cache
+time make -j $(nproc)
+sudo make install
+mkdir -p ~/bin
+ln -s /opt/enblend-4.1.5/bin/enblend ~/bin/
 ```
 
 # Version history
