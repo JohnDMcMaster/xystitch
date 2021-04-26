@@ -161,6 +161,12 @@ class Enblend:
 
         self.lock()
 
+        # Prefix w/ version
+        execute.prefix(["enblend", "--version"],
+                            stdout=self.stdout,
+                            stderr=self.stderr,
+                            prefix=self.pprefix)
+
         print('Blender: executing %s' % (' '.join(args), ))
         rc = execute.prefix(args,
                             stdout=self.stdout,

@@ -74,6 +74,7 @@ from xystitch import execute
 import datetime
 import os
 import sys
+import subprocess
 
 
 class RemapperFailed(execute.CommandFailed):
@@ -90,6 +91,19 @@ def get_nona_files(output_prefix, max_images):
             ret.add(fn)
     return ret
 
+
+def nona_version():
+    """
+    nona: stitch a panorama image
+
+    nona version 2019.2.0.b690aa0334b5
+    ...
+    """
+    out = subprocess.check_output("nona --help", shell=True, encoding="ascii")
+    for l in out.split("\n"):
+        if l.find("nona version") >= 0:
+            return l.split()[2]
+    raise Exception("Failed to parse version")
 
 class Nona:
     TIFF_SINGLE = "TIFF_m"
@@ -188,6 +202,9 @@ class Nona:
         # cmd in: nona "-m" "TIFF_m" "-verbose" "-z" "LZW" "-o" "/tmp/xystitch_7E296EA2D31827B4/0DF5034FE1CEE831/" "out.pto"
         # p w2673 h2056 f0 v76 n"TIFF_m r:CROP c:LZW" E0.0 R0 S"276,2673,312,2056"
         # m line unchanged
+
+        print("nona version: " + nona_version())
+
         print(('Remapper: executing %s' % (' '.join(args), )))
         rc = execute.prefix(args,
                             stdout=self.stdout,
