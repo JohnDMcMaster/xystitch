@@ -90,19 +90,35 @@ from xystitch.config import config
 import fcntl
 import time
 import sys
+import subprocess
+import re
 
+def enblend_cache():
+    """
+    Extra feature: image cache: yes
+      - environment variable TMPDIR not set, cache file in default directory "/tmp"
+    Hmm maybe should say this var...
+    """
+    out = subprocess.check_output(["enblend", "--version", "-v"], encoding="ascii")
+    for l in out.split("\n"):
+        m = re.match(r"Extra feature: image cache: (.+)", l)
+        if not m:
+            continue
+        return m.group(1) == "yes"
+    return False
 
 class EnblendFailed(CommandFailed):
     pass
 
 
 class Enblend:
-    def __init__(self, input_files, output_file, lock=False, pprefix=None):
+    def __init__(self, input_files, output_file, lock=False, pprefix=None, cache_mb=None):
         self.input_files = input_files
         self.output_file = output_file
         self.additional_args = []
         self._lock = lock
         self._lock_fp = None
+        self.cache_mb = cache_mb
 
         self.pprintprefix = pprefix
         self.stdout = sys.stdout
@@ -139,6 +155,9 @@ class Enblend:
 
     def run(self):
         args = ["enblend", "-o", self.output_file]
+        if self.cache_mb and enblend_cache():
+            args.append("-m")
+            args.append(str(self.cache_mb))
         for arg in self.additional_args:
             args.append(arg)
         for opt in config.enblend_opts().split():
