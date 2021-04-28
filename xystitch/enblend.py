@@ -99,7 +99,8 @@ def enblend_cache():
       - environment variable TMPDIR not set, cache file in default directory "/tmp"
     Hmm maybe should say this var...
     """
-    out = subprocess.check_output(["enblend", "--version", "-v"], encoding="ascii")
+    # Errors if you don't have x server, but still returns version
+    out = subprocess.check_output("enblend --version -v || true", encoding="ascii", shell=True)
     for l in out.split("\n"):
         m = re.match(r"Extra feature: image cache: (.+)", l)
         if not m:
