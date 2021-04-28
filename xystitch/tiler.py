@@ -92,16 +92,21 @@ def pid_memory_recursive(pid, indent=""):
 
 
 class PartialStitcher(object):
-    def __init__(self, pto, bounds, out, worki, work_run, pprefix):
+    def __init__(self, pto, bounds, out, worki, work_run, pprefix,
+                enblend_lock = False,
+                nona_args = [],
+                enblend_args = [],
+                enblend_cache_mb=None):
         self.pto = pto
         self.bounds = bounds
         self.out = out
-        self.nona_args = []
-        self.enblend_args = []
-        self.enblend_lock = False
+        self.nona_args = nona_args
+        self.enblend_args = enblend_args
+        self.enblend_lock = enblend_lock
         self.worki = worki
         self.work_run = work_run
         self.pprefix = pprefix
+        self.enblend_cache_mb = enblend_cache_mb
 
     def run(self):
         '''
@@ -162,7 +167,8 @@ class PartialStitcher(object):
               len(remapper.get_output_files()))
         blender = Enblend(remapper.get_output_files(),
                           self.out,
-                          lock=self.enblend_lock, pprefix=self.pprefix)
+                          lock=self.enblend_lock, pprefix=self.pprefix,
+                          cache_mb=self.enblend_cache_mb)
         blender.args = self.enblend_args
         blender.run()
         # We are done with these files, they should be nuked
@@ -186,6 +192,8 @@ class Worker(object):
         # Master drains one line at a time to print to screen
         self.master_log_file = None
 
+        # Used for heuristics
+        self.threads = tiler.threads
         self.dry = tiler.dry
         self.ignore_errors = tiler.ignore_errors
         self.st_dir = tiler.st_dir
@@ -320,15 +328,17 @@ class Worker(object):
                                             prefix_mangle='st_%06dx_%06dy_' %
                                             (x0, y0))
 
+            enblend_cache_mb = int(config.max_mem() / 1e6 / self.threads)
             stitcher = PartialStitcher(self.pto,
                                        st_bounds,
                                        temp_file.file_name,
                                        self.i,
                                        self.running,
-                                       pprefix=self.pprefix)
-            stitcher.enblend_lock = self.enblend_lock
-            stitcher.nona_args = self.nona_args
-            stitcher.enblend_args = self.enblend_args
+                                       pprefix=self.pprefix,
+                                       enblend_lock=self.enblend_lock,
+                                       nona_args=self.nona_args,
+                                       enblend_args=self.enblend_args,
+                                       enblend_cache_mb=enblend_cache_mb)
 
             if self.dry:
                 print('dry: skipping partial stitch')
