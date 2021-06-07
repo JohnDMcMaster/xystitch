@@ -637,6 +637,7 @@ class Tiler:
         best_w = None
         best_h = None
         self.best_n = None
+        best_sts = None
         # Get the lowest perimeter among n
         # Errors occur around edges
         best_p = None
@@ -677,8 +678,7 @@ class Tiler:
                   (n_expected, p))
             # TODO: there might be some optimizations within this for trimming...
             # Add a check for minimum total mapped area
-            if self.best_n is None or self.best_n > n_expected and best_p > p:
-                print('Better')
+            if self.best_n is None or self.best_n > n_expected or (self.best_n == n_expected and best_p > p):
                 self.best_n = n_expected
                 best_w = check_w
                 best_h = check_h
@@ -686,15 +686,16 @@ class Tiler:
                 if n_expected == 1:
                     print('Only 1 ST: early break')
                     break
+                best_sts = list(tiler.gen_supertiles())
             self.verbose and print("")
 
         if self.best_n is None:
             raise Exception("Failed to find stitch solution")
         print('Best n %d w/ %dw X %dh' % (self.best_n, best_w, best_h))
-        if 0:
-            print("")
-            print('Debug break')
-            sys.exit(1)
+        for x0, x1, y0, y1 in best_sts:
+            print("  st %ux0 %ux1 %uy0 %uy1" %
+                  (x0, x1, y0, y1))
+
         self.stw = best_w
         self.sth = best_h
 
@@ -754,10 +755,10 @@ class Tiler:
                 if x1 >= self.right():
                     w_extra = x1 - self.right()
                     break
-            print('%d width tiles waste %d pixels' % (w_sts, w_extra))
-            self.stw = self.stw - w_extra / w_sts
-            print('%d height tiles waste %d pixels' % (h_sts, h_extra))
-            self.sth = self.sth - h_extra / h_sts
+            print('  %u width tiles waste %u pixels' % (w_sts, w_extra))
+            self.stw = int(math.ceil(self.stw - w_extra / w_sts))
+            print('  %u height tiles waste %u pixels' % (h_sts, h_extra))
+            self.sth = int(math.ceil(self.sth - h_extra / h_sts))
             # Since we messed with the tile width the step needs recalc
             self.recalc_step()
 
@@ -773,6 +774,8 @@ class Tiler:
         print('  Net area %d => %d (%g%% of original)' %
               (orig_net_area, new_net_area,
                100.0 * new_net_area / orig_net_area))
+        # Should not have changed how many
+        assert self.best_n == self.expected_sts(), ("Optimizer went too far :(", self.best_n, self.expected_sts())
 
     def make_full(self):
         '''Stitch a single supertile'''
@@ -1223,7 +1226,7 @@ class Tiler:
                     print("    tile %ux %uy o%u c%u f%u" %
                           (tile_x, tile_y, is_open, is_closed, freq),
                           file=f)
-            print("Max tile freq: %u" % maxfreq)
+            # print("Max tile freq: %u" % maxfreq)
 
     def calc_vars(self):
         # in form (row, col)
