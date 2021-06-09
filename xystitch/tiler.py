@@ -683,10 +683,10 @@ class Tiler:
                 best_w = check_w
                 best_h = check_h
                 best_p = p
+                best_sts = list(tiler.gen_supertiles())
                 if n_expected == 1:
                     print('Only 1 ST: early break')
                     break
-                best_sts = list(tiler.gen_supertiles())
             self.verbose and print("")
 
         if self.best_n is None:
@@ -967,7 +967,6 @@ class Tiler:
         if subimage.size[0] != self.tw or subimage.size[1] != self.th:
             dbg('WARNING: %s: expanding partial tile (%d X %d) to full tile size'
                 % (nfn, subimage.size[0], subimage.size[1]))
-            print("WARNING temp")
             subimage = pimage.set_canvas_size(subimage, self.tw, self.th)
         # http://www.pythonware.com/library/pil/handbook/format-jpeg.htm
         # JPEG is a good quality vs disk space compromise but beware:
