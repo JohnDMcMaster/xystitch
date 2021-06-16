@@ -214,9 +214,11 @@ def main():
                         help='Continue even if not cropped')
     parser.add_argument('--nona-args')
     parser.add_argument('--enblend-args')
-    parser.add_argument('--ignore-errors',
-                        action="store_true",
-                        dest="ignore_errors",
+    # Originally this was false, but usually when something fails I still want best effort
+    add_bool_arg(
+                        parser,
+                        '--ignore-errors',
+                        default=True,
                         help='skip broken tile stitches (advanced)')
     parser.add_argument('--verbose',
                         '-v',
