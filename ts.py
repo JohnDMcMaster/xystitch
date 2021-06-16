@@ -135,6 +135,8 @@ def run(args):
     if args.single_dir and not os.path.exists(args.single_dir):
         os.mkdir(args.single_dir)
 
+    config.set_enblend_safe_mode(args.safe_mode)
+
     print('Running tiler')
     try:
         t.run()
@@ -250,6 +252,12 @@ def main():
         default=False,
         help=
         'Calculate stitch parameters and exit')
+    add_bool_arg(
+        parser,
+        '--safe-mode',
+        default=False,
+        help=
+        'Use options that will likely generate a stitch, albeit be slower. Includes: disable image caching')
     parser.add_argument('--threads', type=int, default=None)
     parser.add_argument('--log', default='pr0nts', help='Output log file name')
     args = parser.parse_args()

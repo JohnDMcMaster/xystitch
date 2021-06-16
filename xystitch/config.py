@@ -20,6 +20,9 @@ class Config:
         self.step_frac_x = 0.7
         self.step_frac_y = 0.7
 
+        # Use options that are slow but will generate a stitch
+        self.enblend_safe_mode = False
+
     @staticmethod
     def get_default_fn():
         return os.getenv('HOME') + '/' + '.xyrc'
@@ -121,6 +124,8 @@ class Config:
             # Assume hyperthreading?
             return multiprocessing.cpu_count()
 
+    def set_enblend_safe_mode(self, enblend_safe_mode):
+        self.enblend_safe_mode = enblend_safe_mode
 
 config = Config()
 

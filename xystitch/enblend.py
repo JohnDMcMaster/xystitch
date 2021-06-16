@@ -93,11 +93,11 @@ import sys
 import subprocess
 import re
 
-def enblend_cache():
+def enblend_supports_cache():
     """
     Extra feature: image cache: yes
       - environment variable TMPDIR not set, cache file in default directory "/tmp"
-    Hmm maybe should say this var...
+    Hmm maybe should set this var...
     """
     # Errors if you don't have x server, but still returns version
     out = subprocess.check_output("enblend --version -v || true", encoding="ascii", shell=True)
@@ -155,14 +155,20 @@ class Enblend:
         self._lock_fp = None
 
     def run(self):
-        args = ["enblend", "-o", self.output_file]
-        if self.cache_mb and enblend_cache():
+        args = ["enblend"]
+        # Cache is discontinued b/c developers don't consider it safe
+        # In some instances a stitch crashes as a result of it
+        # However it has such great performance benefit I still use it
+        if config.enblend_safe_mode:
+            print('Blender: safe mode activated')
+        if self.cache_mb and enblend_supports_cache() and not config.enblend_safe_mode:
             args.append("-m")
             args.append(str(self.cache_mb))
         for arg in self.additional_args:
             args.append(arg)
         for opt in config.enblend_opts().split():
             args.append(opt)
+        args += ["-o", self.output_file]
         for f in self.input_files:
             args.append(f)
 
