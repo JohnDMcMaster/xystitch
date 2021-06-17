@@ -309,7 +309,7 @@ class Worker(object):
         # every supertile should have at least one solution or the bounds aren't good
         x0, x1, y0, y1 = st_bounds
 
-        bench = Benchmark()
+        self.bench = Benchmark()
         try:
             if self.st_dir:
                 # nah...tiff takes up too much space
@@ -396,7 +396,7 @@ class Worker(object):
                 print('Supertile done w/ fn %s' % (img_fn, ))
             return img_fn
         except:
-            print('supertile failed at %s' % (bench, ))
+            print('supertile failed at %s' % (self.bench, ))
             raise
 
 
@@ -1026,7 +1026,7 @@ class Tiler:
             print('  r%d c%d' % (row, col))
             i += 1
             if i > 10:
-                print('Break on large open list')
+                print('...')
                 break
 
     def rows(self):
@@ -1254,7 +1254,32 @@ class Tiler:
         for worker in self.workers:
             worker.master_log_file_print()
 
-    def run(self):
+    def print_status(self):
+        """
+        2021-04-21T22:43:08.625793: Status w/ 0 / 1 supertiles complete, 0 / 8010 tiles complete
+        2021-04-21T22:43:08.625817:   0 / 1 submitted tasks complete
+        2021-04-21T22:43:08.625856:   Net size: 493 MP, ST size: 430 MP
+        2021-04-21T22:43:08.625889:   mem_net_last 0.240 GB
+        2021-04-21T22:43:08.625917:   mem_net_max 0.240 GB
+        2021-04-21T22:43:08.625943:   mem_worker_max 0.031 GB
+        """
+        print("Status w/ %u / %u supertiles complete, %u / %u tiles complete" % (
+                len(self.closed_sts), self.n_expected_sts,
+                len(self.closed_list_rc), self.n_tiles()))
+        print("  %u / %u submitted tasks complete" % (self.pair_complete, self.pair_submit))
+        # Net size => uncropped
+        # ST size => a portion of the cropped image
+        print('  Net size: %u MP, ST max size: %u MP' %
+              (self.width() * self.height() / 1e6,
+              self.stw * self.sth / 1e6))
+        print("  mem_net_last %0.3f GB" %
+              (self.mem_net_last / 1e9, ))
+        print("  mem_net_max %0.3f GB" %
+              (self.mem_net_max / 1e9, ))
+        print("  mem_worker_max %0.3f GB" %
+              (self.mem_worker_max / 1e9, ))
+
+    def loop_setup(self):
         self.mem_net_last = 0
         self.mem_net_max = 0
         self.mem_worker_max = 0
@@ -1301,7 +1326,7 @@ class Tiler:
                self.width() * self.height() / 1000000))
         print('Output image extension: %s' % self.out_extension)
 
-        bench = Benchmark()
+        self.main_bench = Benchmark()
 
         if os.path.exists(self.out_dir):
             self.seed_merge()
@@ -1355,223 +1380,209 @@ class Tiler:
         assert n_closed <= n_tiles
         assert n_open <= n_tiles
 
-        try:
-            #temp_file = 'partial.tif'
-            self.n_supertiles_complete = 0
-            st_gen = self.gen_supertiles()
+        #temp_file = 'partial.tif'
+        self.n_supertiles_complete = 0
+        self.st_gen = self.gen_supertiles()
 
-            all_allocated = False
-            last_progress = time.time()
-            last_print = time.time()
-            pair_submit = 0
-            pair_complete = 0
-            idle = False
+        self.all_allocated = False
+        self.last_progress = time.time()
+        self.last_print = time.time()
+        self.pair_submit = 0
+        self.pair_complete = 0
+        self.idle = False
 
-            def print_status():
-                """
-                2021-04-21T22:43:08.625793: Status w/ 0 / 1 supertiles complete, 0 / 8010 tiles complete
-                2021-04-21T22:43:08.625817:   0 / 1 submitted tasks complete
-                2021-04-21T22:43:08.625856:   Net size: 493 MP, ST size: 430 MP
-                2021-04-21T22:43:08.625889:   mem_net_last 0.240 GB
-                2021-04-21T22:43:08.625917:   mem_net_max 0.240 GB
-                2021-04-21T22:43:08.625943:   mem_worker_max 0.031 GB
-                """
-                print("Status w/ %u / %u supertiles complete, %u / %u tiles complete" % (
-                        len(self.closed_sts), self.n_expected_sts,
-                        len(self.closed_list_rc), n_tiles))
-                print("  %u / %u submitted tasks complete" % (pair_complete, pair_submit))
-                # Net size => uncropped
-                # ST size => a portion of the cropped image
-                print('  Net size: %u MP, ST max size: %u MP' %
-                      (self.width() * self.height() / 1e6,
-                      self.stw * self.sth / 1e6))
-                print("  mem_net_last %0.3f GB" %
-                      (self.mem_net_last / 1e9, ))
-                print("  mem_net_max %0.3f GB" %
-                      (self.mem_net_max / 1e9, ))
-                print("  mem_worker_max %0.3f GB" %
-                      (self.mem_worker_max / 1e9, ))
+    def loop(self):
+        progress = False
+        self.profile()
+        # Check for completed jobs
+        for wi, worker in enumerate(self.workers):
+            # print("worker %u qo size %u" % (wi, worker.qo.qsize()))
+            try:
+                # out = worker.qo.get(False)
+                out = worker.qo.get_nowait()
+            except queue.Empty:
+                continue
 
-            print_status()
+            # FIXME
+            # Why aren't W0 tasks coming back?
+            # assert wi != 0
 
-            while not (all_allocated and pair_complete == pair_submit):
-                progress = False
-                self.profile()
-                # Check for completed jobs
-                for wi, worker in enumerate(self.workers):
-                    # print("worker %u qo size %u" % (wi, worker.qo.qsize()))
-                    try:
-                        # out = worker.qo.get(False)
-                        out = worker.qo.get_nowait()
-                    except queue.Empty:
-                        continue
+            self.pair_complete += 1
+            what = out[0]
+            progress = True
 
-                    # FIXME
-                    # Why aren't W0 tasks coming back?
-                    # assert wi != 0
-
-                    pair_complete += 1
-                    what = out[0]
-                    progress = True
-
-                    if what == 'done':
-                        (st_bounds, img_fn) = out[1]
-                        print('MW%d: done w/ submit %d, complete %d' %
-                              (wi, pair_submit, pair_complete))
-                        self.closed_sts.add(tuple(st_bounds))
-                        # Dry run
-                        if img_fn is None:
-                            im = None
-                        else:
-                            im = Image.open(img_fn)
-                        # hack
-                        # ugh remove may be an already existing supertile (not a temp file)
-                        #os.remove(img_fn)
-                        try:
-                            self.process_image(img_fn, im, st_bounds)
-                        except NoTilesGenerated:
-                            print("WARNING: image did not generate tiles %s" %
-                                  img_fn)
-                    elif what == 'exception':
-                        if not self.ignore_errors:
-                            for worker in self.workers:
-                                worker.running.clear()
-                            # let stdout clear up
-                            # (only moderately effective)
-                            time.sleep(1)
-
-                        #(_task, e) = out[1]
-                        print('!' * 80)
-                        print('ERROR: MW%d failed w/ exception' % wi)
-                        (_task, _e, estr) = out[1]
-                        print('Stack trace:')
-                        for l in estr.split('\n'):
-                            print(l)
-                        print('!' * 80)
-                        if not self.ignore_errors:
-                            raise Exception('M: shutdown on worker failure')
-                        print('WARNING: continuing despite worker failure')
-                        self.worker_failures += 1
-                    else:
-                        print('%s' % (out, ))
-                        raise Exception('internal error: bad task type %s' %
-                                        what)
-
-                    self.st_limit -= 1
-                    if self.st_limit == 0:
-                        print('Breaking on ST limit reached')
-                        break
-
-                # Any workers need more work?
-                for wi, worker in enumerate(self.workers):
-                    if all_allocated:
-                        break
-                    if worker.qi.empty():
-                        while True:
-                            try:
-                                st_bounds = next(st_gen)
-                            except StopIteration:
-                                print('All tasks allocated')
-                                all_allocated = True
-                                break
-
-                            progress = True
-
-                            [x0, x1, y0, y1] = st_bounds
-                            self.n_supertiles_complete += 1
-                            (st_solves,
-                             st_net) = self.should_try_supertile(st_bounds)
-                            print(
-                                'M: check st %u (x(%d:%d) y(%d:%d)) want %u / %u tiles'
-                                % (self.n_supertiles_complete, x0, x1, y0, y1,
-                                   st_solves, st_net))
-                            if not st_solves:
-                                print(
-                                    'WARNING: skipping supertile %d as it would not generate any new tiles'
-                                    % self.n_supertiles_complete)
-                                continue
-
-                            print('*' * 80)
-                            #print('W%d: submit %s (%d / %d)' % (wi, repr(pair), pair_submit, n_pairs)
-                            print(
-                                "Creating supertile %d / %d with x%d:%d, y%d:%d"
-                                % (self.n_supertiles_complete, self.n_expected_sts, x0,
-                                   x1, y0, y1))
-                            print('W%d: submit' % (wi, ))
-
-                            worker.qi.put((st_bounds, ))
-                            pair_submit += 1
-                            break
-
-                if time.time() - last_print > 5 * 60:
-                    print_status()
-                    last_print = time.time()
-
-                if progress:
-                    last_progress = time.time()
-                    self.core_dump()
-                    idle = False
+            if what == 'done':
+                (st_bounds, img_fn) = out[1]
+                print('MW%d: done w/ submit %d, complete %d' %
+                      (wi, self.pair_submit, self.pair_complete))
+                self.closed_sts.add(tuple(st_bounds))
+                # Dry run
+                if img_fn is None:
+                    im = None
                 else:
-                    # Prioritize master tasks, only print workers when idle
-                    self.print_worker_logs()
-                    if not idle:
-                        print(
-                            'Server thread idle. dry %s, all %u, complete %u / %u'
-                            % (self.dry, all_allocated, pair_complete,
-                               pair_submit))
-                        print_status()
-                        last_print = time.time()
-                        #print(len(self.workers))
-                        #print(self.workers[0].qo.qsize())
-                        #print(self.workers[1].qo.qsize())
-                    idle = True
-                    # can take some time, but should be using smaller tiles now
-                    if time.time() - last_progress > 4 * 60 * 60:
-                        print('WARNING: server thread stalled')
-                        last_progress = time.time()
-                        time.sleep(0.1)
+                    im = Image.open(img_fn)
+                # hack
+                # ugh remove may be an already existing supertile (not a temp file)
+                #os.remove(img_fn)
+                try:
+                    self.process_image(img_fn, im, st_bounds)
+                except NoTilesGenerated:
+                    print("WARNING: image did not generate tiles %s" %
+                          img_fn)
+            elif what == 'exception':
+                if not self.ignore_errors:
+                    for worker in self.workers:
+                        worker.running.clear()
+                    # let stdout clear up
+                    # (only moderately effective)
+                    time.sleep(1)
 
-            print("All pairs allocated and complete w/ %u failures" %
-                  self.worker_failures)
-            bench.stop()
-            print(
-                'Processed %d supertiles to generate %d new (%d total) tiles in %s'
-                % (self.n_expected_sts, self.this_tiles_done,
-                   len(self.closed_list_rc), str(bench)))
-            tiles_s = self.this_tiles_done / bench.delta_s()
-            print('%f tiles / sec, %f pix / sec' %
-                  (tiles_s, tiles_s * self.tw * self.th))
+                #(_task, e) = out[1]
+                print('!' * 80)
+                print('ERROR: MW%d failed w/ exception' % wi)
+                (_task, _e, estr) = out[1]
+                print('Stack trace:')
+                for l in estr.split('\n'):
+                    print(l)
+                print('!' * 80)
+                if not self.ignore_errors:
+                    raise Exception('M: shutdown on worker failure')
+                print('WARNING: continuing despite worker failure')
+                self.worker_failures += 1
+            else:
+                print('%s' % (out, ))
+                raise Exception('internal error: bad task type %s' %
+                                what)
 
-            if len(self.closed_list_rc) != self.net_expected_tiles:
-                print('ERROR: expected to do %d basic tiles but did %d' %
-                      (self.net_expected_tiles, len(self.closed_list_rc)))
-                self.dump_open_list()
-                raise Exception(
-                    'State mismatch: expected %u basic tiles but open %u, closed %u, %u worker failures'
-                    % (self.net_expected_tiles, len(self.open_list_rc),
-                       len(self.closed_list_rc), self.worker_failures))
+            self.st_limit -= 1
+            if self.st_limit == 0:
+                print('Breaking on ST limit reached')
+                break
 
-            # Gather up supertile filenames generated by workers
-            # xxx: maybe we should tell slaves the file they should use?
-            # Used by singlify?
-            for worker in self.workers:
+        # Any workers need more work?
+        for wi, worker in enumerate(self.workers):
+            if self.all_allocated:
+                break
+            if worker.qi.empty():
                 while True:
                     try:
-                        st_fn = worker.st_fns.get(False)
-                    except queue.Empty:
+                        st_bounds = next(self.st_gen)
+                    except StopIteration:
+                        print('All tasks allocated')
+                        self.all_allocated = True
                         break
-                    self.st_fns.append(st_fn)
 
+                    progress = True
+
+                    [x0, x1, y0, y1] = st_bounds
+                    self.n_supertiles_complete += 1
+                    (st_solves,
+                     st_net) = self.should_try_supertile(st_bounds)
+                    print(
+                        'M: check st %u (x(%d:%d) y(%d:%d)) want %u / %u tiles'
+                        % (self.n_supertiles_complete, x0, x1, y0, y1,
+                           st_solves, st_net))
+                    if not st_solves:
+                        print(
+                            'WARNING: skipping supertile %d as it would not generate any new tiles'
+                            % self.n_supertiles_complete)
+                        continue
+
+                    print('*' * 80)
+                    #print('W%d: submit %s (%d / %d)' % (wi, repr(pair), self.pair_submit, n_pairs)
+                    print(
+                        "Creating supertile %d / %d with x%d:%d, y%d:%d"
+                        % (self.n_supertiles_complete, self.n_expected_sts, x0,
+                           x1, y0, y1))
+                    print('W%d: submit' % (wi, ))
+
+                    worker.qi.put((st_bounds, ))
+                    self.pair_submit += 1
+                    break
+
+        if time.time() - self.last_print > 5 * 60:
+            self.print_status()
+            self.last_print = time.time()
+
+        if progress:
+            self.last_progress = time.time()
+            self.core_dump()
+            self.idle = False
+        else:
+            # Prioritize master tasks, only print workers when idle
+            self.print_worker_logs()
+            if not self.idle:
+                print(
+                    'Server thread self. dry %s, all %u, complete %u / %u'
+                    % (self.dry, self.all_allocated, self.pair_complete,
+                       self.pair_submit))
+                self.print_status()
+                self.last_print = time.time()
+                #print(len(self.workers))
+                #print(self.workers[0].qo.qsize())
+                #print(self.workers[1].qo.qsize())
+            self.idle = True
+            # can take some time, but should be using smaller tiles now
+            if time.time() - self.last_progress > 4 * 60 * 60:
+                print('WARNING: server thread stalled')
+                self.last_progress = time.time()
+                time.sleep(0.1)
+
+    def loop_cleanup(self):
+        self.main_bench.stop()
+        print(
+            'Processed %d supertiles to generate %d new (%d total) tiles in %s'
+            % (self.n_expected_sts, self.this_tiles_done,
+               len(self.closed_list_rc), str(self.main_bench)))
+        tiles_s = self.this_tiles_done / self.main_bench.delta_s()
+        print('%f tiles / sec, %f pix / sec' %
+              (tiles_s, tiles_s * self.tw * self.th))
+
+        if len(self.closed_list_rc) != self.net_expected_tiles:
+            print('ERROR: expected to do %d basic tiles but did %d' %
+                  (self.net_expected_tiles, len(self.closed_list_rc)))
+            self.dump_open_list()
+            raise Exception(
+                'State mismatch: expected %u basic tiles but open %u, closed %u, %u worker failures'
+                % (self.net_expected_tiles, len(self.open_list_rc),
+                   len(self.closed_list_rc), self.worker_failures))
+
+        # Gather up supertile filenames generated by workers
+        # xxx: maybe we should tell slaves the file they should use?
+        # Used by singlify?
+        for worker in self.workers:
+            while True:
+                try:
+                    st_fn = worker.st_fns.get(False)
+                except queue.Empty:
+                    break
+                self.st_fns.append(st_fn)
+
+
+    def run(self):
+
+        try:
+            self.loop_setup()
+            self.print_status()
+            while not (self.all_allocated and self.pair_complete == self.pair_submit):
+                self.loop()
+            print("All pairs allocated and complete w/ %u failures" %
+                  self.worker_failures)
+            self.loop_cleanup()
+
+        except Exception as e:
+            print("ERROR: stitch shutting down on unchecked exception: %s" % str(e))
+            raise
         finally:
             print("Preparing to shut down")
-            print("    all_allocated: %s" % (all_allocated, ))
-            print("    pair_complete: %s" % (pair_complete, ))
-            print("    pair_submit: %s" % (pair_submit, ))
+            print("    all_allocated: %s" % (self.all_allocated, ))
+            print("    pair_complete: %s" % (self.pair_complete, ))
+            print("    pair_submit: %s" % (self.pair_submit, ))
             print("    worker_failures: %s" % (self.worker_failures, ))
             print("    mem_worker_max %0.3f GB" %
                   (self.mem_worker_max / 1e9, ))
             print("    mem_net_max %0.3f GB" % (self.mem_net_max / 1e9, ))
-            print_status()
+            self.print_status()
             self.wkill()
             self.core_dump("final")
             self.workers = None

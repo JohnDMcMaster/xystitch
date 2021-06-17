@@ -16,6 +16,7 @@ from xystitch.pto.project import PTOProject
 from xystitch.config import config
 from xystitch.single import singlify, HugeImage
 from xystitch.util import logwt, add_bool_arg, size2str, mksize, mem2pix, pix2mem
+from xystitch.benchmark import Benchmark
 
 import argparse
 import glob
@@ -86,92 +87,96 @@ def run(args):
     out_dir = 'out'
     _outlog, _errlog, outdate, _errdate = logwt(log_dir, 'main.log', shift_d=True)
     worker_stdout = outdate.fd
-
-    print('Assuming input %s is pto project to be stitched' % args.pto)
-    project = PTOProject.from_file_name(args.pto)
-    print('Creating tiler')
-    threads, stp = make_threads_stp(args)
-
-    t = Tiler(pto=project,
-              out_dir=out_dir,
-              stw=mksize(args.stw),
-              sth=mksize(args.sth),
-              stp=stp,
-              clip_width=args.clip_width,
-              clip_height=args.clip_height,
-              log_dir=log_dir,
-              is_full=args.full,
-              dry=args.dry,
-              worker_stdout=worker_stdout)
-    t.set_threads(threads)
-    t.set_verbose(args.verbose)
-    t.set_st_dir(args.st_dir)
-    t.set_out_extension(args.out_ext)
-    t.set_ignore_errors(args.ignore_errors)
-    t.set_ignore_crop(args.ignore_crop)
-    t.set_st_limit(float(args.st_limit))
-
-    # TODO: make this more proper?
-    if args.nona_args:
-        t.nona_args = args.nona_args.replace('"', '').split(' ')
-    if args.enblend_args:
-        t.enblend_args = args.enblend_args.replace('"', '').split(' ')
-
-    if args.super_t_xstep:
-        t.set_super_t_xstep(args.super_t_xstep)
-    if args.super_t_ystep:
-        t.set_super_t_ystep(args.super_t_ystep)
-    if args.clip_width:
-        t.set_clip_width(args.clip_width)
-    if args.clip_height:
-        t.set_clip_height(args.clip_height)
-    # if they specified clip but not supertile step recalculate the step so they don't have to do it
-    if args.clip_width or args.clip_height and not (args.super_t_xstep
-                                                    or args.super_t_ystep):
-        t.recalc_step()
-
-    t.set_enblend_lock(args.enblend_lock)
-
-    if args.single_dir and not os.path.exists(args.single_dir):
-        os.mkdir(args.single_dir)
-
-    config.set_enblend_safe_mode(args.safe_mode)
-
-    print('Running tiler')
-    try:
-        t.run()
-    except KeyboardInterrupt:
-        if t.stale_worker:
-            print('WARNING: forcing exit on stuck worker')
-            time.sleep(0.5)
-            os._exit(1)
-        raise
-    print('Tiler done!')
-
-    print('Creating single image')
-    single_fn = args.single_fn
-    if single_fn is None:
-        single_fn = 'out.jpg'
-    if args.single_dir:
-        single_fn = os.path.join(args.single_dir, single_fn)
-    # sometimes I restitch with different supertile size
-    # this results in excessive merge, although really I should just delete the old files
-    if 1:
-        print('Single: using glob strategy on merge')
-        s_fns = glob.glob(os.path.join(args.st_dir, 'st_*x_*y.jpg'))
-    else:
-        print('Single: using output strategy')
-        s_fns = t.st_fns
-
-    single_fn_alt = None
-    if args.single_fn is None:
-        single_fn_alt = single_fn.replace('.jpg', '.tif')
+    bench = Benchmark()
 
     try:
-        singlify(s_fns, single_fn, single_fn_alt)
-    except HugeImage:
-        print('WARNING: single: exceeds max image size, skipped')
+        print('Assuming input %s is pto project to be stitched' % args.pto)
+        project = PTOProject.from_file_name(args.pto)
+        print('Creating tiler')
+        threads, stp = make_threads_stp(args)
 
+        t = Tiler(pto=project,
+                  out_dir=out_dir,
+                  stw=mksize(args.stw),
+                  sth=mksize(args.sth),
+                  stp=stp,
+                  clip_width=args.clip_width,
+                  clip_height=args.clip_height,
+                  log_dir=log_dir,
+                  is_full=args.full,
+                  dry=args.dry,
+                  worker_stdout=worker_stdout)
+        t.set_threads(threads)
+        t.set_verbose(args.verbose)
+        t.set_st_dir(args.st_dir)
+        t.set_out_extension(args.out_ext)
+        t.set_ignore_errors(args.ignore_errors)
+        t.set_ignore_crop(args.ignore_crop)
+        t.set_st_limit(float(args.st_limit))
+
+        # TODO: make this more proper?
+        if args.nona_args:
+            t.nona_args = args.nona_args.replace('"', '').split(' ')
+        if args.enblend_args:
+            t.enblend_args = args.enblend_args.replace('"', '').split(' ')
+
+        if args.super_t_xstep:
+            t.set_super_t_xstep(args.super_t_xstep)
+        if args.super_t_ystep:
+            t.set_super_t_ystep(args.super_t_ystep)
+        if args.clip_width:
+            t.set_clip_width(args.clip_width)
+        if args.clip_height:
+            t.set_clip_height(args.clip_height)
+        # if they specified clip but not supertile step recalculate the step so they don't have to do it
+        if args.clip_width or args.clip_height and not (args.super_t_xstep
+                                                        or args.super_t_ystep):
+            t.recalc_step()
+
+        t.set_enblend_lock(args.enblend_lock)
+
+        if args.single_dir and not os.path.exists(args.single_dir):
+            os.mkdir(args.single_dir)
+
+        config.set_enblend_safe_mode(args.safe_mode)
+
+        print('Running tiler')
+        try:
+            t.run()
+        except KeyboardInterrupt:
+            if t.stale_worker:
+                print('WARNING: forcing exit on stuck worker')
+                time.sleep(0.5)
+                os._exit(1)
+            raise
+        print('Tiler done!')
+
+        print('Creating single image')
+        single_fn = args.single_fn
+        if single_fn is None:
+            single_fn = 'out.jpg'
+        if args.single_dir:
+            single_fn = os.path.join(args.single_dir, single_fn)
+        # sometimes I restitch with different supertile size
+        # this results in excessive merge, although really I should just delete the old files
+        if 1:
+            print('Single: using glob strategy on merge')
+            s_fns = glob.glob(os.path.join(args.st_dir, 'st_*x_*y.jpg'))
+        else:
+            print('Single: using output strategy')
+            s_fns = t.st_fns
+
+        single_fn_alt = None
+        if args.single_fn is None:
+            single_fn_alt = single_fn.replace('.jpg', '.tif')
+
+        try:
+            singlify(s_fns, single_fn, single_fn_alt)
+        except HugeImage:
+            print('WARNING: single: exceeds max image size, skipped')
+    finally:
+        bench.stop()
+        print('Completed in %s' % bench)
 
 def main():
     parser = argparse.ArgumentParser(
