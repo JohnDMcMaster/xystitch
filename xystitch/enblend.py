@@ -159,9 +159,24 @@ class Enblend:
         # Cache is discontinued b/c developers don't consider it safe
         # In some instances a stitch crashes as a result of it
         # However it has such great performance benefit I still use it
-        if config.enblend_safe_mode:
-            print('Blender: safe mode activated')
-        if self.cache_mb and enblend_supports_cache() and not config.enblend_safe_mode:
+        """
+        test/simple on "cluster" xy-ts net time
+        note: enblend is only part of this => actual effect is larger
+        normal:: 7.8 sec net => 5.3 sec
+        safer: 11.8 sec net => 9.3 sec
+        safest: 6.5 sec net => 4.0 sec
+            looks like 4 sec on enblend
+        """
+        if config.enblend_safer_mode:
+            print('Blender: safer mode activated')
+            # IIRC this takes more memory but is more likely to succeed
+            # Quick test
+            # So significant performance impact
+            args.append("--fine-mask")
+        if config.enblend_safest_mode:
+            print('Blender: safest mode activated')
+            args.append("--no-optimize")
+        if self.cache_mb and enblend_supports_cache() and not config.enblend_safer_mode and not config.enblend_safest_mode:
             args.append("-m")
             args.append(str(self.cache_mb))
         for arg in self.additional_args:
