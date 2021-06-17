@@ -1381,7 +1381,7 @@ class Tiler:
         assert n_open <= n_tiles
 
         #temp_file = 'partial.tif'
-        self.n_supertiles_complete = 0
+        self.n_supertiles_allocated = 0
         self.st_gen = self.gen_supertiles()
 
         self.all_allocated = False
@@ -1475,24 +1475,25 @@ class Tiler:
                     progress = True
 
                     [x0, x1, y0, y1] = st_bounds
-                    self.n_supertiles_complete += 1
+                    self.n_supertiles_allocated += 1
                     (st_solves,
                      st_net) = self.should_try_supertile(st_bounds)
                     print(
                         'M: check st %u (x(%d:%d) y(%d:%d)) want %u / %u tiles'
-                        % (self.n_supertiles_complete, x0, x1, y0, y1,
+                        % (self.n_supertiles_allocated, x0, x1, y0, y1,
                            st_solves, st_net))
                     if not st_solves:
                         print(
                             'WARNING: skipping supertile %d as it would not generate any new tiles'
-                            % self.n_supertiles_complete)
+                            % self.n_supertiles_allocated)
+                        self.closed_sts.add(tuple(st_bounds))
                         continue
 
                     print('*' * 80)
                     #print('W%d: submit %s (%d / %d)' % (wi, repr(pair), self.pair_submit, n_pairs)
                     print(
                         "Creating supertile %d / %d with x%d:%d, y%d:%d"
-                        % (self.n_supertiles_complete, self.n_expected_sts, x0,
+                        % (self.n_supertiles_allocated, self.n_expected_sts, x0,
                            x1, y0, y1))
                     print('W%d: submit' % (wi, ))
 
