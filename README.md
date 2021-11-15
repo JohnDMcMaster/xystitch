@@ -59,13 +59,24 @@ Now open in Hugin to rotate and crop the image (optional):
 ```
 xy-hugin out.pto
 ```
- 
-Now:
-1. Click on "
-view panorama"
+
+If you want a quick result from Hugin:
+1. Click on interface => Simple
 1. Go to crop tab and set crop
 1. Save project (ctrl-S or file => save)
-1. Close both windows
+1. Close the Hugin window
+
+ 
+If you want a higher quality result from Hugin:
+1. Click on interface => Expert
+1. If you don't see a "Crop" tab already: Click on View menu => "Fast Panorama Preview Window"
+1. Go to projection tab. If image doesn't fit in the screen, increase field of view
+1. Go to move/drag tag and update Roll until image is level
+1. Go to crop tab and set crop
+1. Go back to the other Hugin window (might be called "Hugin - Panorrama Sticher")
+1. Go to stitcher tab and click "Calcualte Optimal Size"
+1. Save project (ctrl-S or file => save)
+1. Close both Hugin windows (closing the main window will close both)
 
 ```
 # On my carbon X1 (gen 4) this took ~45 sec
