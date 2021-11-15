@@ -30,7 +30,8 @@ Install:
 
 ```
 # Misc requirements
-sudo apt install hugin-tools enblend imagemagick
+sudo apt install hugin-tools enblend imagemagick python3-psutil
+sudo pip3 install Pillow
 
 # Do one of these:
 # Option 1: install from pip
