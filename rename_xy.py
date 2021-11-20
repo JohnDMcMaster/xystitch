@@ -129,7 +129,7 @@ def apply_serpentine(imrows, layout):
 def apply_du(imrows, layout):
     # Reverse to be top to bottom
     if layout not in ("serp-lr-du", "serp-rl-du", "lr-du", "rl-du"):
-        return
+        return imrows
     # Mirror along x axis
     for row in range(len(imrows) // 2):
         imrows[row], imrows[len(imrows) - row - 1] = imrows[len(imrows) - row - 1], imrows[row]
@@ -186,14 +186,14 @@ def main():
     parser = argparse.ArgumentParser(
         description='Rename manually captured images into a grid')
     add_bool_arg(parser, '--verbose', default=False, help='')
-    add_bool_arg(parser, '--dry', default=True, help='')
+    add_bool_arg(parser, '--dry', default=True, help='Dry run. Set to False after verifying the tool does the right thing.')
     add_bool_arg(parser, '--rm-even-row', default=False, help='')
     add_bool_arg(parser, '--rm-odd-row', default=False, help='')
     add_bool_arg(parser, '--rm-even-col', default=False, help='')
     add_bool_arg(parser, '--rm-odd-col', default=False, help='')
     parser.add_argument('--fill-before', default="", help='List of placeholder images to insert to fill in missing grid entries')
     parser.add_argument('--fill-after', default="", help='List of placeholder images to insert to fill in missing grid entries')
-    parser.add_argument('--layout', required=True, help='')
+    parser.add_argument('--layout', required=True, help='Order images are in, one of: [serp-]{lr-ud | lr-du | rl-du}')
     parser.add_argument('--cols',
                         type=int,
                         default=None,
