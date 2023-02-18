@@ -105,16 +105,20 @@ def nona_version():
             return l.split()[2]
     raise Exception("Failed to parse version")
 
+
 class Nona:
     TIFF_SINGLE = "TIFF_m"
     TIFF_MULTILAYER = "TIFF_multilayer"
 
-    def __init__(self, pto_project, output_prefix="nonaout", start_hook=None, pprefix=None):
+    def __init__(self,
+                 pto_project,
+                 output_prefix="nonaout",
+                 start_hook=None,
+                 pprefix=None):
         if output_prefix is None or len(
                 output_prefix
         ) == 0 or output_prefix == '.' or output_prefix == '..':
-            raise NonaFailed('Bad output file base "%s"' %
-                                 str(output_prefix))
+            raise NonaFailed('Bad output file base "%s"' % str(output_prefix))
 
         self.pto_project = pto_project
         # if true assume pto project is already setup up correctly

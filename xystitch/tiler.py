@@ -92,11 +92,17 @@ def pid_memory_recursive(pid, indent=""):
 
 
 class PartialStitcher(object):
-    def __init__(self, pto, bounds, out, worki, work_run, pprefix,
-                enblend_lock = False,
-                nona_args = [],
-                enblend_args = [],
-                enblend_cache_mb=None):
+    def __init__(self,
+                 pto,
+                 bounds,
+                 out,
+                 worki,
+                 work_run,
+                 pprefix,
+                 enblend_lock=False,
+                 nona_args=[],
+                 enblend_args=[],
+                 enblend_cache_mb=None):
         self.pto = pto
         self.bounds = bounds
         self.out = out
@@ -167,7 +173,8 @@ class PartialStitcher(object):
               len(remapper.get_output_files()))
         blender = Enblend(remapper.get_output_files(),
                           self.out,
-                          lock=self.enblend_lock, pprefix=self.pprefix,
+                          lock=self.enblend_lock,
+                          pprefix=self.pprefix,
                           cache_mb=self.enblend_cache_mb)
         blender.args = self.enblend_args
         blender.run()
@@ -244,10 +251,15 @@ class Worker(object):
                 sys.stderr = outlog
 
                 def worker_pprefix():
-                    return "%s W%u: " % (datetime.datetime.utcnow().isoformat(), self.i)
+                    return "%s W%u: " % (
+                        datetime.datetime.utcnow().isoformat(), self.i)
 
-                self.outdate = IOTimestamp(sys, 'stdout', pprefix=worker_pprefix)
-                self.errdate = IOTimestamp(sys, 'stderr', pprefix=worker_pprefix)
+                self.outdate = IOTimestamp(sys,
+                                           'stdout',
+                                           pprefix=worker_pprefix)
+                self.errdate = IOTimestamp(sys,
+                                           'stderr',
+                                           pprefix=worker_pprefix)
             else:
                 print("Working using stdout")
 
@@ -540,7 +552,8 @@ class Tiler:
         stp = self.stw * self.sth
         cstp = (self.stw - 2 * self.clip_width) * (self.sth -
                                                    2 * self.clip_height)
-        self.verbose and print("Center ST efficiency: %0.1f%%" % (100.0 * cstp / stp))
+        self.verbose and print("Center ST efficiency: %0.1f%%" %
+                               (100.0 * cstp / stp))
 
     def set_threads(self, threads):
         self.threads = int(threads)
@@ -646,8 +659,9 @@ class Tiler:
         # for small sets we don't care
         for check_w in range(min_stwh, max_stwh, 100):
             check_h = stp / check_w
-            self.verbose and print('Checking supertile size %dw X %dh (area %d)' %
-                  (check_w, check_h, check_w * check_h))
+            self.verbose and print(
+                'Checking supertile size %dw X %dh (area %d)' %
+                (check_w, check_h, check_w * check_h))
             try:
                 tiler = Tiler(pto=self.pto,
                               out_dir=self.out_dir,
@@ -674,11 +688,13 @@ class Tiler:
                 continue
 
             p = (check_w + check_h) * 2
-            self.verbose and print('Would generate %d supertiles each with perimeter %d' %
-                  (n_expected, p))
+            self.verbose and print(
+                'Would generate %d supertiles each with perimeter %d' %
+                (n_expected, p))
             # TODO: there might be some optimizations within this for trimming...
             # Add a check for minimum total mapped area
-            if self.best_n is None or self.best_n > n_expected or (self.best_n == n_expected and best_p > p):
+            if self.best_n is None or self.best_n > n_expected or (
+                    self.best_n == n_expected and best_p > p):
                 self.best_n = n_expected
                 best_w = check_w
                 best_h = check_h
@@ -693,8 +709,7 @@ class Tiler:
             raise Exception("Failed to find stitch solution")
         print('Best n %d w/ %dw X %dh' % (self.best_n, best_w, best_h))
         for x0, x1, y0, y1 in best_sts:
-            print("  st %ux0 %ux1 %uy0 %uy1" %
-                  (x0, x1, y0, y1))
+            print("  st %ux0 %ux1 %uy0 %uy1" % (x0, x1, y0, y1))
 
         self.stw = best_w
         self.sth = best_h
@@ -775,7 +790,8 @@ class Tiler:
               (orig_net_area, new_net_area,
                100.0 * new_net_area / orig_net_area))
         # Should not have changed how many
-        assert self.best_n == self.expected_sts(), ("Optimizer went too far :(", self.best_n, self.expected_sts())
+        assert self.best_n == self.expected_sts(), (
+            "Optimizer went too far :(", self.best_n, self.expected_sts())
 
     def make_full(self):
         '''Stitch a single supertile'''
@@ -798,11 +814,13 @@ class Tiler:
         Will get worse the more tiles you create
         '''
         try:
-            self.super_t_xstep = int(self.stw - 2 * self.clip_width - 2 * self.tw)
+            self.super_t_xstep = int(self.stw - 2 * self.clip_width -
+                                     2 * self.tw)
             if self.super_t_xstep <= 0:
                 print('parameters', self.sth, self.clip_height, self.th)
                 raise InvalidClip("Bad xstep: %s" % self.super_t_xstep)
-            self.super_t_ystep = int(self.sth - 2 * self.clip_height - 2 * self.th)
+            self.super_t_ystep = int(self.sth - 2 * self.clip_height -
+                                     2 * self.th)
             if self.super_t_ystep <= 0:
                 print('parameters', self.sth, self.clip_height, self.th)
                 raise InvalidClip("Bad ystep: %s" % self.super_t_ystep)
@@ -1263,21 +1281,18 @@ class Tiler:
         2021-04-21T22:43:08.625917:   mem_net_max 0.240 GB
         2021-04-21T22:43:08.625943:   mem_worker_max 0.031 GB
         """
-        print("Status w/ %u / %u supertiles complete, %u / %u tiles complete" % (
-                len(self.closed_sts), self.n_expected_sts,
-                len(self.closed_list_rc), self.n_tiles()))
-        print("  %u / %u submitted tasks complete" % (self.pair_complete, self.pair_submit))
+        print("Status w/ %u / %u supertiles complete, %u / %u tiles complete" %
+              (len(self.closed_sts), self.n_expected_sts,
+               len(self.closed_list_rc), self.n_tiles()))
+        print("  %u / %u submitted tasks complete" %
+              (self.pair_complete, self.pair_submit))
         # Net size => uncropped
         # ST size => a portion of the cropped image
         print('  Net size: %u MP, ST max size: %u MP' %
-              (self.width() * self.height() / 1e6,
-              self.stw * self.sth / 1e6))
-        print("  mem_net_last %0.3f GB" %
-              (self.mem_net_last / 1e9, ))
-        print("  mem_net_max %0.3f GB" %
-              (self.mem_net_max / 1e9, ))
-        print("  mem_worker_max %0.3f GB" %
-              (self.mem_worker_max / 1e9, ))
+              (self.width() * self.height() / 1e6, self.stw * self.sth / 1e6))
+        print("  mem_net_last %0.3f GB" % (self.mem_net_last / 1e9, ))
+        print("  mem_net_max %0.3f GB" % (self.mem_net_max / 1e9, ))
+        print("  mem_worker_max %0.3f GB" % (self.mem_worker_max / 1e9, ))
 
     def loop_setup(self):
         self.mem_net_last = 0
@@ -1304,8 +1319,7 @@ class Tiler:
         print('Input images width %d, height %d' %
               (self.img_width, self.img_height))
         print('Output to %s' % self.out_dir)
-        print('Super tile width %d, height %d' %
-              (self.stw, self.sth))
+        print('Super tile width %d, height %d' % (self.stw, self.sth))
         print('Super tile x step %d, y step %d' %
               (self.super_t_xstep, self.super_t_ystep))
         print('Supertile clip width %d, height %d' %
@@ -1351,7 +1365,8 @@ class Tiler:
             print('Full => forcing 1 thread ')
             self.threads = 1
         if self.n_expected_sts < self.threads:
-            print("Reducing max worker threads %u to match ST count %u" % (self.threads, self.n_expected_sts))
+            print("Reducing max worker threads %u to match ST count %u" %
+                  (self.threads, self.n_expected_sts))
             self.threads = self.n_expected_sts
         print("Initializing %d workers" % self.threads)
         self.workers = []
@@ -1427,8 +1442,7 @@ class Tiler:
                 try:
                     self.process_image(img_fn, im, st_bounds)
                 except NoTilesGenerated:
-                    print("WARNING: image did not generate tiles %s" %
-                          img_fn)
+                    print("WARNING: image did not generate tiles %s" % img_fn)
             elif what == 'exception':
                 if not self.ignore_errors:
                     for worker in self.workers:
@@ -1451,8 +1465,7 @@ class Tiler:
                 self.worker_failures += 1
             else:
                 print('%s' % (out, ))
-                raise Exception('internal error: bad task type %s' %
-                                what)
+                raise Exception('internal error: bad task type %s' % what)
 
             self.st_limit -= 1
             if self.st_limit == 0:
@@ -1476,8 +1489,7 @@ class Tiler:
 
                     [x0, x1, y0, y1] = st_bounds
                     self.n_supertiles_allocated += 1
-                    (st_solves,
-                     st_net) = self.should_try_supertile(st_bounds)
+                    (st_solves, st_net) = self.should_try_supertile(st_bounds)
                     print(
                         'M: check st %u (x(%d:%d) y(%d:%d)) want %u / %u tiles'
                         % (self.n_supertiles_allocated, x0, x1, y0, y1,
@@ -1491,10 +1503,9 @@ class Tiler:
 
                     print('*' * 80)
                     #print('W%d: submit %s (%d / %d)' % (wi, repr(pair), self.pair_submit, n_pairs)
-                    print(
-                        "Creating supertile %d / %d with x%d:%d, y%d:%d"
-                        % (self.n_supertiles_allocated, self.n_expected_sts, x0,
-                           x1, y0, y1))
+                    print("Creating supertile %d / %d with x%d:%d, y%d:%d" %
+                          (self.n_supertiles_allocated, self.n_expected_sts,
+                           x0, x1, y0, y1))
                     print('W%d: submit' % (wi, ))
 
                     worker.qi.put((st_bounds, ))
@@ -1513,9 +1524,8 @@ class Tiler:
             # Prioritize master tasks, only print workers when idle
             self.print_worker_logs()
             if not self.idle:
-                print(
-                    'Server thread self. dry %s, all %u, complete %u / %u'
-                    % (self.dry, self.all_allocated, self.pair_complete,
+                print('Server thread self. dry %s, all %u, complete %u / %u' %
+                      (self.dry, self.all_allocated, self.pair_complete,
                        self.pair_submit))
                 self.print_status()
                 self.last_print = time.time()
@@ -1559,20 +1569,21 @@ class Tiler:
                     break
                 self.st_fns.append(st_fn)
 
-
     def run(self):
 
         try:
             self.loop_setup()
             self.print_status()
-            while not (self.all_allocated and self.pair_complete == self.pair_submit):
+            while not (self.all_allocated
+                       and self.pair_complete == self.pair_submit):
                 self.loop()
             print("All pairs allocated and complete w/ %u failures" %
                   self.worker_failures)
             self.loop_cleanup()
 
         except Exception as e:
-            print("ERROR: stitch shutting down on unchecked exception: %s" % str(e))
+            print("ERROR: stitch shutting down on unchecked exception: %s" %
+                  str(e))
             raise
         finally:
             print("Preparing to shut down")

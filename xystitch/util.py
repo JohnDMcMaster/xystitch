@@ -252,5 +252,6 @@ def mem2pix(mem):
     # since the files got deleted after the run it wasn't obvious
     #return mem * 35 / 1000
 
+
 def pix2mem(pix):
     return pix / (51 / 1000)

@@ -93,6 +93,7 @@ import sys
 import subprocess
 import re
 
+
 def enblend_supports_cache():
     """
     Extra feature: image cache: yes
@@ -100,7 +101,9 @@ def enblend_supports_cache():
     Hmm maybe should set this var...
     """
     # Errors if you don't have x server, but still returns version
-    out = subprocess.check_output("enblend --version -v || true", encoding="ascii", shell=True)
+    out = subprocess.check_output("enblend --version -v || true",
+                                  encoding="ascii",
+                                  shell=True)
     for l in out.split("\n"):
         m = re.match(r"Extra feature: image cache: (.+)", l)
         if not m:
@@ -108,12 +111,18 @@ def enblend_supports_cache():
         return m.group(1) == "yes"
     return False
 
+
 class EnblendFailed(CommandFailed):
     pass
 
 
 class Enblend:
-    def __init__(self, input_files, output_file, lock=False, pprefix=None, cache_mb=None):
+    def __init__(self,
+                 input_files,
+                 output_file,
+                 lock=False,
+                 pprefix=None,
+                 cache_mb=None):
         self.input_files = input_files
         self.output_file = output_file
         self.additional_args = []
@@ -140,7 +149,8 @@ class Enblend:
             except IOError:
                 # Can take a while, print every 10 min or so and once at failure
                 if i % (10 * 60 * 10) == 0:
-                    print('enblend: Failed to acquire enblend lock, retrying (print every 10 min)'
+                    print(
+                        'enblend: Failed to acquire enblend lock, retrying (print every 10 min)'
                     )
                 time.sleep(0.1)
             i += 1
@@ -176,7 +186,8 @@ class Enblend:
         if config.enblend_safest_mode:
             print('Blender: safest mode activated')
             args.append("--no-optimize")
-        if self.cache_mb and enblend_supports_cache() and not config.enblend_safer_mode and not config.enblend_safest_mode:
+        if self.cache_mb and enblend_supports_cache(
+        ) and not config.enblend_safer_mode and not config.enblend_safest_mode:
             args.append("-m")
             args.append(str(self.cache_mb))
         for arg in self.additional_args:
@@ -191,9 +202,9 @@ class Enblend:
 
         # Prefix w/ version
         execute.prefix(["enblend", "--version"],
-                            stdout=self.stdout,
-                            stderr=self.stderr,
-                            prefix=self.pprintprefix)
+                       stdout=self.stdout,
+                       stderr=self.stderr,
+                       prefix=self.pprintprefix)
 
         print('Blender: executing %s' % (' '.join(args), ))
         rc = execute.prefix(args,

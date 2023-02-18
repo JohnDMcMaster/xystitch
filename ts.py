@@ -24,6 +24,7 @@ import os
 import time
 import math
 
+
 def make_threads_stp(args):
     """
     Ultimately require:
@@ -72,7 +73,8 @@ def make_threads_stp(args):
         max_mem = config.max_mem()
         stm = pix2mem(stp)
         max_st_threads = int(max(math.floor(max_mem / stm), 1))
-        print("Strategy best: memory fits %u STs, %u threads available" % (max_st_threads, threads))
+        print("Strategy best: memory fits %u STs, %u threads available" %
+              (max_st_threads, threads))
         print("  Max total memory: %sB" % size2str(max_mem))
         print("  Max ST pixels: %s" % size2str(stp))
         print("  Estimated max ST memory: %sB" % size2str(stm))
@@ -82,10 +84,13 @@ def make_threads_stp(args):
 
     return threads, stp
 
+
 def run(args):
     log_dir = args.log
     out_dir = 'out'
-    _outlog, _errlog, outdate, _errdate = logwt(log_dir, 'main.log', shift_d=True)
+    _outlog, _errlog, outdate, _errdate = logwt(log_dir,
+                                                'main.log',
+                                                shift_d=True)
     worker_stdout = outdate.fd
     bench = Benchmark()
 
@@ -179,6 +184,7 @@ def run(args):
         bench.stop()
         print('Completed in %s' % bench)
 
+
 def main():
     parser = argparse.ArgumentParser(
         description='create tiles from unstitched images')
@@ -223,11 +229,10 @@ def main():
     parser.add_argument('--nona-args')
     parser.add_argument('--enblend-args')
     # Originally this was false, but usually when something fails I still want best effort
-    add_bool_arg(
-                        parser,
-                        '--ignore-errors',
-                        default=True,
-                        help='skip broken tile stitches (advanced)')
+    add_bool_arg(parser,
+                 '--ignore-errors',
+                 default=True,
+                 help='skip broken tile stitches (advanced)')
     parser.add_argument('--verbose',
                         '-v',
                         action="store_true",
@@ -252,24 +257,24 @@ def main():
         default=False,
         help=
         'use lock file to only enblend (memory intensive part) one at a time')
-    add_bool_arg(
-        parser,
-        '--dry',
-        default=False,
-        help=
-        'Calculate stitch parameters and exit')
+    add_bool_arg(parser,
+                 '--dry',
+                 default=False,
+                 help='Calculate stitch parameters and exit')
     add_bool_arg(
         parser,
         '--safer-mode',
         default=False,
         help=
-        'Use options that will likely generate a stitch, albeit be slower. Includes: disable image caching')
+        'Use options that will likely generate a stitch, albeit be slower. Includes: disable image caching'
+    )
     add_bool_arg(
         parser,
         '--safest-mode',
         default=False,
         help=
-        'Use options that will very likely generate a stitch, albeit with poor results. Includes: disable image seam optimization entirely')
+        'Use options that will very likely generate a stitch, albeit with poor results. Includes: disable image seam optimization entirely'
+    )
     parser.add_argument('--threads', type=int, default=None)
     parser.add_argument('--log', default='pr0nts', help='Output log file name')
     args = parser.parse_args()

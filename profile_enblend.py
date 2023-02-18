@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 """
 TODO:
 -Plot memory as images increase
@@ -10,6 +9,7 @@ import argparse
 import matplotlib.pyplot as plt
 import re
 import dateutil.parser
+
 
 def load_enblends(fn):
     """
@@ -22,7 +22,8 @@ def load_enblends(fn):
     2021-04-20T02:45:34.820427: 2021-04-20T02:45:34.820387 w0: enblend: info: loading next image: /mnt/m10_4/tmp/8B2DEF981C116130/st_000427x_011546y_80A42DAC5292D592/0023.tif 1/1
     """
     for l in open(fn):
-        m = re.search(r"([0-9T\.\-\:]+) [wW]0: enblend: info: loading next image", l)
+        m = re.search(
+            r"([0-9T\.\-\:]+) [wW]0: enblend: info: loading next image", l)
         # m = re.search(r"([0-9T\.\-\:]+) W[0-9]+: enblend: info: loading next image", l)
         if not m:
             continue
@@ -30,6 +31,7 @@ def load_enblends(fn):
         # print(datestr, l)
         dt = dateutil.parser.isoparse(datestr)
         yield dt
+
 
 def load_enblend_log_net(fn):
     t0 = None
@@ -41,6 +43,7 @@ def load_enblend_log_net(fn):
         times.append(t / 60.0)
     assert len(times)
     return list(range(len(times))), times
+
 
 def load_enblend_log_diff(fn):
     tlast = None
@@ -76,7 +79,7 @@ def main():
         else:
             imgns, ts = load_enblend_log_diff(fn)
         print("%s: %u images" % (fn, len(ts)))
-        plt.plot(imgns, ts, label = label)
+        plt.plot(imgns, ts, label=label)
     plt.xlabel('Image #')
     if args.net:
         plt.ylabel('t (min) aggregate')
@@ -89,6 +92,7 @@ def main():
         plt.savefig(args.save)
     else:
         plt.show()
+
 
 if __name__ == "__main__":
     main()

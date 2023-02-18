@@ -4,6 +4,7 @@ import multiprocessing
 from psutil import virtual_memory
 from .util import mksize
 
+
 class Config:
     def __init__(self, fn=None):
         if fn is None:
@@ -66,7 +67,7 @@ class Config:
         ret = self.get('mem', None)
         if ret is None:
             # Evidently this is physical memory
-            ret =int(virtual_memory().total * 0.75)
+            ret = int(virtual_memory().total * 0.75)
         return ret
 
     def st_max_pix(self):
@@ -130,6 +131,7 @@ class Config:
 
     def set_enblend_safest_mode(self, enblend_safest_mode):
         self.enblend_safest_mode = enblend_safest_mode
+
 
 config = Config()
 

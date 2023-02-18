@@ -12,11 +12,20 @@ import os
 import shutil
 import math
 
-def seed_layout(fns, cols, endrows, fill_before=[], fill_after=[], verbose=False):
+
+def seed_layout(fns,
+                cols,
+                endrows,
+                fill_before=[],
+                fill_after=[],
+                verbose=False):
     imrows = []
     if cols is not None:
         if len(fill_before) == 0 and len(fill_after) == 0:
-            assert len(fns) % cols == 0, "%u filenames is not a multiple of %u columns" % (len(fns), cols)
+            assert len(
+                fns
+            ) % cols == 0, "%u filenames is not a multiple of %u columns" % (
+                len(fns), cols)
         currow = None
         n_fns = 0
         for fn in fns:
@@ -36,16 +45,18 @@ def seed_layout(fns, cols, endrows, fill_before=[], fill_after=[], verbose=False
 
             # Insert placeholders
             while fn in fill_after:
-                print("%s: insert placeholder after row %u, col %u" % (fn, len(imrows) - 1, len(currow) - 1))
+                print("%s: insert placeholder after row %u, col %u" %
+                      (fn, len(imrows) - 1, len(currow) - 1))
                 currow.append(None)
                 n_fns += 1
                 fill_after.remove(fn)
 
-            if n_fns% cols == 0:
-                verbose and print("Finish row: %s" % (currow,))
+            if n_fns % cols == 0:
+                verbose and print("Finish row: %s" % (currow, ))
                 currow = None
         for rowi, row in enumerate(imrows):
-            assert len(row) == cols, "Row %u has %u cols but need %u" % (rowi, len(row), cols)
+            assert len(row) == cols, "Row %u has %u cols but need %u" % (
+                rowi, len(row), cols)
     elif endrows is not None:
         # Bucket into rows
         endrows = endrows.split(",")
@@ -77,7 +88,12 @@ def seed_layout(fns, cols, endrows, fill_before=[], fill_after=[], verbose=False
         raise Exception("Need either cols or endrows")
     return imrows
 
-def rm_rowcols(imrows, rm_even_row=False, rm_odd_row=False, rm_even_col=False, rm_odd_col=False):
+
+def rm_rowcols(imrows,
+               rm_even_row=False,
+               rm_odd_row=False,
+               rm_even_col=False,
+               rm_odd_col=False):
     if rm_even_row:
         ret = []
         for rowi, imrow in enumerate(imrows):
@@ -108,6 +124,7 @@ def rm_rowcols(imrows, rm_even_row=False, rm_odd_row=False, rm_even_col=False, r
 
     return imrows
 
+
 def apply_serpentine(imrows, layout):
     if layout.find("serp-") != 0:
         return imrows
@@ -126,14 +143,17 @@ def apply_serpentine(imrows, layout):
         raise Exception("Invalid layout %s" % layout)
     return imrows
 
+
 def apply_du(imrows, layout):
     # Reverse to be top to bottom
     if layout not in ("serp-lr-du", "serp-rl-du", "lr-du", "rl-du"):
         return imrows
     # Mirror along x axis
     for row in range(len(imrows) // 2):
-        imrows[row], imrows[len(imrows) - row - 1] = imrows[len(imrows) - row - 1], imrows[row]
+        imrows[row], imrows[len(imrows) - row - 1] = imrows[len(imrows) - row -
+                                                            1], imrows[row]
     return imrows
+
 
 def trim_overlap(imrows):
     # Images have excessive overlap
@@ -148,6 +168,7 @@ def trim_overlap(imrows):
                 new_imrow.append(fn)
         imrows[rowi] = new_imrow
     return imrows
+
 
 def move_images(imrows, dir_in, dir_out, dry):
     # Calculate number columns
@@ -168,13 +189,33 @@ def move_images(imrows, dir_in, dir_out, dry):
                 shutil.copyfile("%s/%s" % (dir_in, fn),
                                 "%s/r%03u_c%03u.jpg" % (dir_out, row, col))
 
-def run(dir_in, dir_out, layout="serp-lr-ud", cols=None, endrows=None, dry=True,
-        rm_even_row=False, rm_odd_row=False, rm_even_col=False, rm_odd_col=False,
-        fill_before=[], fill_after=[], verbose=False):
+
+def run(dir_in,
+        dir_out,
+        layout="serp-lr-ud",
+        cols=None,
+        endrows=None,
+        dry=True,
+        rm_even_row=False,
+        rm_odd_row=False,
+        rm_even_col=False,
+        rm_odd_col=False,
+        fill_before=[],
+        fill_after=[],
+        verbose=False):
     fns = sorted(glob.glob("%s/*.jpg" % dir_in))
     # Get images into a grid, although not necessarily with the right orientation
-    imrows = seed_layout(fns, cols, endrows, fill_before=fill_before, fill_after=fill_after, verbose=verbose)
-    imrows = rm_rowcols(imrows, rm_even_row=rm_even_row, rm_odd_row=rm_odd_row, rm_even_col=rm_even_col, rm_odd_col=rm_odd_col)
+    imrows = seed_layout(fns,
+                         cols,
+                         endrows,
+                         fill_before=fill_before,
+                         fill_after=fill_after,
+                         verbose=verbose)
+    imrows = rm_rowcols(imrows,
+                        rm_even_row=rm_even_row,
+                        rm_odd_row=rm_odd_row,
+                        rm_even_col=rm_even_col,
+                        rm_odd_col=rm_odd_col)
     # Its more intuitive to get left/right right if we do this before serp
     imrows = apply_du(imrows, layout)
     imrows = apply_serpentine(imrows, layout)
@@ -186,14 +227,30 @@ def main():
     parser = argparse.ArgumentParser(
         description='Rename manually captured images into a grid')
     add_bool_arg(parser, '--verbose', default=False, help='')
-    add_bool_arg(parser, '--dry', default=True, help='Dry run. Set to False after verifying the tool does the right thing.')
+    add_bool_arg(
+        parser,
+        '--dry',
+        default=True,
+        help=
+        'Dry run. Set to False after verifying the tool does the right thing.')
     add_bool_arg(parser, '--rm-even-row', default=False, help='')
     add_bool_arg(parser, '--rm-odd-row', default=False, help='')
     add_bool_arg(parser, '--rm-even-col', default=False, help='')
     add_bool_arg(parser, '--rm-odd-col', default=False, help='')
-    parser.add_argument('--fill-before', default="", help='List of placeholder images to insert to fill in missing grid entries')
-    parser.add_argument('--fill-after', default="", help='List of placeholder images to insert to fill in missing grid entries')
-    parser.add_argument('--layout', required=True, help='Order images are in, one of: [serp-]{lr-ud | lr-du | rl-du}')
+    parser.add_argument(
+        '--fill-before',
+        default="",
+        help=
+        'List of placeholder images to insert to fill in missing grid entries')
+    parser.add_argument(
+        '--fill-after',
+        default="",
+        help=
+        'List of placeholder images to insert to fill in missing grid entries')
+    parser.add_argument(
+        '--layout',
+        required=True,
+        help='Order images are in, one of: [serp-]{lr-ud | lr-du | rl-du}')
     parser.add_argument('--cols',
                         type=int,
                         default=None,
@@ -217,7 +274,8 @@ def main():
         rm_odd_row=args.rm_odd_row,
         rm_even_col=args.rm_even_col,
         rm_odd_col=args.rm_odd_col,
-        fill_before=args.fill_before.split(","), fill_after=args.fill_after.split(","),
+        fill_before=args.fill_before.split(","),
+        fill_after=args.fill_after.split(","),
         verbose=args.verbose)
 
 
