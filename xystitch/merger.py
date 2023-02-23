@@ -4,10 +4,9 @@ Copyright 2011 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under a 2 clause BSD license, see COPYING for details
 '''
 
-from xystitch import execute
 from xystitch.temp_file import ManagedTempFile
 import os.path
-from xystitch.pto.util import dbg
+import subprocess
 
 
 class Merger:
@@ -25,9 +24,14 @@ class Merger:
         for pto in self.ptos:
             args.append(pto.get_a_file_name())
 
-        print('MERGING: %s' % (args, ))
+        # print('MERGING: %s' % (args, ))
 
-        rc = execute.without_output(args)
+        rc = subprocess.run(args,
+                            stdout=subprocess.DEVNULL,
+                            stderr=subprocess.DEVNULL,
+                            shell=False,
+                            encoding="ascii").returncode
+
         # go go go
         if not rc == 0:
             print()
