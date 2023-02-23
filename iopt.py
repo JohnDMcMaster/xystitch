@@ -17,7 +17,7 @@ def run(pto_in,
         stdev=3.0,
         anchor_cr=None,
         check_poor_opt=True,
-        r_oders=2,
+        r_orders=2,
         verbose=False):
     if pto_out is None:
         pto_out = pto_in
@@ -36,6 +36,7 @@ def run(pto_in,
     opt = XYOptimizer(pto)
     opt.debug = verbose
     opt.stdev = stdev
+    opt.r_orders = r_orders
     opt.run(anchor_cr=anchor_cr, check_poor_opt=check_poor_opt)
 
     print('Centering...')

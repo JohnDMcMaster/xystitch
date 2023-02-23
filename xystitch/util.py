@@ -255,3 +255,13 @@ def mem2pix(mem):
 
 def pix2mem(pix):
     return pix / (51 / 1000)
+
+
+def iabs(f):
+    """
+    Given a number return an asolute integeter
+    """
+    if f < 0:
+        return -int(f)
+    else:
+        return int(f)

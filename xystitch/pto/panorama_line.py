@@ -5,11 +5,12 @@ Licensed under a 2 clause BSD license, see COPYING for details
 '''
 
 from . import line
+from xystitch.util import iabs
 '''
 p f0 w921 h681 v89  E0 R0 S233,891,57,670 n"TIFF_m c:NONE"
 
 S: crop
-	S<left>,<right>,<top>,<bottom>
+    S<left>,<right>,<top>,<bottom>
 '''
 
 
@@ -68,7 +69,7 @@ class PanoramaLine(line.Line):
 
     def width(self):
         c = self.get_crop()
-        return c[0] - c[1]
+        return iabs(c[0] - c[1])
 
     def width2(self):
         return self.getv('w')
@@ -100,7 +101,7 @@ class PanoramaLine(line.Line):
 
     def height(self):
         c = self.get_crop()
-        return c[2] - c[3]
+        return iabs(c[2] - c[3])
 
     def top(self):
         c = self.get_crop()

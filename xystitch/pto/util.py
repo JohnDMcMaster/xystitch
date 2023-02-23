@@ -530,3 +530,45 @@ def rm_red_img(pto):
     for il in pto.image_lines:
         print('  %s w/ [%s, %s, %s, %s]' %
               (il.get_name(), il.left(), il.right(), il.top(), il.bottom()))
+
+
+def iter_raw_image_positions(pto):
+    """
+    yield (fn, x, y, r)
+    """
+    for il in pto.get_image_lines():
+        yield (il.get_name(), il.x(), il.y(), il.rotation())
+
+
+import math
+
+
+# https://stackoverflow.com/questions/34372480/rotate-point-about-another-point-in-degrees-python
+def rotate(origin, point, angle):
+    """
+    Rotate a point counterclockwise by a given angle around a given origin.
+
+    The angle should be given in radians.
+    """
+    ox, oy = origin
+    px, py = point
+
+    qx = ox + math.cos(angle) * (px - ox) - math.sin(angle) * (py - oy)
+    qy = oy + math.sin(angle) * (px - ox) + math.cos(angle) * (py - oy)
+    return qx, qy
+
+
+def iter_output_image_positions(pto):
+    """
+    yield (fn, x, y, r)
+    """
+    for il in pto.get_image_lines():
+        r = il.rotation()
+        xraw = il.x()
+        yraw = il.y()
+        xnew, ynew = rotate((0, 0), (xraw, yraw), r)
+        """
+        Panotools has origin lower right
+        Images typically have origin upper left
+        """
+        yield (il.get_name(), -xnew, -ynew, r)
