@@ -17,8 +17,10 @@ if not os.path.exists('build'):
 scripts = (
     'cphugin.py',
     'clean.sh',
+    'dopt.py',
     'feature.py',
     'hugin.py',
+    'iopt.py',
     'move.sh',
     'pto.py',
     'stitch.sh',

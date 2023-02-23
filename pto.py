@@ -12,21 +12,7 @@ from xystitch.pto.util import *
 from xystitch.util import IOTimestamp, IOLog
 from xystitch.benchmark import Benchmark
 from xystitch.config import config_pto_defaults
-
-
-def parser_add_bool_arg(yes_arg, default=False, **kwargs):
-    dashed = yes_arg.replace('--', '')
-    dest = dashed.replace('-', '_')
-    parser.add_argument(yes_arg,
-                        dest=dest,
-                        action='store_true',
-                        default=default,
-                        **kwargs)
-    parser.add_argument('--no-' + dashed,
-                        dest=dest,
-                        action='store_false',
-                        **kwargs)
-
+from xystitch.util import add_bool_arg
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Manipulate .pto files')
@@ -96,7 +82,7 @@ if __name__ == "__main__":
     parser.add_argument('--allow-missing',
                         action="store_true",
                         help='Allow missing images')
-    parser_add_bool_arg('--stampout', default=True, help='timestamp output')
+    add_bool_arg('--stampout', default=True, help='timestamp output')
     parser.add_argument(
         '--stdev',
         type=float,
@@ -105,7 +91,7 @@ if __name__ == "__main__":
     parser.add_argument('--anchor-cr',
                         default=None,
                         help='xy-opt: use col,row instead of guessing anchor')
-    parser_add_bool_arg('--check-poor-opt', default=True, help='')
+    add_bool_arg('--check-poor-opt', default=True, help='')
     parser.add_argument(
         '--crop',
         default=None,

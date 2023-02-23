@@ -847,7 +847,8 @@ def xy_opt(project,
            verbose=False,
            stdev=None,
            anchor_cr=None,
-           should_check_poor_opt=True):
+           should_check_poor_opt=True,
+           r_orders=2):
     '''
     FIXME: implementation is extremely inefficient
     Change to do a single pass on control points, indexing results
@@ -939,24 +940,36 @@ def xy_opt(project,
     This means we need to check first for even rows and then for odd rows
     Removing these now means regression later won't use them
     """
-    print("")
-    # Serpentine even rows
-    check_pair_outlier_u_sd(icm,
-                            pairsx,
-                            xbase=0,
-                            xorder=1,
-                            ybase=0,
-                            yorder=2,
-                            stdev=stdev)
-    print("")
-    # Serpentine odd rows
-    check_pair_outlier_u_sd(icm,
-                            pairsy,
-                            xbase=0,
-                            xorder=1,
-                            ybase=1,
-                            yorder=2,
-                            stdev=stdev)
+    if r_orders == 2:
+        print("")
+        # Serpentine even rows
+        check_pair_outlier_u_sd(icm,
+                                pairsx,
+                                xbase=0,
+                                xorder=1,
+                                ybase=0,
+                                yorder=2,
+                                stdev=stdev)
+        print("")
+        # Serpentine odd rows
+        check_pair_outlier_u_sd(icm,
+                                pairsy,
+                                xbase=0,
+                                xorder=1,
+                                ybase=1,
+                                yorder=2,
+                                stdev=stdev)
+    elif r_orders == 1:
+        check_pair_outlier_u_sd(icm,
+                                pairsy,
+                                xbase=0,
+                                xorder=1,
+                                ybase=0,
+                                yorder=1,
+                                stdev=stdev)
+    else:
+        assert 0, r_orders
+
     print("")
 
     # Chose an image in the center to attach other images to
@@ -984,30 +997,45 @@ def xy_opt(project,
         project, icm, closed_set, pairsx, pairsy, order=2, verbose=verbose)
     """
 
-    print("")
-    print("")
-    # Serpentine even rows
-    attach_image_linear(project,
-                        icm,
-                        closed_set,
-                        pairsx,
-                        pairsy,
-                        xbase=0,
-                        xorder=1,
-                        ybase=0,
-                        yorder=2)
-    print("")
-    print("")
-    # Serpentine odd rows
-    attach_image_linear(project,
-                        icm,
-                        closed_set,
-                        pairsx,
-                        pairsy,
-                        xbase=0,
-                        xorder=1,
-                        ybase=1,
-                        yorder=2)
+    if r_orders == 2:
+        print("")
+        print("")
+        # Serpentine even rows
+        attach_image_linear(project,
+                            icm,
+                            closed_set,
+                            pairsx,
+                            pairsy,
+                            xbase=0,
+                            xorder=1,
+                            ybase=0,
+                            yorder=2)
+        print("")
+        print("")
+        # Serpentine odd rows
+        attach_image_linear(project,
+                            icm,
+                            closed_set,
+                            pairsx,
+                            pairsy,
+                            xbase=0,
+                            xorder=1,
+                            ybase=1,
+                            yorder=2)
+    elif r_orders == 1:
+        print("")
+        print("")
+        attach_image_linear(project,
+                            icm,
+                            closed_set,
+                            pairsx,
+                            pairsy,
+                            xbase=0,
+                            xorder=1,
+                            ybase=0,
+                            yorder=1)
+    else:
+        assert 0, r_orders
 
     print("")
     print("")
@@ -1047,7 +1075,7 @@ def xy_opt(project,
                            (x, y, p[0], p[1])))
 
     rms_this = get_rms(project)
-    print(('Pre-opt: final RMS error: %f' % rms_this))
+    print(('dopt: final RMS error: %f' % rms_this))
 
     # internal use only
     return closed_set
@@ -1278,6 +1306,7 @@ class XYOptimizer:
         self.debug = False
         self.icm = None
         self.stdev = None
+        self.r_orders = 2
 
     def verify_images(self):
         first = True
@@ -1317,7 +1346,8 @@ class XYOptimizer:
                verbose=self.debug,
                stdev=self.stdev,
                anchor_cr=anchor_cr,
-               should_check_poor_opt=check_poor_opt)
+               should_check_poor_opt=check_poor_opt,
+               r_orders=self.r_orders)
 
         bench.stop()
         print(('Optimized project in %s' % bench))

@@ -82,8 +82,8 @@ def without_output(args, print_output=True):
     else:
         # Specifying nothing completely throws away the output
         subp = subprocess.Popen(args,
-                                stdout=None,
-                                stderr=None,
+                                stdout=subprocess.DEVNULL,
+                                stderr=subprocess.DEVNULL,
                                 shell=False,
                                 encoding="ascii")
 
