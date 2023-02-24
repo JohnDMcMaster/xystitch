@@ -5,6 +5,7 @@ from xystitch.pto.util import iter_output_image_positions
 from PIL import ImageFont, ImageDraw 
 import os
 from xystitch.image_coordinate_map import get_row_col
+from xystitch.util import add_bool_arg
 
 
 # /usr/local/lib/python2.7/dist-packages/PIL/Image.py:2210: DecompressionBombWarning: Image size (941782785 pixels) exceeds limit of 89478485 pixels, could be decompression bomb DOS attack.
@@ -20,7 +21,7 @@ def get_font(size):
     """
     return ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf", size, encoding="unic")
 
-def run(pto_fn, fn_out, mark=True, alpha=True):
+def run(pto_fn, fn_out, label=True, alpha=True):
     pto = PTOProject.from_file_name(pto_fn)
 
     pano_w = pto.panorama_line.width()
@@ -60,7 +61,7 @@ def run(pto_fn, fn_out, mark=True, alpha=True):
         print("Image %u / %u %s: x=%u, y=%u, r=%0.1f" %
               (imi, images, fn, dstx, dsty, r))
         draw = None
-        if mark:
+        if label:
             draw = ImageDraw.Draw(im_dst)
             font = get_font(int(im.size[0] * 0.05))
             font_fill = (255, 0, 0)
@@ -80,7 +81,7 @@ def run(pto_fn, fn_out, mark=True, alpha=True):
                 im_dst.paste(imr, (int(dstx), int(dsty)), imr)
             else:
                 im_dst.paste(imr, (int(dstx), int(dsty)))
-            if mark:
+            if label:
                 desc = fn.replace(".jpg", "")
                 # font = ImageFont.load_default()
                 # quick scale to something that "looked about right"
@@ -102,9 +103,11 @@ def main():
     parser.add_argument('--pto-in',
                         default="out.pto",
                         help='input .pto file name (default: out.pto)')
+    add_bool_arg(parser, "--label", default=False)
+    add_bool_arg(parser, "--alpha", default=False)
     parser.add_argument('image_out', help='output image file name')
     args = parser.parse_args()
-    run(args.pto_in, args.image_out)
+    run(args.pto_in, args.image_out, label=args.label, alpha=args.alpha)
 
 
 if __name__ == "__main__":

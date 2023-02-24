@@ -21,6 +21,7 @@ scripts = (
     'feature.py',
     'hugin.py',
     'iopt.py',
+    'merer.py',
     'move.sh',
     'pto.py',
     'stitch.sh',
