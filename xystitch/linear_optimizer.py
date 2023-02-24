@@ -432,6 +432,6 @@ def linear_reoptimize(pto, allow_missing=False, r_orders=2):
                  y_drs, y_cs)
 
     rms_this = get_rms(pto)
-    print(('iopt: final RMS error: %f' % rms_this))
+    print(('dopt: final RMS error: %f' % rms_this))
 
     return x_dcs, x_drs, x_cs, y_dcs, y_drs, y_cs

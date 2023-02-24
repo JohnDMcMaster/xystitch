@@ -1075,7 +1075,7 @@ def xy_opt(project,
                            (x, y, p[0], p[1])))
 
     rms_this = get_rms(project)
-    print(('dopt: final RMS error: %f' % rms_this))
+    print(('iopt: final RMS error: %f' % rms_this))
 
     # internal use only
     return closed_set
