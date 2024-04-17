@@ -27,11 +27,11 @@ fi
 echo
 echo
 echo '**********************************'
-echo 'No failures, optimizing'
-time xy-iopt --pto-in out.pto
-
-# fit to screen
-time pano_modify --fov=AUTO --canvas=AUTO -o out.pto out.pto
+echo 'Optimizing'
+# reopt will remove bad control points
+# Create a backup
+cp out.pto out_unclean.pto
+time xy-reopt out.pto
 
 echo
 echo

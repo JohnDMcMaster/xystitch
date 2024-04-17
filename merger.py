@@ -2,11 +2,10 @@
 from PIL import Image
 from xystitch.pto.project import PTOProject
 from xystitch.pto.util import iter_output_image_positions
-from PIL import ImageFont, ImageDraw 
+from PIL import ImageFont, ImageDraw
 import os
 from xystitch.image_coordinate_map import get_row_col
 from xystitch.util import add_bool_arg
-
 
 # /usr/local/lib/python2.7/dist-packages/PIL/Image.py:2210: DecompressionBombWarning: Image size (941782785 pixels) exceeds limit of 89478485 pixels, could be decompression bomb DOS attack.
 #   DecompressionBombWarning)
@@ -19,7 +18,11 @@ def get_font(size):
     font_path = os.path.join(cv2.__path__[0],'qt','fonts','DejaVuSans.ttf')
     return ImageFont.truetype(font_path, size=128)
     """
-    return ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf", size, encoding="unic")
+    return ImageFont.truetype(
+        "/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf",
+        size,
+        encoding="unic")
+
 
 def run(pto_fn, fn_out, label=True, alpha=True):
     pto = PTOProject.from_file_name(pto_fn)
@@ -72,9 +75,11 @@ def run(pto_fn, fn_out, label=True, alpha=True):
                 # Green alternates up/down
                 row, col = get_row_col(fn)
                 if row % 2 == 0:
-                    tint = (255 * ((col + 0) % 2), 255 * ((col + 1) % 2), 255, 32)
+                    tint = (255 * ((col + 0) % 2), 255 * ((col + 1) % 2), 255,
+                            32)
                 else:
-                    tint = (255 * ((col + 1) % 2), 255 * ((col + 0) % 2), 255, 32)
+                    tint = (255 * ((col + 1) % 2), 255 * ((col + 0) % 2), 255,
+                            32)
                 im_mask = Image.new("RGBA", src_wh, tint)
                 imr.paste(im_mask, (0, 0), im_mask)
                 imr.putalpha(127)
@@ -85,7 +90,11 @@ def run(pto_fn, fn_out, label=True, alpha=True):
                 desc = fn.replace(".jpg", "")
                 # font = ImageFont.load_default()
                 # quick scale to something that "looked about right"
-                draw.text((dstx + imr.size[0] * 0.4, dsty + imr.size[1] * 0.45), desc, fill=font_fill, font=font)
+                draw.text(
+                    (dstx + imr.size[0] * 0.4, dsty + imr.size[1] * 0.45),
+                    desc,
+                    fill=font_fill,
+                    font=font)
                 # imr.save("merger/test.jpg")
                 # return
 

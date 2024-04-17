@@ -7,6 +7,7 @@ Copyright 2012 John McMaster
 import argparse
 import sys
 from xystitch.optimizer import PTOptimizer, XYOptimizer
+from xystitch.optimizer2 import XYOptimizer2
 from xystitch.pto.project import PTOProject
 from xystitch.pto.util import *
 from xystitch.util import IOTimestamp, IOLog
@@ -45,6 +46,9 @@ if __name__ == "__main__":
         '--xy-opt',
         action="store_true",
         help='Core xy-stitch optimizer. Statistical based xy optimizer')
+    parser.add_argument('--xy-opt2',
+                        action="store_true",
+                        help='Newer algorithm using uscan.json metadata')
     parser.add_argument(
         '--reoptimize',
         action="store_true",
@@ -82,7 +86,7 @@ if __name__ == "__main__":
     parser.add_argument('--allow-missing',
                         action="store_true",
                         help='Allow missing images')
-    add_bool_arg('--stampout', default=True, help='timestamp output')
+    add_bool_arg(parser, '--stampout', default=True, help='timestamp output')
     parser.add_argument(
         '--stdev',
         type=float,
@@ -91,7 +95,7 @@ if __name__ == "__main__":
     parser.add_argument('--anchor-cr',
                         default=None,
                         help='xy-opt: use col,row instead of guessing anchor')
-    add_bool_arg('--check-poor-opt', default=True, help='')
+    add_bool_arg(parser, '--check-poor-opt', default=True, help='')
     parser.add_argument(
         '--crop',
         default=None,
@@ -205,6 +209,21 @@ if __name__ == "__main__":
     if args.xy_opt:
         print('Optimizing')
         opt = XYOptimizer(pto)
+        opt.debug = args.verbose
+        opt.stdev = args.stdev
+        anchor_cr = None
+        if args.anchor_cr:
+            anchor_c, anchor_r = args.anchor_cr.split(",")
+            anchor_cr = int(anchor_c), int(anchor_r)
+        opt.run(anchor_cr=anchor_cr, check_poor_opt=args.check_poor_opt)
+        # Default
+        if args.center != False:
+            print('Centering...')
+            center(pto)
+
+    if args.xy_opt2:
+        print('Optimizing')
+        opt = XYOptimizer2(pto)
         opt.debug = args.verbose
         opt.stdev = args.stdev
         anchor_cr = None

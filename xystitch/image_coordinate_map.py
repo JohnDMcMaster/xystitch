@@ -129,7 +129,10 @@ class ImageCoordinateMap:
         self.cols = cols
         # ie y in range(0, rows)
         self.rows = rows
+        # (col, row) = image file name
         self.layout = {}
+        # Reverse of above
+        self.fn2cr = {}
 
     def images(self):
         '''Returns a generator giving (file name, row, col) tuples'''
@@ -192,6 +195,7 @@ class ImageCoordinateMap:
                 'row %d, col %d are out of bounds height %d, width %d' %
                 (row, col, self.height(), self.width()))
         self.layout[(col, row)] = file_name
+        self.fn2cr[file_name] = (col, row)
 
     def set_image(self, col, row, file_name):
         self.set_image_rc(row, col, file_name)

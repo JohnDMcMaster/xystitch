@@ -575,6 +575,7 @@ m g1.0 i0 f0 m2
         for line in self.variable_lines:
             text += line.regen()
 
+        print("save cpls", len(self.control_point_lines))
         for line in self.control_point_lines:
             text += line.regen()
 
@@ -712,6 +713,7 @@ m g1.0 i0 f0 m2
         self.save_as(self.file_name)
 
     def save_as(self, file_name, is_new_filename=False):
+        print("get text", self.parsed)
         with open(file_name + '.tmp', 'w') as f:
             f.write(self.get_text())
         shutil.move(file_name + '.tmp', file_name)

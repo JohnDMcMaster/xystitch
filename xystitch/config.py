@@ -133,6 +133,109 @@ class Config:
         self.enblend_safest_mode = enblend_safest_mode
 
 
+"""
+{
+    "optics": {
+        "rotation_cw": 0.0,
+        "um_per_pixel": 0.9356893588659003
+    },
+    "motion": {
+        "backlash": 0.05,
+        "repeatability_u": 2.0,
+        "repeatability_std": 1.5
+    }
+}
+
+FIXME: deal with per axis config a bit better
+For now assume all axes are the same but keep the interface per axis
+"""
+
+
+class UscopeCalibration:
+    def __init__(self, j=None, axes=set("xyz")):
+        self.j = j
+        self.axes = axes
+
+    def get_optics_rotation_ccw(self):
+        """
+        Get the amount the image needs to be rotated CCW in order to give a square image
+
+        Example
+        If the camera is rotated -3 degrees CCW (3 degrees CW), a +3 degree correction CCW is needed
+        This value will be +3 degrees
+        See Image.rotate()
+        """
+        ret = self.j.get("optics", {}).get("rotation_ccw")
+        if not ret:
+            return None
+        else:
+            return float(ret)
+
+    def get_optics_um_per_pixel(self):
+        ret = self.j.get("optics", {}).get("um_per_pixel")
+        if ret is None:
+            return None
+        else:
+            return float(ret)
+
+    '''
+    not currently used here
+    def get_motion_backlash(self, axes=None):
+        """
+        Return a dict with value for each axis
+        """
+        ret = self.j.get("motion", {}).get("backlash")
+        if not ret:
+            return None
+        else:
+            return float(ret)
+    '''
+
+    def get_motion_repeatability_u(self):
+        """
+        Return a dict with value for each axis
+        """
+        ret = self.j.get("motion", {}).get("repeatability_u")
+        if not ret:
+            return None
+        else:
+            val = float(ret)
+            return dict([(axis, val) for axis in self.axes])
+
+    def get_motion_repeatability_std(self):
+        """
+        Return a dict with value for each axis
+        """
+        ret = self.j.get("motion", {}).get("repeatability_std")
+        if not ret:
+            return None
+        else:
+            val = float(ret)
+            return dict([(axis, val) for axis in self.axes])
+
+    def get_motion_repeatibility_u_std(self):
+        """
+        return like
+        {
+            "x": {"u": 2.0, "std": 1.0},
+            "y": {"u": 2.5, "std": 1.5},
+        }
+        Or None if insufficient info
+
+        Intended use is to reject points likely not within expected distribution
+        """
+        us = self.get_motion_repeatability_u()
+        stds = self.get_motion_repeatability_std()
+        if us is None and stds is None:
+            return None
+        elif us is None or stds is None:
+            raise ValueError("Inconsistent distribution. Require u + std")
+        ret = {}
+        for axis in self.axes():
+            ret[axis] = {"u": us[axis], "std": stds[axis]}
+        return ret
+
+
 config = Config()
 
 

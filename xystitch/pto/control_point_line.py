@@ -12,13 +12,13 @@ from . import line
 
 
 class ControlPointLine(line.Line):
-    def __init__(self, text, project):
+    def __init__(self, text=None, project=None, variables=None):
         # c n0 N1 x1444.778035 y233.742619 X1225.863118 Y967.737131 t0
         # Both of type ControlPointLineImage
         # Coordinates are increasing from upper left of image
         self.lower_image = None
         self.upper_image = None
-        line.Line.__init__(self, text, project)
+        line.Line.__init__(self, text, project, variables=variables)
 
     def prefix(self):
         return 'c'

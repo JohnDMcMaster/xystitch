@@ -15,11 +15,11 @@ from xystitch.pto.util import dbg
 
 
 class Line:
-    def __init__(self, text, project):
+    def __init__(self, text=None, project=None, variables=None):
         # Variables for the line as dict
         # If a value is not set, it should not have the key even present
         # If a key is present and value is None, indicates it is a key only variable
-        self.variables = dict()
+        self.variables = variables
         # Original raw text as string
         self.text = None
         # Really does seem easiest to just have this here
@@ -42,9 +42,15 @@ class Line:
         # Quotes are needed to distinguish the data from the key
         #string_variables = set()
 
-        self.text = text.strip()
+        if text:
+            text = text.strip()
+        self.text = text
         self.project = project
-        self.reparse()
+
+        if self.text is not None:
+            self.reparse()
+        else:
+            assert self.variables is not None
 
     def prefix(self):
         raise Exception("Required")
