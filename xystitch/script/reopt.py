@@ -21,7 +21,7 @@ def run(pto_in=None, pto_out=None):
     if not pto_out:
         pto_out = pto_in
 
-    print('pr0npto starting')
+    print('xyreopt starting')
     print('In: %s' % pto_in)
     print('Out: %s' % pto_out)
     bench = Benchmark()
@@ -67,9 +67,9 @@ def main():
     pto_in = args.pto_in
     pto_out = args.pto_out
 
-    exist = os.path.exists('pr0npto.log')
+    exist = os.path.exists('xyreopt.log')
     # can easily be multiple invocations, save all data
-    _outlog = IOLog(obj=sys, name='stdout', out_fn='pr0npto.log', mode='a')
+    _outlog = IOLog(obj=sys, name='stdout', out_fn='xyreopt.log', mode='a')
     _errlog = IOLog(obj=sys, name='stderr', out_fd=_outlog.out_fd)
 
     _outdate = IOTimestamp(sys, 'stdout')
