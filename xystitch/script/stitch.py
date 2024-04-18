@@ -13,6 +13,8 @@ import os
 import sys
 import shutil
 from xystitch.util import add_bool_arg
+import glob
+import shutil
 
 
 def run(pto_out=None,
@@ -60,6 +62,9 @@ def run(pto_out=None,
                 ts_script.run_kwargs(ignore_errors=ignore_errors,
                                      skip_missing=skip_missing,
                                      out_ext=out_ext)
+                if glob.glob("single/*"):
+                    print("Deleting tiles on single file success")
+                    shutil.rmtree("out")
             else:
                 print(
                     "RMS: fail. Fix errors or raise RMS threshold and re-run optimizer"
