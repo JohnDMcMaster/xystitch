@@ -4,6 +4,93 @@ import multiprocessing
 from psutil import virtual_memory
 from .util import mksize
 
+import shutil
+import subprocess
+
+
+def find_panotools_exe(config, configk, exe_name, flatpak_name):
+    exe = config.get(configk)
+    if exe is not None:
+        return tuple(exe)
+
+    if 1:
+        exe = shutil.which(exe_name)
+        if exe is not None:
+            return (exe, )
+
+    # flatpak run --command=enfuse net.sourceforge.Hugin --help
+    # bwrap: execvp align_image_stackD: No such file or directory
+    # bad command => returns 1
+    # good command => returns 0
+    command = [
+        "flatpak", "run", f"--command={flatpak_name}", "net.sourceforge.Hugin",
+        "--help"
+    ]
+    try:
+        process = subprocess.Popen(command,
+                                   stderr=subprocess.PIPE,
+                                   stdout=subprocess.PIPE)
+        _stdout, _stderr = process.communicate()
+        exit_code = process.wait()
+        if exit_code == 0:
+            return ("flatpak", "run", "--filesystem=host",
+                    f"--command={flatpak_name}", "net.sourceforge.Hugin")
+    # FIME: catch the specific exception for command not found
+    except:
+        pass
+    return None
+
+
+class PanotoolsConfig:
+    def __init__(self, j=None):
+        self.j = j
+
+        self._hugin_cli = None
+        self._enblend_cli = None
+        self._enfuse_cli = None
+        self._align_image_stack_cli = None
+        self._pano_modify_cli = None
+
+    def hugin_cli(self):
+        if self._hugin_cli:
+            return self._hugin_cli
+        self._hugin_cli = find_panotools_exe(self.j, "hugin_cli", "hugin",
+                                             "hugin")
+        return self._hugin_cli
+
+    def enblend_cli(self):
+        if self._enblend_cli:
+            return self._enblend_cli
+        self._enblend_cli = find_panotools_exe(self.j, "enblend_cli",
+                                               "enblend", "enblend")
+        return self._enblend_cli
+
+    def enfuse_cli(self):
+        """
+        flatpak run --command=enfuse net.sourceforge.Hugin --help
+        """
+        if self._enfuse_cli:
+            return self._enfuse_cli
+        self._enfuse_cli = find_panotools_exe(self.j, "enfuse_cli", "enfuse",
+                                              "enfuse")
+        return self._enfuse_cli
+
+    def align_image_stack_cli(self):
+        if self._align_image_stack_cli:
+            return self._align_image_stack_cli
+        self._align_image_stack_cli = find_panotools_exe(
+            self.j, "align_image_stack_cli", "align_image_stack",
+            "align_image_stack")
+        return self._align_image_stack_cli
+
+    def pano_modify_cli(self):
+        if self._pano_modify_cli:
+            return self._pano_modify_cli
+        self._pano_modify_cli = find_panotools_exe(self.j, "pano_modify_cli",
+                                                   "pano_modify",
+                                                   "pano_modify")
+        return self._pano_modify_cli
+
 
 class Config:
     def __init__(self, fn=None):
@@ -24,6 +111,8 @@ class Config:
         # Use options that are slow but will generate a stitch
         self.enblend_safer_mode = False
         self.enblend_safest_mode = False
+
+        self.panotools = PanotoolsConfig(self.json.get("panotools", {}))
 
     @staticmethod
     def get_default_fn():

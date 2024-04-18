@@ -1486,10 +1486,12 @@ class XYOptimizer2:
         # Ex: all of the images are the same size
         self.verify_image_assumptions()
 
+        self.rms_initial = None
         try:
-            rms_original = get_rms(self.project)
-            if rms_original is not None:
-                print(('XYOptimizer2: initial RMS error: %f' % rms_original))
+            self.rms_initial = get_rms(self.project)
+            if self.rms_initial is not None:
+                print(
+                    ('XYOptimizer2: initial RMS error: %f' % self.rms_initial))
         except NoRMS:
             pass
 
@@ -1506,10 +1508,11 @@ class XYOptimizer2:
 
         self.xy_opt()
 
+        self.rms_final = None
         try:
-            rms_final = get_rms(self.project)
-            if rms_final is not None:
-                print(('XYOptimizer2: final RMS error: %f' % rms_final))
+            self.rms_final = get_rms(self.project)
+            if self.rms_final is not None:
+                print(('XYOptimizer2: final RMS error: %f' % self.rms_final))
         except NoRMS:
             pass
 

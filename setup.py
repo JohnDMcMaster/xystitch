@@ -25,7 +25,7 @@ scripts = (
     'move.sh',
     'pto.py',
     'reopt.py',
-    'stitch.sh',
+    'stitch.py',
     'ts.py',
 )
 scripts_dist = []
